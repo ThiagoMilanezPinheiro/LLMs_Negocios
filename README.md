@@ -142,7 +142,7 @@ Modelos de ML, NLP e análise preditiva.
 - **Projetos Totais**: 0 (em construção) 🔨
 - **Linguagens**: Python, JavaScript, TypeScript, SQL
 - **Área de Foco**: LLMs, Data Science, Web Development
-- **Últimas Atualizações**: [Ver histórico de commits](../../commits/main)
+- **Últimas Atualizações**: [Ver histórico de commits](./commits/main)
 
 ---
 
