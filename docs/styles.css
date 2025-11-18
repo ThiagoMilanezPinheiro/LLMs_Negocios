@@ -17,6 +17,20 @@ html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -app
 .brand .subtitle{margin:0;color:var(--muted);font-size:0.9rem}
 .social a{color:var(--text);text-decoration:none;margin-left:1rem;padding:0.35rem 0.6rem;border-radius:6px;border:1px solid transparent;font-size:0.9rem}
 .social a:hover{background:var(--glass);border-color:rgba(255,255,255,0.04)}
+.social-linkedin {
+  color: var(--accent) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0.35rem 0.5rem !important;
+}
+.social-linkedin:hover {
+  color: #9d5eff !important;
+  transform: scale(1.15);
+  background: transparent !important;
+  border-color: transparent !important;
+}
 
 .hero{display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start;padding:3rem 0}
 .hero h2{font-size:1.8rem;margin:0 0 0.6rem}
