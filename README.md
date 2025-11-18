@@ -168,6 +168,6 @@ Este portfólio está licenciado sob a MIT License. Veja o arquivo LICENSE para 
 
 **Feito com ❤️ por Thiago Milanez Pinheiro**
 
-*Última atualização: Novembro 2025*
+*Última atualização: 18 de Novembro de 2025*
 
 </div>
