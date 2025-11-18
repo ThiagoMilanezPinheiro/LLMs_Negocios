@@ -139,9 +139,10 @@ Modelos de ML, NLP e análise preditiva.
 
 ## 📊 Estatísticas
 
-- **Projetos Totais**: Em construção 🔨
+- **Projetos Totais**: 0 (em construção) 🔨
 - **Linguagens**: Python, JavaScript, TypeScript, SQL
 - **Área de Foco**: LLMs, Data Science, Web Development
+- **Últimas Atualizações**: [Ver histórico de commits](../../commits/main)
 
 ---
 
@@ -149,9 +150,9 @@ Modelos de ML, NLP e análise preditiva.
 
 <div align="center">
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com)
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:seu-email@exemplo.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/thiago-milanez-pinheiro/)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ThiagoMilanezPinheiro)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:thiago.milanez@example.com)
 
 </div>
 
