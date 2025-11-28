@@ -82,6 +82,10 @@
             <li>Data Engineering</li>
           </ul>
         </div>
+         <!-- Avatar de IA estilo Copilot -->
+        <div class="ai-avatar-wrapper">
+          <img src="img/CopilotHeader.png" alt="AI Avatar" class="ai-avatar" />
+        </div>
       </div>
     </section>
 
@@ -118,7 +122,6 @@
 
       </div>
     </section>
-
 
     <section id="skills" class="section grid">
       <div class="card">
@@ -168,5 +171,21 @@
       <p>Feito por Thiago Milanez C Pinheiro — Última atualização: 27 de Novembro de 2025</p>
     </div>
   </footer>
+  <script>
+  const avatar = document.querySelector('.ai-avatar');
+
+  document.addEventListener('mousemove', (e) => {
+    if (!avatar) return;
+
+    const xCenter = window.innerWidth / 2;
+    const yCenter = window.innerHeight / 2;
+
+    const dx = (e.clientX - xCenter) / 35;
+    const dy = (e.clientY - yCenter) / 35;
+
+    avatar.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.6}deg)`;
+  });
+</script>
+
 </body>
 </html>
