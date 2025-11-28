@@ -77,9 +77,6 @@
         </p>
       </div>
       <div class="hero-aside">
-        <!-- Avatar de IA estilo Copilot -->
-          <img src="img/CopilotHeader.png" alt="AI Avatar" class="ai-avatar" />
-          
         <div class="card stats">
           <h3>Áreas</h3>
           <ul>
@@ -87,6 +84,10 @@
             <li>Machine Learning & NLP</li>
             <li>Data Engineering</li>
           </ul>
+        </div>
+         <!-- Avatar de IA estilo Copilot -->
+        <div class="ai-avatar-wrapper">
+          <img src="img/CopilotHeader.png" alt="AI Avatar" class="ai-avatar" />
         </div>
       </div>
     </section>
@@ -174,15 +175,20 @@
     </div>
   </footer>
   <script>
-  document.addEventListener("mousemove", (e) => {
-    const x = (e.clientX - window.innerWidth / 2) * 0.02;
-    const y = (e.clientY - window.innerHeight / 2) * 0.02;
+  const avatar = document.querySelector('.ai-avatar');
 
-    document.body.style.setProperty("--mx", `${x}px`);
-    document.body.style.setProperty("--my", `${y}px`);
+  document.addEventListener('mousemove', (e) => {
+    if (!avatar) return;
+
+    const xCenter = window.innerWidth / 2;
+    const yCenter = window.innerHeight / 2;
+
+    const dx = (e.clientX - xCenter) / 35;
+    const dy = (e.clientY - yCenter) / 35;
+
+    avatar.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.6}deg)`;
   });
 </script>
-
 
 </body>
 </html>
