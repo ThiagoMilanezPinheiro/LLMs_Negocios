@@ -71,9 +71,15 @@
       <div class="hero-content">
         <h2>Construindo soluções de IA práticas para negócios</h2>
         <p>Desenvolvo aplicações com LLMs, pipelines de dados e modelos de machine learning prontos para produção. Foco em entregar impacto mensurável e soluções robustas.</p>
-<p class="cta-row"><a class="btn" href="projetos/">Ver Projetos</a> <a class="btn ghost" href="PORTFOLIO.md">Documentação</a></p>
+        <p class="cta-row">
+          <a class="btn" href="projetos/">Ver Projetos</a> 
+          <a class="btn ghost" href="PORTFOLIO.md">Documentação</a>
+        </p>
       </div>
       <div class="hero-aside">
+        <!-- Avatar de IA estilo Copilot -->
+          <img src="img/CopilotHeader.png" alt="AI Avatar" class="ai-avatar" />
+          
         <div class="card stats">
           <h3>Áreas</h3>
           <ul>
@@ -81,10 +87,6 @@
             <li>Machine Learning & NLP</li>
             <li>Data Engineering</li>
           </ul>
-        </div>
-         <!-- Avatar de IA estilo Copilot -->
-        <div class="ai-avatar-wrapper">
-          <img src="img/CopilotHeader.png" alt="AI Avatar" class="ai-avatar" />
         </div>
       </div>
     </section>
@@ -172,20 +174,15 @@
     </div>
   </footer>
   <script>
-  const avatar = document.querySelector('.ai-avatar');
+document.addEventListener("mousemove", (e) => {
+  const x = (e.clientX - window.innerWidth / 2) * 0.02;
+  const y = (e.clientY - window.innerHeight / 2) * 0.02;
 
-  document.addEventListener('mousemove', (e) => {
-    if (!avatar) return;
-
-    const xCenter = window.innerWidth / 2;
-    const yCenter = window.innerHeight / 2;
-
-    const dx = (e.clientX - xCenter) / 35;
-    const dy = (e.clientY - yCenter) / 35;
-
-    avatar.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.6}deg)`;
-  });
+  document.body.style.setProperty("--mx", `${x}px`);
+  document.body.style.setProperty("--my", `${y}px`);
+});
 </script>
+
 
 </body>
 </html>
