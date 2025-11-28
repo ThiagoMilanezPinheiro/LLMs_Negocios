@@ -175,19 +175,13 @@
     </div>
   </footer>
   <script>
-  const avatar = document.querySelector('.ai-avatar');
+document.addEventListener("mousemove", (e) => {
+  const x = (e.clientX - window.innerWidth / 2) * 0.02;
+  const y = (e.clientY - window.innerHeight / 2) * 0.02;
 
-  document.addEventListener('mousemove', (e) => {
-    if (!avatar) return;
-
-    const xCenter = window.innerWidth / 2;
-    const yCenter = window.innerHeight / 2;
-
-    const dx = (e.clientX - xCenter) / 35;
-    const dy = (e.clientY - yCenter) / 35;
-
-    avatar.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.6}deg)`;
-  });
+  document.body.style.setProperty("--mx", `${x}px`);
+  document.body.style.setProperty("--my", `${y}px`);
+});
 </script>
 
 </body>
