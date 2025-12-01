@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: linkedin-assistant
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run agent_linkedin.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL_ID
+        value: llama-3.3-70b-versatile
+      - key: GROQ_TEMPERATURE
+        value: "0.7"
+      - key: CONTENT_PATH_LINKEDIN
+        value: ./content_linkedin
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: FAISS_INDEX_DIR_LINKEDIN
+        value: index_faiss_linkedin
+      - key: PYTHONUNBUFFERED
+        value: "1"

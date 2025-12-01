@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+app_linkedin.log
+
+# Environment variables
+.env
+
+# FAISS index (será recriado em produção)
+index_faiss_linkedin/
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
