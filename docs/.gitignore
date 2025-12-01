@@ -15,9 +15,6 @@ app_linkedin.log
 # Environment variables
 .env
 
-# FAISS index (será recriado em produção)
-index_faiss_linkedin/
-
 # Streamlit
 .streamlit/
 
