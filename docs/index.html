@@ -122,12 +122,13 @@
         <div style="display: flex; gap: 1rem; align-items: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
           <span style="font-size: 1.5rem;">🚀</span>
           <div style="flex: 1;">
-            <strong>Como iniciar:</strong>
+            <strong>Como iniciar (escolha uma opção):</strong>
             <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">
-              Execute: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">streamlit run agent_linkedin.py</code>
+              <strong>Opção 1:</strong> Clique duplo no arquivo: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">docs/start_linkedin.bat</code><br>
+              <strong>Opção 2:</strong> Terminal: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">streamlit run docs/agent_linkedin.py --server.port=8503</code>
             </p>
           </div>
-          <a href="http://localhost:8503" target="_blank" class="btn" onclick="alert('⚠️ Certifique-se de que o assistente está rodando!\n\nPara iniciar:\n1. Abra o terminal\n2. Navegue até: docs/\n3. Execute: streamlit run agent_linkedin.py\n\nA aplicação abrirá em http://localhost:8503')">
+          <a href="http://localhost:8503" target="_blank" class="btn" onclick="return confirm('⚠️ Atenção!\n\nO assistente precisa estar RODANDO primeiro!\n\n✅ Passo 1: Execute o start_linkedin.bat (clique duplo)\n✅ Passo 2: Aguarde a mensagem de inicialização\n✅ Passo 3: Clique OK para abrir no navegador\n\n▶️ Deseja continuar?')">
             Abrir Assistente
           </a>
         </div>
