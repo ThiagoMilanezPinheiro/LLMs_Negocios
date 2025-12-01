@@ -234,6 +234,16 @@ def extract_text_pdf(file_path):
 # -------------------------
 def config_retriever(folder_path: str = CONTENT_PATH):
     try:
+        # Verificar se índice FAISS já existe (otimização para cold start)
+        faiss_path = Path(FAISS_INDEX_DIR)
+        if faiss_path.exists() and (faiss_path / "index.faiss").exists():
+            logger.info(f"Carregando índice FAISS existente de {FAISS_INDEX_DIR}")
+            embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+            vectorstore = FAISS.load_local(FAISS_INDEX_DIR, embeddings, allow_dangerous_deserialization=True)
+            retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 3, "fetch_k": 4})
+            logger.info("Índice FAISS carregado com sucesso")
+            return retriever
+        
         docs_path = Path(folder_path)
         
         if not docs_path.exists():
