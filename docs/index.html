@@ -126,12 +126,12 @@
           </div>
           
           <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button onclick="window.open('ms-terminal:'); navigator.clipboard.writeText('cd \"c:\\Users\\Thiago Milanez\\OneDrive\\6 - Lovely Fotográfias\\GitHub\\LLMs_Negocios\\docs\" && conda activate safebank && streamlit run agent_linkedin.py --server.port=8503'); setTimeout(() => alert('✅ Terminal aberto e comando copiado!\n\n📋 O comando foi copiado para área de transferência\n\nPróximos passos:\n1. Cole no terminal (Ctrl+V ou clique direito)\n2. Pressione Enter\n3. Aguarde \"You can now view your Streamlit app\"\n4. Clique no botão \"Abrir no Navegador\"'), 500);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%);">
-              🖥️ Opção 1: Abrir Terminal + Copiar
+            <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/start_linkedin.bat'); setTimeout(() => window.open('http://localhost:8503', '_blank'), 5000);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%);">
+              📂 Opção 1: Executar Script (.bat)
             </button>
             
-            <button onclick="navigator.clipboard.writeText('cd \"c:\\Users\\Thiago Milanez\\OneDrive\\6 - Lovely Fotográfias\\GitHub\\LLMs_Negocios\\docs\" && conda activate safebank && streamlit run agent_linkedin.py --server.port=8503'); alert('✅ Comando completo copiado!\n\nPróximos passos:\n1. Abra o PowerShell ou CMD\n2. Cole o comando (Ctrl+V)\n3. Pressione Enter\n4. Aguarde \"You can now view your Streamlit app\"\n5. Clique em \"Abrir no Navegador\"\n\n💡 Comando inclui:\n   → Navegar para a pasta correta\n   → Ativar ambiente conda\n   → Iniciar o assistente');" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #00a0dc 0%, #0077b5 100%);">
-              📋 Opção 2: Apenas Copiar Comando
+            <button onclick="navigator.clipboard.writeText('streamlit run docs/agent_linkedin.py --server.port=8503').then(() => alert('✅ Comando copiado!\n\nAgora:\n1. Abra o terminal (PowerShell ou CMD)\n2. Navegue até a pasta do projeto\n3. Cole o comando (Ctrl+V) e pressione Enter\n4. Aguarde a inicialização\n5. Acesse: http://localhost:8503')); " class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #00a0dc 0%, #0077b5 100%);">
+              💻 Opção 2: Copiar Comando Terminal
             </button>
             
             <a href="http://localhost:8503" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="return confirm('⚠️ O assistente está rodando?\n\nVerifique se você:\n✅ Executou o start_linkedin.bat OU\n✅ Rodou o comando no terminal\n✅ Viu a mensagem de inicialização\n\n▶️ Deseja abrir o assistente?')">

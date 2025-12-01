@@ -115,12 +115,12 @@
             </div>
             
             <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
-              <button onclick="window.open('ms-terminal:'); navigator.clipboard.writeText('cd \"c:\\Users\\Thiago Milanez\\OneDrive\\6 - Lovely Fotográfias\\GitHub\\LLMs_Negocios\\docs\\projetos\\llms-negocios\" && conda activate safebank && streamlit run agent_app.py'); setTimeout(function() { alert('✅ Terminal aberto e comando copiado!\\n\\n📋 O comando foi copiado para área de transferência\\n\\nPróximos passos:\\n1. Cole no terminal (Ctrl+V ou clique direito)\\n2. Pressione Enter\\n3. Aguarde \"You can now view your Streamlit app\"\\n4. Clique no botão \"Abrir no Navegador\"'); }, 500);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
-                🖥️ Abrir Terminal + Copiar
+              <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/projetos/llms-negocios/start_app.bat'); setTimeout(() => window.open('http://localhost:8501', '_blank'), 5000);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                📂 Executar Script (.bat)
               </button>
               
-              <button onclick="navigator.clipboard.writeText('cd \"c:\\Users\\Thiago Milanez\\OneDrive\\6 - Lovely Fotográfias\\GitHub\\LLMs_Negocios\\docs\\projetos\\llms-negocios\" && conda activate safebank && streamlit run agent_app.py'); alert('✅ Comando completo copiado!\\n\\nPróximos passos:\\n1. Abra o PowerShell ou CMD\\n2. Cole o comando (Ctrl+V)\\n3. Pressione Enter\\n4. Aguarde \"You can now view your Streamlit app\"\\n5. Clique em \"Abrir no Navegador\"\\n\\n💡 Comando inclui:\\n   → Navegar para a pasta correta\\n   → Ativar ambiente conda\\n   → Iniciar a aplicação');" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                📋 Apenas Copiar Comando
+              <button onclick="navigator.clipboard.writeText('cd docs/projetos/llms-negocios && streamlit run agent_app.py').then(() => alert('✅ Comando copiado!\n\nAgora:\n1. Abra o terminal (PowerShell ou CMD)\n2. Navegue até a pasta do projeto\n3. Cole o comando (Ctrl+V) e pressione Enter\n4. Aguarde a inicialização\n5. Acesse: http://localhost:8501'));" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                💻 Copiar Comando Terminal
               </button>
               
               <a href="http://localhost:8501" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="return confirm('⚠️ A aplicação está rodando?\n\nVerifique se você:\n✅ Executou o start_app.bat OU\n✅ Rodou o comando no terminal\n✅ Viu a mensagem de inicialização\n\n▶️ Deseja abrir a aplicação?')">
