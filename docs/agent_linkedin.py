@@ -461,9 +461,9 @@ if len(st.session_state.get("chat_history", [])) <= 1:
     st.markdown("""
     <div class="success-card">
         <h3 style="margin-top: 0;">👋  Bem-vindo ao Currículo Interativo!</h3>
-        <p>Este é um assistente virtual inteligente que usa <strong>RAG (Retrieval-Augmented Generation)</strong> 
-        para responder perguntas baseadas em documentos corporativos.</p>
-        <h4>✨ O que posso fazer:</h4>
+        <p>Este assistente virtual foi treinado com o currículo e portfólio de <strong>Thiago Milanez</strong> 
+        e pode responder perguntas como se fosse uma entrevista de emprego.</p>
+        <h4>💼 O que você pode perguntar:</h4>
         <ul>
             <li>📊 Experiência profissional e trajetória</li>
             <li>🛠️ Habilidades técnicas e ferramentas</li>
