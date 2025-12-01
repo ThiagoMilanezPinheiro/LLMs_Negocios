@@ -119,18 +119,29 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; align-items: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
-          <span style="font-size: 1.5rem;">🚀</span>
-          <div style="flex: 1;">
-            <strong>Como iniciar (escolha uma opção):</strong>
-            <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">
-              <strong>Opção 1:</strong> Clique duplo no arquivo: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">docs/start_linkedin.bat</code><br>
-              <strong>Opção 2:</strong> Terminal: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">streamlit run docs/agent_linkedin.py --server.port=8503</code>
-            </p>
+        <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
+          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+            <span style="font-size: 1.5rem;">🚀</span>
+            <strong style="font-size: 1.1rem;">Como iniciar o Assistente:</strong>
           </div>
-          <a href="http://localhost:8503" target="_blank" class="btn" onclick="return confirm('⚠️ Atenção!\n\nO assistente precisa estar RODANDO primeiro!\n\n✅ Passo 1: Execute o start_linkedin.bat (clique duplo)\n✅ Passo 2: Aguarde a mensagem de inicialização\n✅ Passo 3: Clique OK para abrir no navegador\n\n▶️ Deseja continuar?')">
-            Abrir Assistente
-          </a>
+          
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/start_linkedin.bat'); setTimeout(() => window.open('http://localhost:8503', '_blank'), 5000);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%);">
+              📂 Opção 1: Executar Script (.bat)
+            </button>
+            
+            <button onclick="navigator.clipboard.writeText('streamlit run docs/agent_linkedin.py --server.port=8503').then(() => alert('✅ Comando copiado!\n\nAgora:\n1. Abra o terminal (PowerShell ou CMD)\n2. Navegue até a pasta do projeto\n3. Cole o comando (Ctrl+V) e pressione Enter\n4. Aguarde a inicialização\n5. Acesse: http://localhost:8503')); " class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #00a0dc 0%, #0077b5 100%);">
+              💻 Opção 2: Copiar Comando Terminal
+            </button>
+            
+            <a href="http://localhost:8503" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="return confirm('⚠️ O assistente está rodando?\n\nVerifique se você:\n✅ Executou o start_linkedin.bat OU\n✅ Rodou o comando no terminal\n✅ Viu a mensagem de inicialização\n\n▶️ Deseja abrir o assistente?')">
+              🌐 Abrir no Navegador
+            </a>
+          </div>
+          
+          <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem;">
+            <strong>💡 Dica:</strong> Use a Opção 1 para iniciar rapidamente com um clique!
+          </div>
         </div>
       </div>
 

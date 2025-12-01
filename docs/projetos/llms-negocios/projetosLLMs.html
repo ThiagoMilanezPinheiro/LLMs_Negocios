@@ -110,27 +110,38 @@
               <span style="background: rgba(124, 58, 237, 0.2); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">RAG</span>
             </div>
             
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-              <a href="http://localhost:8501" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;" onclick="return confirm('⚠️ Atenção!\n\nA aplicação precisa estar RODANDO primeiro!\n\n✅ Passo 1: Execute o start_app.bat (clique duplo)\n✅ Passo 2: Aguarde a mensagem de inicialização\n✅ Passo 3: Clique OK para abrir no navegador\n\n▶️ Deseja continuar?')">
-                🚀 Acessar Aplicação
+            <div style="margin-bottom: 1rem;">
+              <strong style="font-size: 0.95rem; color: #7c3aed;">🚀 Iniciar Aplicação:</strong>
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
+              <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/projetos/llms-negocios/start_app.bat'); setTimeout(() => window.open('http://localhost:8501', '_blank'), 5000);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                📂 Executar Script (.bat)
+              </button>
+              
+              <button onclick="navigator.clipboard.writeText('cd docs/projetos/llms-negocios && streamlit run agent_app.py').then(() => alert('✅ Comando copiado!\n\nAgora:\n1. Abra o terminal (PowerShell ou CMD)\n2. Navegue até a pasta do projeto\n3. Cole o comando (Ctrl+V) e pressione Enter\n4. Aguarde a inicialização\n5. Acesse: http://localhost:8501'));" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                💻 Copiar Comando Terminal
+              </button>
+              
+              <a href="http://localhost:8501" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="return confirm('⚠️ A aplicação está rodando?\n\nVerifique se você:\n✅ Executou o start_app.bat OU\n✅ Rodou o comando no terminal\n✅ Viu a mensagem de inicialização\n\n▶️ Deseja abrir a aplicação?')">
+                🌐 Abrir no Navegador
               </a>
-              <a href="README.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            </div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+              <a href="README.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
                 📖 Documentação
               </a>
-              <a href="ARCHITECTURE.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <a href="ARCHITECTURE.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
                 🏗️ Arquitetura
               </a>
-              <a href="DEPLOY.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <a href="DEPLOY.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
                 ☁️ Deploy
               </a>
             </div>
             
-            <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
-              <p style="margin: 0; font-size: 0.85rem; color: rgba(59, 130, 246, 1);">
-                💡 <strong>Como iniciar (escolha uma opção):</strong><br>
-                <strong>Opção 1:</strong> Clique duplo no arquivo: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">start_app.bat</code><br>
-                <strong>Opção 2:</strong> Terminal: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">cd docs/projetos/llms-negocios && streamlit run agent_app.py</code>
-              </p>
+            <div style="padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; border-left: 3px solid #7c3aed; font-size: 0.85rem;">
+              <strong>💡 Dica:</strong> Use o botão "Executar Script" para iniciar rapidamente com um clique!
             </div>
             
             <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid #7c3aed;">
