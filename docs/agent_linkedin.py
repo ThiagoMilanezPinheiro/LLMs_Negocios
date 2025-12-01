@@ -478,7 +478,7 @@ if len(st.session_state.get("chat_history", [])) <= 1:
         ✅ Gestores técnicos avaliando perfil<br>
         ✅ Conhecer melhor o candidato de forma interativa</p>
     </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     
     # Exemplos de perguntas para RH
     st.markdown("### 💭 Exemplos de perguntas para RH:")
