@@ -3,7 +3,6 @@ services:
     name: linkedin-assistant
     runtime: python
     plan: free
-    rootDir: docs
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run agent_linkedin.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
     envVars:
