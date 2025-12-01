@@ -122,26 +122,35 @@
         <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
           <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
             <span style="font-size: 1.5rem;">🚀</span>
-            <strong style="font-size: 1.1rem;">Como iniciar o Assistente:</strong>
+            <strong style="font-size: 1.1rem;">Acesse o Assistente Virtual:</strong>
           </div>
           
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/start_linkedin.bat'); setTimeout(() => window.open('http://localhost:8503', '_blank'), 5000);" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%);">
-              📂 Opção 1: Executar Script (.bat)
-            </button>
-            
-            <button onclick="navigator.clipboard.writeText('streamlit run docs/agent_linkedin.py --server.port=8503').then(() => alert('✅ Comando copiado!\n\nAgora:\n1. Abra o terminal (PowerShell ou CMD)\n2. Navegue até a pasta do projeto\n3. Cole o comando (Ctrl+V) e pressione Enter\n4. Aguarde a inicialização\n5. Acesse: http://localhost:8503')); " class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #00a0dc 0%, #0077b5 100%);">
-              💻 Opção 2: Copiar Comando Terminal
-            </button>
-            
-            <a href="http://localhost:8503" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="return confirm('⚠️ O assistente está rodando?\n\nVerifique se você:\n✅ Executou o start_linkedin.bat OU\n✅ Rodou o comando no terminal\n✅ Viu a mensagem de inicialização\n\n▶️ Deseja abrir o assistente?')">
-              🌐 Abrir no Navegador
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="https://llms-negocios.onrender.com/" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); font-size: 1.1rem; padding: 1rem 2rem;">
+              💼 Conversar com o Assistente
             </a>
           </div>
           
-          <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem;">
-            <strong>💡 Dica:</strong> Use a Opção 1 para iniciar rapidamente com um clique!
+          <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem; text-align: center;">
+            <strong>🌐 Online 24/7</strong> • Powered by Groq AI & LangChain
           </div>
+          
+          <details style="margin-top: 1rem; cursor: pointer;">
+            <summary style="font-size: 0.9rem; padding: 0.5rem; color: rgba(255,255,255,0.7);">
+              🖥️ Versão local (desenvolvedores)
+            </summary>
+            <div style="margin-top: 0.5rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 0.85rem;">
+              <p style="margin-bottom: 0.5rem;"><strong>Opção 1:</strong> Executar script local</p>
+              <button onclick="window.open('file:///c:/Users/Thiago Milanez/OneDrive/6 - Lovely Fotográfias/GitHub/LLMs_Negocios/docs/start_linkedin.bat'); setTimeout(() => window.open('http://localhost:8503', '_blank'), 5000);" class="btn" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                📂 start_linkedin.bat
+              </button>
+              
+              <p style="margin: 1rem 0 0.5rem;"><strong>Opção 2:</strong> Copiar comando</p>
+              <button onclick="navigator.clipboard.writeText('streamlit run docs/agent_linkedin.py --server.port=8503').then(() => alert('✅ Comando copiado!'));" class="btn" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                💻 Copiar comando
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 
