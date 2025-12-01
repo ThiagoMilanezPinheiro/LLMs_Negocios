@@ -460,23 +460,28 @@ with st.sidebar:
 if len(st.session_state.get("chat_history", [])) <= 1:
     st.markdown("""
     <div class="success-card">
-        <h3 style="margin-top: 0;">👋 Bem-vindo ao SafeBank Chatbot!</h3>
-        <p>Este é um assistente virtual inteligente que usa <strong>RAG (Retrieval-Augmented Generation)</strong> 
-        para responder perguntas baseadas em documentos corporativos.</p>
-        <h4>✨ O que posso fazer:</h4>
+        <h3 style="margin-top: 0;">👋 Bem-vindo ao Currículo Interativo!</h3>
+        <p>Este assistente virtual foi treinado com o currículo e portfólio de <strong>Thiago Milanez</strong> 
+        e pode responder perguntas como se fosse uma entrevista de emprego.</p>
+        
+        <h4>💼 O que você pode perguntar:</h4>
         <ul>
-            <li>📄 Responder perguntas sobre os documentos carregados</li>
-            <li>💬 Manter contexto da conversa anterior</li>
-            <li>🔍 Buscar informações relevantes automaticamente</li>
-            <li>📊 Mostrar as fontes utilizadas nas respostas</li>
+            <li>📊 Experiência profissional e trajetória</li>
+            <li>🛠️ Habilidades técnicas e ferramentas</li>
+            <li>🚀 Projetos realizados e resultados</li>
+            <li>🎓 Formação e certificações</li>
+            <li>🤖 Especialização em IA e LLMs</li>
         </ul>
-        <h4>🚀 Como começar:</h4>
-        <p>Digite sua pergunta na caixa abaixo e pressione Enter!</p>
+        
+        <h4>🎯 Perfeito para:</h4>
+        <p>✅ Recrutadores e profissionais de RH<br>
+        ✅ Gestores técnicos avaliando perfil<br>
+        ✅ Conhecer melhor o candidato de forma interativa</p>
     </div>
     """, unsafe_allow_html=True)
     
     # Exemplos de perguntas para RH
-    st.markdown("### 💭 Exemplos de perguntas para RH:")
+    st.markdown("### 💭 Exemplos de perguntas:")
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("""
