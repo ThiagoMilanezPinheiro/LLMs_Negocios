@@ -47,8 +47,158 @@ if not os.getenv("GROQ_API_KEY"):
 # -------------------------
 # Streamlit UI config
 # -------------------------
-st.set_page_config(page_title="Atendimento SafeBank 🤖", page_icon="🤖")
-st.title("Atendimento SafeBank")
+st.set_page_config(
+    page_title="SafeBank - Chatbot Inteligente 🏦",
+    page_icon="🏦",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# CSS customizado para tema escuro similar ao HTML
+st.markdown("""
+<style>
+    /* Tema escuro geral */
+    .stApp {
+        background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+        color: #e5e7eb;
+    }
+    
+    /* Header customizado */
+    .main-header {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+    }
+    
+    .main-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        text-align: center;
+    }
+    
+    .subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+    
+    /* Estilo das mensagens do chat */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .stChatMessage:hover {
+        border-color: rgba(124, 58, 237, 0.5);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+    
+    /* Input do chat */
+    .stChatInputContainer {
+        border-top: 1px solid rgba(124, 58, 237, 0.3);
+        padding-top: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Botões e elementos interativos */
+    .stButton > button {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    /* Expander customizado */
+    .streamlit-expanderHeader {
+        background: rgba(124, 58, 237, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-top-color: #7c3aed !important;
+    }
+    
+    /* Info boxes */
+    .element-container div[data-testid="stMarkdownContainer"] {
+        color: #e5e7eb;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(124, 58, 237, 0.5);
+        border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(124, 58, 237, 0.7);
+    }
+    
+    /* Cards de informação */
+    .info-card {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .success-card {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .warning-card {
+        background: rgba(234, 179, 8, 0.1);
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Header customizado
+st.markdown("""
+<div class="main-header">
+    <h1 class="main-title">🏦 SafeBank - Chatbot Inteligente</h1>
+    <p class="subtitle">Assistente Virtual com IA • Powered by Groq & LangChain</p>
+</div>
+""", unsafe_allow_html=True)
 
 # -------------------------
 # Configs / hyperparams
@@ -336,7 +486,72 @@ def chat_llm_flow(retriever, user_input):
 # -------------------------
 # Streamlit UI main
 # -------------------------
-input_text = st.chat_input("Digite sua mensagem aqui...")
+
+# Sidebar com informações
+with st.sidebar:
+    st.markdown("### 📊 Informações do Sistema")
+    st.markdown(f"""
+    <div class="info-card">
+        <strong>🤖 Modelo:</strong> Llama 3.3 70B<br>
+        <strong>🔍 Embeddings:</strong> MiniLM-L6-v2<br>
+        <strong>⚡ Provider:</strong> Groq AI<br>
+        <strong>🗄️ Vector DB:</strong> FAISS
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### 💡 Dicas de Uso")
+    st.markdown("""
+    - Faça perguntas sobre os documentos carregados
+    - O assistente mantém contexto da conversa
+    - Respostas baseadas apenas em informações documentadas
+    - Expandir 'Debug' para ver fontes utilizadas
+    """)
+    
+    st.markdown("### 🔗 Links Úteis")
+    st.markdown("""
+    - [📖 Documentação](README.md)
+    - [🏗️ Arquitetura](ARCHITECTURE.md)
+    - [☁️ Deploy](DEPLOY.md)
+    - [🐙 GitHub](https://github.com/ThiagoMilanezPinheiro/LLMs_Negocios)
+    """)
+
+# Área de boas-vindas quando não há mensagens
+if len(st.session_state.get("chat_history", [])) <= 1:
+    st.markdown("""
+    <div class="success-card">
+        <h3 style="margin-top: 0;">👋 Bem-vindo ao SafeBank Chatbot!</h3>
+        <p>Este é um assistente virtual inteligente que usa <strong>RAG (Retrieval-Augmented Generation)</strong> 
+        para responder perguntas baseadas em documentos corporativos.</p>
+        <h4>✨ O que posso fazer:</h4>
+        <ul>
+            <li>📄 Responder perguntas sobre os documentos carregados</li>
+            <li>💬 Manter contexto da conversa anterior</li>
+            <li>🔍 Buscar informações relevantes automaticamente</li>
+            <li>📊 Mostrar as fontes utilizadas nas respostas</li>
+        </ul>
+        <h4>🚀 Como começar:</h4>
+        <p>Digite sua pergunta na caixa abaixo e pressione Enter!</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Exemplos de perguntas
+    st.markdown("### 💭 Exemplos de perguntas:")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+        - Quais serviços estão disponíveis?
+        - Como funciona o atendimento?
+        - Quais são os horários?
+        """)
+    with col2:
+        st.markdown("""
+        - Quais investimentos são oferecidos?
+        - Como entrar em contato?
+        - Informações sobre segurança
+        """)
+
+# Input do chat
+input_text = st.chat_input("💬 Digite sua mensagem aqui...")
 
 # initialize state variables
 if "chat_history" not in st.session_state:
@@ -346,40 +561,50 @@ if "retriever" not in st.session_state:
     st.session_state.retriever = None
 
 # render existing chat history
+st.markdown("---")
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
-        with st.chat_message("AI"):
-            st.write(message.content)
+        with st.chat_message("assistant", avatar="🤖"):
+            st.markdown(message.content)
     elif isinstance(message, HumanMessage):
-        with st.chat_message("Human"):
-            st.write(message.content)
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(message.content)
 
 # handle input
 if input_text is not None:
-    with st.chat_message("Human"):
+    with st.chat_message("user", avatar="👤"):
         st.markdown(input_text)
 
-    with st.chat_message("AI"):
+    with st.chat_message("assistant", avatar="🤖"):
         try:
             if st.session_state.retriever is None:
-                with st.spinner("Carregando documentos e preparando o sistema..."):
+                with st.spinner("🔄 Carregando documentos e preparando o sistema..."):
                     st.session_state.retriever = config_retriever(CONTENT_PATH)
             
-            with st.spinner("Processando sua pergunta..."):
+            with st.spinner("🤔 Processando sua pergunta..."):
                 answer, debug = chat_llm_flow(st.session_state.retriever, input_text)
             
-            st.write(answer)
+            st.markdown(answer)
 
             # opcional: mostrar debug (collapse)
             if debug and "error" not in debug:
-                with st.expander("🔍 Debug (trechos utilizados)"):
-                    st.write("**Pergunta reformulada:**", debug.get("reformulated_question"))
-                    st.write("**Preview dos trechos usados:**")
+                with st.expander("🔍 Debug (trechos utilizados)", expanded=False):
+                    st.markdown(f"**Pergunta reformulada:** `{debug.get('reformulated_question')}`")
+                    st.markdown("**Preview dos trechos usados:**")
                     for i, p in enumerate(debug.get("used_chunks_preview", []), 1):
-                        st.write(f"{i}. {p}")
+                        st.markdown(f"{i}. {p}")
         
         except Exception as e:
             logger.error(f"Erro crítico na interface: {str(e)}")
             st.error("⚠️ Ocorreu um erro inesperado. Por favor, recarregue a página.")
             st.exception(e)
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style="text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 0.85rem; padding: 1rem;">
+    SafeBank Chatbot v1.0 | Powered by Groq AI & LangChain | 
+    <a href="https://github.com/ThiagoMilanezPinheiro/LLMs_Negocios" target="_blank" style="color: #7c3aed;">GitHub</a>
+</div>
+""", unsafe_allow_html=True)
 

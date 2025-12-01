@@ -111,7 +111,7 @@
             </div>
             
             <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-              <a href="http://localhost:8501" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <a href="http://localhost:8501" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem;" onclick="alert('⚠️ Certifique-se de que a aplicação está rodando!\n\nPara iniciar:\n1. Abra o terminal\n2. Navegue até: docs/projetos/llms-negocios\n3. Execute: streamlit run agent_app.py\n\nOu veja o DEPLOY.md para instruções completas.')">
                 🚀 Acessar Aplicação
               </a>
               <a href="README.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem;">
@@ -123,6 +123,15 @@
               <a href="DEPLOY.md" class="btn ghost" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                 ☁️ Deploy
               </a>
+            </div>
+            
+            <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
+              <p style="margin: 0; font-size: 0.85rem; color: rgba(59, 130, 246, 1);">
+                💡 <strong>Como iniciar a aplicação:</strong><br>
+                <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace;">
+                  cd docs/projetos/llms-negocios && streamlit run agent_app.py
+                </code>
+              </p>
             </div>
             
             <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid #7c3aed;">
