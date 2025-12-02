@@ -192,7 +192,7 @@ st.markdown("""
 ID_MODEL = os.getenv("GROQ_MODEL_ID", "llama-3.3-70b-versatile")
 TEMPERATURE = float(os.getenv("GROQ_TEMPERATURE", 0.7))
 CONTENT_PATH = os.getenv("CONTENT_PATH_LINKEDIN", "./content_linkedin")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-MiniLM-L3-v2")
 FAISS_INDEX_DIR = os.getenv("FAISS_INDEX_DIR_LINKEDIN", "index_faiss_linkedin")
 
 # -------------------------

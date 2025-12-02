@@ -19,7 +19,7 @@ services:
       - key: CONTENT_PATH_LINKEDIN
         value: ./content_linkedin
       - key: EMBEDDING_MODEL
-        value: sentence-transformers/all-MiniLM-L6-v2
+        value: sentence-transformers/paraphrase-MiniLM-L3-v2
       - key: FAISS_INDEX_DIR_LINKEDIN
         value: index_faiss_linkedin
       - key: PYTHONUNBUFFERED
