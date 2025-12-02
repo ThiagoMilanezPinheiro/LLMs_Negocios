@@ -1,5 +1,6 @@
 import os
 import logging
+import gc
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -242,10 +243,18 @@ def config_retriever(folder_path: str = CONTENT_PATH):
         faiss_path = Path(FAISS_INDEX_DIR)
         if faiss_path.exists() and (faiss_path / "index.faiss").exists():
             logger.info(f"Carregando índice FAISS existente de {FAISS_INDEX_DIR}")
-            embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+            # Configurar embeddings com cache reduzido para economizar memória
+            embeddings = HuggingFaceEmbeddings(
+                model_name=EMBEDDING_MODEL,
+                cache_folder="./cache",
+                model_kwargs={'device': 'cpu'},
+                encode_kwargs={'batch_size': 1, 'show_progress_bar': False}
+            )
             vectorstore = FAISS.load_local(FAISS_INDEX_DIR, embeddings, allow_dangerous_deserialization=True)
             retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 3, "fetch_k": 4})
             logger.info("Índice FAISS carregado com sucesso")
+            # Forçar garbage collection após carregar modelo pesado
+            gc.collect()
             return retriever
         
         docs_path = Path(folder_path)
@@ -422,11 +431,18 @@ def chat_llm_flow(retriever, user_input):
         logger.info(f"Processando pergunta: {user_input[:100]}...")
         
         st.session_state.chat_history.append(HumanMessage(content=user_input))
+        
+        # Limitar histórico a 10 mensagens para economizar memória (Render free tier)
+        if len(st.session_state.chat_history) > 20:
+            st.session_state.chat_history = st.session_state.chat_history[-20:]
 
         rag_result = make_rag_response(user_input, st.session_state.chat_history, retriever)
 
         res_text = rag_result.get("answer", "").strip()
         st.session_state.chat_history.append(AIMessage(content=res_text))
+        
+        # Limpar memória após resposta (importante para Render free tier)
+        gc.collect()
         
         logger.info("Resposta gerada com sucesso")
 
@@ -498,10 +514,11 @@ if len(st.session_state.get("chat_history", [])) <= 1:
     # Aviso sobre erro 502 (Free tier limitation)
     if os.getenv("RENDER"):
         st.warning("""
-⏰ **Hospedagem Gratuita**: Este serviço usa o plano gratuito do Render.com, que:
+⏰ **Hospedagem Gratuita** (512MB RAM): Este serviço usa o plano gratuito do Render.com, que:
 - 🛌 **Dorme após 15 minutos** de inatividade
-- ⚠️ Pode mostrar **erro 502** no primeiro acesso
-- ✅ **Solução**: Se ver erro 502, aguarde 30-60 segundos e **recarregue a página**
+- ⚠️ Pode mostrar **erro 502** no primeiro acesso ou durante alto uso
+- 💾 **Limite de memória**: Reinicia automaticamente se ultrapassar 512MB
+- ✅ **Solução**: Se ver erro, aguarde 30-60 segundos e **recarregue a página**
 
 💼 Projeto demonstrativo para portfólio profissional.
         """)
