@@ -53,6 +53,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Health check para Render.com (evita 502 no cold start)
+if os.getenv("RENDER"):
+    logger.info("Aplicação Streamlit inicializada com sucesso no Render.com")
+
 # CSS customizado para tema profissional LinkedIn
 st.markdown("""
 <style>
@@ -488,6 +492,9 @@ if len(st.session_state.get("chat_history", [])) <= 1:
     </div>
     """, unsafe_allow_html=True)
     
+    # Aviso sobre primeira inicialização
+    st.info("💡 **Primeira vez aqui?** A primeira pergunta pode levar ~30 segundos para inicializar o modelo de IA. Depois disso, as respostas serão instantâneas!")
+    
     # Exemplos de perguntas para RH
     st.markdown("### 💭 Exemplos de perguntas para RH:")
     col1, col2 = st.columns(2)
@@ -505,6 +512,7 @@ if len(st.session_state.get("chat_history", [])) <= 1:
 - Certificações obtidas?
 - Diferenciais profissionais?
         """)
+
 
 # Input do chat
 input_text = st.chat_input("💬 Faça sua pergunta sobre o profissional...")
@@ -533,8 +541,9 @@ if input_text is not None:
 
     with st.chat_message("assistant", avatar="💼"):
         try:
+            # Carregamento lazy do retriever (apenas quando usuário faz primeira pergunta)
             if st.session_state.retriever is None:
-                with st.spinner("🔄 Carregando currículo e preparando assistente..."):
+                with st.spinner("🔄 Inicializando assistente pela primeira vez... (pode levar ~30 segundos)"):
                     st.session_state.retriever = config_retriever(CONTENT_PATH)
             
             with st.spinner("🤔 Analisando perfil profissional..."):

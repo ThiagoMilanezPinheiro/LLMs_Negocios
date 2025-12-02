@@ -6,6 +6,9 @@ services:
     rootDir: docs
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run agent_linkedin.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
+    healthCheckPath: /
+    # Aumenta timeout para cold start (até 5 minutos)
+    autoDeploy: true
     envVars:
       - key: GROQ_API_KEY
         sync: false
@@ -21,3 +24,5 @@ services:
         value: index_faiss_linkedin
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: RENDER
+        value: "true"
