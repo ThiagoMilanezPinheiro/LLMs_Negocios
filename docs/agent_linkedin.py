@@ -492,8 +492,19 @@ if len(st.session_state.get("chat_history", [])) <= 1:
     </div>
     """, unsafe_allow_html=True)
     
-    # Aviso sobre primeira inicialização
+    # Aviso sobre primeira inicialização e cold start
     st.info("💡 **Primeira vez aqui?** A primeira pergunta pode levar ~30 segundos para inicializar o modelo de IA. Depois disso, as respostas serão instantâneas!")
+    
+    # Aviso sobre erro 502 (Free tier limitation)
+    if os.getenv("RENDER"):
+        st.warning("""
+⏰ **Hospedagem Gratuita**: Este serviço usa o plano gratuito do Render.com, que:
+- 🛌 **Dorme após 15 minutos** de inatividade
+- ⚠️ Pode mostrar **erro 502** no primeiro acesso
+- ✅ **Solução**: Se ver erro 502, aguarde 30-60 segundos e **recarregue a página**
+
+💼 Projeto demonstrativo para portfólio profissional.
+        """)
     
     # Exemplos de perguntas para RH
     st.markdown("### 💭 Exemplos de perguntas para RH:")
