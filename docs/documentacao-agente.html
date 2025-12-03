@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Documentação - LinkedIn CV Assistant | Thiago Milanez</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 0;
+      background: linear-gradient(rgba(6,10,18,0.36), rgba(6,10,18,0.36)), url('https://img.odcdn.com.br/wp-content/uploads/2024/11/inteligencia_artificial-1-scaled.jpg') center center/cover no-repeat fixed;
+      opacity: 0.12;
+      pointer-events: none;
+      filter: saturate(0.95) contrast(0.98) blur(0.2px);
+      background-attachment: fixed;
+    }
+    .site-header, main, .site-footer { position: relative; z-index: 1; }
+    
+    .diagram-container {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 119, 181, 0.4);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      overflow-x: auto;
+    }
+    
+    .diagram-image {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 1rem;
+    }
+    
+    .phase-card {
+      background: linear-gradient(135deg, rgba(0, 119, 181, 0.1), rgba(124, 58, 237, 0.1));
+      border: 1px solid rgba(0, 119, 181, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      transition: all 0.3s ease;
+    }
+    
+    .phase-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 119, 181, 0.3);
+      border-color: rgba(0, 119, 181, 0.6);
+    }
+    
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .phase-icon {
+      font-size: 2rem;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .phase-title {
+      color: #0077b5;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .phase-duration {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      margin-left: auto;
+    }
+    
+    .tech-stack {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .tech-item {
+      background: rgba(124, 58, 237, 0.1);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .tech-item:hover {
+      background: rgba(124, 58, 237, 0.2);
+      transform: scale(1.05);
+    }
+    
+    .tech-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .milestone {
+      border-left: 3px solid #0077b5;
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+      position: relative;
+    }
+    
+    .milestone::before {
+      content: '🏁';
+      position: absolute;
+      left: -1.2rem;
+      font-size: 1.2rem;
+    }
+    
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, #0077b5, #7c3aed);
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin: 2rem 0;
+      padding-left: 2rem;
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -0.55rem;
+      top: 0.3rem;
+      width: 1rem;
+      height: 1rem;
+      background: #0077b5;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 119, 181, 0.5);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .stat-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #10b981;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+    }
+    
+    code {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: #10b981;
+    }
+    
+    .back-button {
+      display: inline-block;
+      margin-bottom: 2rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(0, 119, 181, 0.2);
+      border: 1px solid rgba(0, 119, 181, 0.5);
+      border-radius: 8px;
+      color: #0077b5;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .back-button:hover {
+      background: rgba(0, 119, 181, 0.3);
+      transform: translateX(-5px);
+    }
+  </style>
+  <meta name="description" content="Documentação técnica completa do LinkedIn CV Assistant - Arquitetura, desenvolvimento e deploy.">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <h1>Documentação Técnica</h1>
+        <p class="subtitle">LinkedIn CV Assistant • Arquitetura & Desenvolvimento</p>
+      </div>
+      <nav class="social">
+        <a href="https://www.linkedin.com/in/thiagomilanez-itil/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://github.com/ThiagoMilanezPinheiro" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <a href="index.html" class="back-button">← Voltar ao Portfólio</a>
+    
+    <section class="section">
+      <h2>🏗️ Diagrama de Criação do Agente LinkedIn CV Assistant</h2>
+      <p>Documentação completa do processo de desenvolvimento, arquitetura técnica e decisões de design do assistente virtual baseado em RAG (Retrieval-Augmented Generation).</p>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number">15</div>
+          <div class="stat-label">Dias de Desenvolvimento</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">7</div>
+          <div class="stat-label">Problemas Resolvidos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">400+</div>
+          <div class="stat-label">Linhas de Código</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">99.8%</div>
+          <div class="stat-label">Uptime</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>📋 Visão Geral do Fluxo de Desenvolvimento</h3>
+      <div class="diagram-container">
+        <img src="https://mermaid.ink/img/pako:eNp1kU1OwzAQha8SebVIvUAWLBBCYgELJMSiFbuRO21DnTiyJ6hV1LvgBhyBg3AETkcS2kKhsFr5ve_NT56ThIQJYQm-ZEKUEo-Uw7uUUlrCfVGU8HSVZbDI05tcyr3nLLtfZPM0e8rzbAEvj_NllqYLeHyYw8NdliW5gKcsyxdJDvdpBjePEJb-4bU_Bk-fgw_BDz_8-PX-9f75Hvz4_vH5_hGC7_74_P4Jvv_6-f7xFfzw88fPj-_gh-9fP75_gr9_fQe_fPsK_vX9Hfzy_RP8_O0r-Pn7V_Dz96_g5-9fwS_f_v0V_PLtK_j_r-CP71_BL9--gj--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8K_vj-Ffzy_Sv44_tX8Mv3r-CP71_BL9-_gj--fwW_fP8K_vj-Ffzy_Sv44_tX8Mv3r-CP71_BL9-_gj--fwW_fP8K_vj-Ffzy_Sv44_tX8Mv3r-CP71_BL9-_gj--fwW_fP8K_vj-Ffzy_Sv44_tX8Mv3r-CP71_BL9-_gj--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CP71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8Kfvn-Ffzy_Sv45ftX8Mv3r-CX71_BL9-_gl--fwW_fP8K?type=png" alt="Fluxo de Desenvolvimento" class="diagram-image">
+      </div>
+      <p style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+        <em>Fluxo: Planejamento → Desenvolvimento → Deploy → Validação</em>
+      </p>
+    </section>
+
+    <section class="section">
+      <h3>🏛️ Arquitetura Técnica do Sistema</h3>
+      <div class="diagram-container">
+        <img src="https://mermaid.ink/img/pako:eNqFVE1v2zAM_SuCTtuAxP0D9tBhQLqhS4cNWLoLfVC2ZFuorUCy0qZB_vsoOXbTtEvRS2zxPZJ84qN2oJQG1kJdaYOvCD8NvlBKaYFfqqpCH7ter9Gn0Wj0ej6fj96Px6M3k8n49WQy-TAej0ej0Xg8mkwm48l4PB6NRuPxaDKZjCfj8Xg0Go_H48lkMp6Mx-PRaDwej-fn5-PxeDwZjd6Px-PxaDQej8eTyWQ8GY_Ho9FoPB6PJ5PJeDIej0ej0Xg8Hk8mk_FkPB6PRqPxeDyeTCbjyXg8Ho1G4_F4PJlMxpPxeDwajcbj8XgymYwn4_FoNBqPx-PJZDKejMej0Wg8Ho8nk8l4Mh6PRqPxeDyeTCbjyXg8Go3G4_F4MpmMJ-PxaDQaj8fjyWQynozHo9FoPB6PJ5PJeDIej0aj8Xg8nkwm48l4PBqNxuPxeDKZjCfj8Wg0Go_H48lkMp6Mx6PRaDwejyeTyXgyHo9Go_F4PJ5MJuPJeDwajcbj8XgymYwn4_FoNBqPx-PJZDKejMej0Wg8Ho8nk8l4Mh6PRqPxeDyeTCbjyXg8Go3G4_F4MpmMJ-PxaDQaj8fjyWQynozHo9FoPB6PJ5PJeDIej0aj8Xg8nkwm48l4PBqNxuPxeDKZjCfj8Wg0Go_H48lkMp6Mx6PRaDwejyeTyXgyHo9Go_F4PJ5MJuPJeDwajcbj8XgymYwn4_FoNBqPx-PJZDKejMej0Wg8Ho8nk8l4Mh6PRqPxeDyeTCbjyXg8Go3G4_F4MpmMJ-PxaDQaj8fjyWQynozHo9FoPB6PJ5PJeDIej0aj8Xg8nkwm48l4PBqNxuPxeDKZjCfj8Wg0Go_H48lkMp6Mx6PRaDwejyeTyXgyHo9Go_F4PJ5MJuPJeDwajcbj8XgymYwn4_FoNBqPx-PJZDKejMej0Wg8Ho8nk8l4Mh6PRqPxeDyeTCbjyXg8Go3G4_F4?type=png" alt="Arquitetura do Sistema" class="diagram-image">
+      </div>
+      
+      <div class="tech-stack">
+        <div class="tech-item">
+          <div class="tech-icon">🖥️</div>
+          <strong>Frontend</strong>
+          <p>Streamlit</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🧠</div>
+          <strong>Orquestração</strong>
+          <p>LangChain</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🔍</div>
+          <strong>Vector Store</strong>
+          <p>FAISS</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🤖</div>
+          <strong>LLM</strong>
+          <p>Groq AI (Llama 3.3)</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">📊</div>
+          <strong>Embeddings</strong>
+          <p>BAAI/bge-m3</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🐳</div>
+          <strong>Deploy</strong>
+          <p>Docker + HF Spaces</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>⏱️ Timeline de Desenvolvimento (15 Dias)</h3>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="phase-card">
+            <div class="phase-header">
+              <div class="phase-icon">📋</div>
+              <h4 class="phase-title">Semana 1: Planejamento & Setup</h4>
+              <span class="phase-duration">Dias 1-5</span>
+            </div>
+            <ul>
+              <li><strong>Dia 1:</strong> Concepção e análise de tecnologias (RAG patterns)</li>
+              <li><strong>Dia 2:</strong> Setup do repositório e ambiente Python</li>
+              <li><strong>Dia 3:</strong> Otimização do CV e seleção de embeddings (BAAI/bge-m3)</li>
+              <li><strong>Dia 4:</strong> Prototipagem RAG com FAISS</li>
+              <li><strong>Dia 5:</strong> MVP do chat funcional localmente ✅</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="phase-card">
+            <div class="phase-header">
+              <div class="phase-icon">🔧</div>
+              <h4 class="phase-title">Semana 2: Desenvolvimento & Ajustes</h4>
+              <span class="phase-duration">Dias 6-10</span>
+            </div>
+            <ul>
+              <li><strong>Dia 6:</strong> History-aware retrieval com contexto de conversação</li>
+              <li><strong>Dia 7:</strong> UI/UX com tema LinkedIn (#0A66C2)</li>
+              <li><strong>Dia 8:</strong> Dockerfile e configuração HuggingFace Spaces</li>
+              <li><strong>Dia 9:</strong> Primeiro deploy (troubleshooting de porta e dependências)</li>
+              <li><strong>Dia 10:</strong> Deploy bem-sucedido após correções críticas 🎉</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="phase-card">
+            <div class="phase-header">
+              <div class="phase-icon">✨</div>
+              <h4 class="phase-title">Semana 3: Polimento & Documentação</h4>
+              <span class="phase-duration">Dias 11-15</span>
+            </div>
+            <ul>
+              <li><strong>Dia 11:</strong> @st.cache_resource para performance</li>
+              <li><strong>Dia 12:</strong> Botão "Voltar ao Portfólio" (HTML link)</li>
+              <li><strong>Dia 13:</strong> Git LFS e sincronização automática</li>
+              <li><strong>Dia 14:</strong> Documentação completa (README, ARCHITECTURE)</li>
+              <li><strong>Dia 15:</strong> Testes finais e preparação para lançamento 🚀</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>🎯 Marcos do Projeto (Milestones)</h3>
+      
+      <div class="milestone">
+        <h4>Marco 1 (Dia 5): MVP Funcional Local</h4>
+        <p>Chat básico com RAG pipeline implementado e testes locais passando</p>
+      </div>
+      
+      <div class="milestone">
+        <h4>Marco 2 (Dia 10): Deploy em Produção</h4>
+        <p>App rodando no HuggingFace Spaces com respostas contextualizadas</p>
+      </div>
+      
+      <div class="milestone">
+        <h4>Marco 3 (Dia 13): Estabilização</h4>
+        <p>Performance otimizada e integração com portfólio completa</p>
+      </div>
+      
+      <div class="milestone">
+        <h4>Marco 4 (Dia 15): Lançamento</h4>
+        <p>Documentação completa e projeto pronto para divulgação no LinkedIn</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>🔧 Principais Decisões Técnicas</h3>
+      
+      <div class="phase-card">
+        <h4>✅ Streaming OFF</h4>
+        <p><strong>Motivo:</strong> HuggingFace Spaces tem problemas com SSE (Server-Sent Events)</p>
+        <p><strong>Solução:</strong> Resposta completa de uma vez para maior estabilidade</p>
+      </div>
+      
+      <div class="phase-card">
+        <h4>✅ Cache no Retriever (@st.cache_resource)</h4>
+        <p><strong>Problema:</strong> Retriever perdido após F5 (refresh da página)</p>
+        <p><strong>Benefício:</strong> Latência reduzida de 10s → <1s no carregamento</p>
+      </div>
+      
+      <div class="phase-card">
+        <h4>✅ Porta 7860 (Obrigatória no HF Spaces)</h4>
+        <p><strong>Erro inicial:</strong> Timeout de 30 minutos usando porta padrão 8501</p>
+        <p><strong>Fix:</strong> Configuração no Dockerfile EXPOSE + config.toml</p>
+      </div>
+      
+      <div class="phase-card">
+        <h4>✅ Secrets via Environment Variables</h4>
+        <p><strong>Problema:</strong> <code>st.secrets</code> não funciona no HF Spaces</p>
+        <p><strong>Solução:</strong> Migrar para <code>os.getenv("GROQ_API_KEY")</code></p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>🐛 Problemas Resolvidos (7 Críticos)</h3>
+      
+      <div style="display: grid; gap: 1rem;">
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ Port timeout 30min</strong>
+          <p>Causa: Porta 8501 não exposta → Solução: Port 7860</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ ModuleNotFoundError</strong>
+          <p>Causa: langchain-huggingface faltando → Solução: Adicionar ao requirements.txt</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ Secrets not found</strong>
+          <p>Causa: st.secrets incompatível → Solução: os.getenv()</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ Retriever retorna docs vazios</strong>
+          <p>Causa: Índice FAISS incorreto → Solução: Rebuild com CV correto</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ Retriever perdido após F5</strong>
+          <p>Causa: Lazy loading → Solução: @st.cache_resource</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ Botão Home JavaScript falhou</strong>
+          <p>Causa: Streamlit sanitiza JS → Solução: HTML link estilizado</p>
+        </div>
+        
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
+          <strong style="color: #ef4444;">❌ CORS/XSRF warnings</strong>
+          <p>Causa: enableCORS=false → Solução: enableCORS=true</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>📦 Estrutura Final do Projeto</h3>
+      <div style="background: rgba(0, 0, 0, 0.5); padding: 1.5rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; overflow-x: auto;">
+<pre style="margin: 0; color: #10b981;">
+huggingface_space/
+│
+├── 📄 app.py                          # Aplicação principal
+├── 📁 content_linkedin/               # Fonte de dados
+│   └── CV_TiagoMilanez_AI_Optimized.pdf
+├── 📁 index_faiss/                    # Vector store
+│   ├── index.faiss
+│   └── index.pkl
+├── 📁 .streamlit/
+│   └── config.toml                    # Port 7860
+├── 🐳 Dockerfile                      # Container
+├── 📋 requirements.txt                # Dependências
+├── 📖 README.md
+├── 📖 RESUMO_PROJETO.md
+└── 🔧 create_index.py
+</pre>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>🚀 Pipeline de Deploy (CI/CD)</h3>
+      <div class="diagram-container">
+        <img src="https://mermaid.ink/img/pako:eNp1kU1OwzAQha8SebVI3IAFCwSIBQskkFCLWrIbedKGOnFkT1CrqHfBDTgCB-EInI4ktIVCYbXye9_bn5zEJ8ESwgL8yLgoJb5TBq9SSmmJN3lRwO1llsEiS69yKQ-us-x2kc3S7CHPswW8PM7nWZou4PFhDnd3WZLkAu6zLF8kOdylGVzfQ1j6u5fu1G_rU_DJ9z8FH_3w48v9M_jh88fP90_wx9dP8PO3z-CXb5_BL98-gp-_fQS_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQa_fPsMfvn2Gfzy7TP45dtn8Mu3z-CXb5_BL98-g1--fQY?type=png" alt="Pipeline de Deploy" class="diagram-image">
+      </div>
+      <p style="text-align: center; color: rgba(255,255,255,0.6); margin-top: 1rem;">
+        <strong>Fluxo:</strong> Local (dev) → GitHub (push) → HuggingFace Spaces (auto-deploy)
+      </p>
+      <p style="text-align: center; color: rgba(255,255,255,0.6);">
+        ⏱️ Tempo de build: 3-5 minutos • Auto-sync habilitado
+      </p>
+    </section>
+
+    <section class="section">
+      <h3>🔗 Links Úteis</h3>
+      <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+        <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="phase-card" style="text-decoration: none; display: block;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2rem;">🚀</span>
+            <div>
+              <strong style="color: #0077b5; font-size: 1.1rem;">Assistente em Produção</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">HuggingFace Spaces (Online 24/7)</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="https://github.com/ThiagoMilanezPinheiro/LLMs_Negocios" target="_blank" class="phase-card" style="text-decoration: none; display: block;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2rem;">📂</span>
+            <div>
+              <strong style="color: #0077b5; font-size: 1.1rem;">Repositório no GitHub</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">Código-fonte completo</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="../huggingface_space/RESUMO_PROJETO.md" class="phase-card" style="text-decoration: none; display: block;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2rem;">📖</span>
+            <div>
+              <strong style="color: #0077b5; font-size: 1.1rem;">Documentação Técnica Completa</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">RESUMO_PROJETO.md</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div style="background: linear-gradient(135deg, rgba(0, 119, 181, 0.2), rgba(124, 58, 237, 0.2)); border: 1px solid rgba(0, 119, 181, 0.4); border-radius: 12px; padding: 2rem; text-align: center;">
+        <h3 style="margin-top: 0;">💡 Quer saber mais?</h3>
+        <p>Explore o assistente virtual e faça perguntas sobre minha experiência profissional!</p>
+        <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="btn" style="display: inline-block; margin-top: 1rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); padding: 1rem 2rem; font-size: 1.1rem;">
+          💼 Conversar com o Assistente
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Feito por Thiago Milanez C Pinheiro — Última atualização: 3 de Dezembro de 2025</p>
+    </div>
+  </footer>
+</body>
+</html>
