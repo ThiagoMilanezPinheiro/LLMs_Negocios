@@ -499,6 +499,16 @@ with st.sidebar:
 - [🐙 GitHub](https://github.com/ThiagoMilanezPinheiro)
 - [📁 Portfólio](https://github.com/ThiagoMilanezPinheiro/LLMs_Negocios)
     """)
+    
+    st.markdown("---")
+    
+    # Botão para voltar à Home
+    if st.button("🏠 Voltar ao Portfólio", use_container_width=True):
+        st.markdown("""
+        <script>
+            window.parent.location.href = 'https://thiagomilanezpinheiro.github.io/LLMs_Negocios/';
+        </script>
+        """, unsafe_allow_html=True)
 
 # Área de boas-vindas quando não há mensagens
 if len(st.session_state.get("chat_history", [])) <= 1:
