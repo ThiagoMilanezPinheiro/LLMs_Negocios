@@ -11,7 +11,7 @@ from langchain_community.vectorstores import FAISS
 
 CONTENT_PATH = "./content_linkedin"
 FAISS_INDEX_DIR = "index_faiss_linkedin"
-EMBEDDING_MODEL = "sentence-transformers/paraphrase-MiniLM-L3-v2"
+EMBEDDING_MODEL = "BAAI/bge-m3"
 
 def extract_text_pdf(file_path):
     print(f"Extraindo texto do PDF: {file_path}")
