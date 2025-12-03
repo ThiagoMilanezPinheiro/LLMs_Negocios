@@ -502,13 +502,25 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Botão para voltar à Home
-    if st.button("🏠 Voltar ao Portfólio", use_container_width=True):
-        st.markdown("""
-        <script>
-            window.parent.location.href = 'https://thiagomilanezpinheiro.github.io/LLMs_Negocios/';
-        </script>
-        """, unsafe_allow_html=True)
+    # Botão para voltar à Home (usando link estilizado)
+    st.markdown("""
+    <a href="https://thiagomilanezpinheiro.github.io/LLMs_Negocios/" target="_blank" style="text-decoration: none;">
+        <button style="
+            width: 100%;
+            background: linear-gradient(135deg, #0077b5 0%, #006097 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='linear-gradient(135deg, #006097 0%, #004d7a 100%)'; this.style.boxShadow='0 4px 16px rgba(0, 119, 181, 0.4)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='linear-gradient(135deg, #0077b5 0%, #006097 100%)'; this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+            🏠 Voltar ao Portfólio
+        </button>
+    </a>
+    """, unsafe_allow_html=True)
 
 # Área de boas-vindas quando não há mensagens
 if len(st.session_state.get("chat_history", [])) <= 1:
