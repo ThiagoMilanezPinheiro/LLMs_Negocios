@@ -235,6 +235,7 @@ def extract_text_pdf(file_path):
 # -------------------------
 # Retriever / Index config
 # -------------------------
+@st.cache_resource(show_spinner="🔄 Carregando índice FAISS...")
 def config_retriever(folder_path: str = CONTENT_PATH):
     try:
         # Verificar se índice FAISS já existe (otimização para cold start)
@@ -350,6 +351,7 @@ def history_aware_retriever_fn(input_dict, retriever):
     chat_history = input_dict.get("chat_history", [])
 
     reformulated = contextualize_chain.invoke({"input": question, "chat_history": chat_history})
+    logger.info(f"Pergunta reformulada: '{reformulated}'")
 
     try:
         if hasattr(retriever, "get_relevant_documents"):
@@ -358,8 +360,11 @@ def history_aware_retriever_fn(input_dict, retriever):
             retrieved = retriever.get_relevant_texts(reformulated)
         else:
             retrieved = retriever.invoke(reformulated)
+        
+        logger.info(f"Retriever retornou {len(retrieved)} documentos")
+        
     except Exception as e:
-        print("Erro ao recuperar documentos:", e)
+        logger.error(f"Erro ao recuperar documentos: {e}")
         retrieved = []
 
     texts = []
@@ -373,10 +378,18 @@ def history_aware_retriever_fn(input_dict, retriever):
             else:
                 texts.append(content)
 
+    logger.info(f"Extraídos {len(texts)} textos dos documentos")
+    if texts:
+        logger.info(f"Preview do primeiro texto: {texts[0][:200]}")
+    else:
+        logger.warning("Nenhum texto extraído dos documentos!")
+
     return texts
 
 def make_rag_response(question, chat_history, retriever):
+    logger.info(f"make_rag_response chamado para pergunta: '{question[:100]}'")
     texts = history_aware_retriever_fn({"input": question, "chat_history": chat_history}, retriever)
+    logger.info(f"history_aware_retriever_fn retornou {len(texts)} textos")
 
     max_context_len = 4000
     context_builder = []
@@ -388,8 +401,11 @@ def make_rag_response(question, chat_history, retriever):
         context_builder.append(t)
         current_len += t_len
     context = "\n\n---\n\n".join(context_builder) if context_builder else ""
+    
+    logger.info(f"Contexto final tem {len(context)} caracteres")
 
     if not context:
+        logger.warning("Contexto vazio - retriever não encontrou documentos relevantes!")
         reformulated = contextualize_chain.invoke({"input": question, "chat_history": chat_history})
         return {
             "answer": "Desculpe, não encontrei informações suficientes no currículo para responder essa pergunta específica. Você pode reformular ou fazer outra pergunta?",
@@ -535,8 +551,16 @@ input_text = st.chat_input("💬 Faça sua pergunta sobre o profissional...")
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [AIMessage(content="Olá! Sou o assistente virtual de Thiago Milanez. Posso responder perguntas sobre sua experiência profissional, habilidades, projetos e qualificações. Como posso ajudar?")]
 
-if "retriever" not in st.session_state:
-    st.session_state.retriever = None
+# Carregar retriever uma única vez (cache_resource mantém entre reruns)
+if "retriever" not in st.session_state or st.session_state.retriever is None:
+    logger.info("Inicializando retriever...")
+    try:
+        st.session_state.retriever = config_retriever(CONTENT_PATH)
+        logger.info("Retriever carregado com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao carregar retriever: {e}")
+        st.error(f"⚠️ Erro ao inicializar o assistente: {e}")
+        st.stop()
 
 # render existing chat history
 st.markdown("---")
@@ -555,11 +579,6 @@ if input_text is not None:
 
     with st.chat_message("assistant", avatar="💼"):
         try:
-            # Carregamento lazy do retriever (apenas quando usuário faz primeira pergunta)
-            if st.session_state.retriever is None:
-                with st.spinner("🔄 Inicializando assistente pela primeira vez... (pode levar ~10 segundos)"):
-                    st.session_state.retriever = config_retriever(CONTENT_PATH)
-            
             with st.spinner("🤔 Analisando perfil profissional..."):
                 answer, debug = chat_llm_flow(st.session_state.retriever, input_text)
             
