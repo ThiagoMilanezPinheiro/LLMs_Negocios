@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 # -------------------------
 # Validações de ambiente
 # -------------------------
-# HuggingFace Spaces usa st.secrets para variáveis sensíveis
-groq_api_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
+# HuggingFace Spaces disponibiliza secrets como variáveis de ambiente
+groq_api_key = os.getenv("GROQ_API_KEY")
 
 if not groq_api_key:
     logger.error("GROQ_API_KEY não encontrada")
