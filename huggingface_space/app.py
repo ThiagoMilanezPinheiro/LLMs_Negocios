@@ -266,6 +266,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------
+# Initialize language BEFORE any access
+# -------------------------
+if "language" not in st.session_state:
+    # Check URL parameter first (from portfolio)
+    query_params = st.query_params
+    url_lang = query_params.get("lang", None)
+    
+    if url_lang in ["pt", "en"]:
+        st.session_state.language = url_lang
+    else:
+        st.session_state.language = "pt"  # Default to Portuguese
+
 # Header customizado (bilíngue)
 if st.session_state.language == "pt":
     st.markdown("""
@@ -574,17 +587,6 @@ def chat_llm_flow(retriever, user_input, language="pt"):
 # -------------------------
 # Streamlit UI main
 # -------------------------
-
-# Inicializar idioma no session_state
-if "language" not in st.session_state:
-    # Check URL parameter first (from portfolio)
-    query_params = st.query_params
-    url_lang = query_params.get("lang", None)
-    
-    if url_lang in ["pt", "en"]:
-        st.session_state.language = url_lang
-    else:
-        st.session_state.language = "pt"  # Default to Portuguese
 
 # Sidebar com informações
 with st.sidebar:
