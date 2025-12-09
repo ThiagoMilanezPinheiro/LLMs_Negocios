@@ -56,9 +56,18 @@
     <div class="container header-inner">
       <div class="brand">
         <h1>Thiago Milanez C Pinheiro</h1>
-        <p class="subtitle">Engenheiro de IA • LLMs • Machine Learning • Data Science</p>
+        <p class="subtitle" data-i18n="header.subtitle">Engenheiro de IA • LLMs • Machine Learning • Data Science</p>
       </div>
       <nav class="social">
+        <!-- Language Switcher -->
+        <div class="language-switcher" style="display: inline-flex; gap: 0.5rem; margin-right: 1rem; align-items: center;">
+          <button id="lang-pt" class="lang-btn active" onclick="changeLanguage('pt')" style="background: rgba(0, 119, 181, 0.2); border: 1px solid rgba(0, 119, 181, 0.4); color: #fff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;" title="Português">
+            🇧🇷 PT
+          </button>
+          <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;" title="English">
+            🇺🇸 EN
+          </button>
+        </div>
         <a href="https://www.linkedin.com/in/thiagomilanez-itil/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         <a href="https://github.com/ThiagoMilanezPinheiro" target="_blank" rel="noopener noreferrer">GitHub</a>
       </nav>
@@ -68,17 +77,17 @@
   <main class="container">
     <section class="hero">
       <div class="hero-content">
-        <h2>Construindo soluções de IA práticas para negócios</h2>
-        <p>Desenvolvo aplicações com LLMs, pipelines de dados e modelos de machine learning prontos para produção. Foco em entregar impacto mensurável e soluções robustas.</p>
+        <h2 data-i18n="hero.title">Construindo soluções de IA práticas para negócios</h2>
+        <p data-i18n="hero.description">Desenvolvo aplicações com LLMs, pipelines de dados e modelos de machine learning prontos para produção. Foco em entregar impacto mensurável e soluções robustas.</p>
         <p class="cta-row">
-          <a class="btn" href="projetos/">Ver Projetos</a> 
-          <a class="btn ghost" href="documentacao-agente.html">Documentação</a>
+          <a class="btn" href="projetos/" data-i18n="hero.btn.projects">Ver Projetos</a> 
+          <a class="btn ghost" href="documentacao-agente.html" data-i18n="hero.btn.docs">Documentação</a>
         </p>
       </div>
       <div class="hero-aside">
         
         <div class="card stats">
-          <h3>Áreas</h3>
+          <h3 data-i18n="hero.areas">Áreas</h3>
           <ul>
             <li>LLMs & Prompt Engineering</li>
             <li>Machine Learning & NLP</li>
@@ -93,28 +102,28 @@
     </section>
 
     <section id="about" class="section">
-      <h3>💼 Converse com Meu Assistente Virtual</h3>
+      <h3 data-i18n="about.title">💼 Converse com Meu Assistente Virtual</h3>
       <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0, 119, 181, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-        <p style="margin-bottom: 1rem;">
+        <p style="margin-bottom: 1rem;" data-i18n="about.intro">
           Criado um <strong>assistente virtual interativo</strong> treinado com meu currículo e experiência profissional. 
           Faça perguntas como se estivesse em uma entrevista de emprego!
         </p>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
           <div style="background: rgba(0, 119, 181, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0, 119, 181, 0.3);">
-            <strong>💡 Pergunte sobre:</strong>
+            <strong data-i18n="about.ask">💡 Pergunte sobre:</strong>
             <ul style="margin: 0.5rem 0 0 1.2rem; line-height: 1.8;">
-              <li>Experiência profissional</li>
-              <li>Habilidades técnicas</li>
-              <li>Projetos realizados</li>
+              <li data-i18n="about.experience">Experiência profissional</li>
+              <li data-i18n="about.skills">Habilidades técnicas</li>
+              <li data-i18n="about.projects">Projetos realizados</li>
             </ul>
           </div>
           <div style="background: rgba(0, 119, 181, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0, 119, 181, 0.3);">
-            <strong>🎯 Ideal para:</strong>
+            <strong data-i18n="about.ideal">🎯 Ideal para:</strong>
             <ul style="margin: 0.5rem 0 0 1.2rem; line-height: 1.8;">
-              <li>Recrutadores de RH</li>
-              <li>Gestores técnicos</li>
-              <li>Conhecer o candidato</li>
+              <li data-i18n="about.recruiters">Recrutadores de RH</li>
+              <li data-i18n="about.managers">Gestores técnicos</li>
+              <li data-i18n="about.learn">Conhecer o candidato</li>
             </ul>
           </div>
         </div>
@@ -122,17 +131,17 @@
         <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
           <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
             <span style="font-size: 1.5rem;">🚀</span>
-            <strong style="font-size: 1.1rem;">Acesse o Assistente Virtual:</strong>
+            <strong style="font-size: 1.1rem;" data-i18n="about.access">Acesse o Assistente Virtual:</strong>
           </div>
           
           <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-            <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); font-size: 1.1rem; padding: 1rem 2rem;">
+            <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); font-size: 1.1rem; padding: 1rem 2rem;" data-i18n="about.btn">
               💼 Conversar com o Assistente
             </a>
           </div>
           
           <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem; text-align: center;">
-            <strong>🌐 Online 24/7</strong> • Powered by Groq AI & LangChain
+            <strong data-i18n="about.online">🌐 Online 24/7</strong> • <span data-i18n="about.powered">Powered by Groq AI & LangChain</span>
           </div>
           
           <details style="margin-top: 1rem; cursor: pointer;">
@@ -167,7 +176,7 @@
     </section>
 
     <section id="certifications" class="section">
-      <h3>Certificações</h3>
+      <h3 data-i18n="certifications.title">Certificações</h3>
       <div class="projects">
 
         <article class="project">
@@ -195,7 +204,7 @@
 
     <section id="skills" class="section grid">
       <div class="card">
-        <h4>Habilidades Técnicas</h4>
+        <h4 data-i18n="skills.title">Habilidades Técnicas</h4>
         <ul>
           <li>Python, JavaScript, SQL</li>
           <li>Transformers, LangChain, OpenAI API</li>
@@ -204,7 +213,7 @@
         </ul>
       </div>
       <div class="card">
-        <h4>Infraestrutura</h4>
+        <h4 data-i18n="skills.infra">Infraestrutura</h4>
         <ul>
           <li>AWS / Oracle</li>
           <li>Docker & Kubernetes</li>
@@ -214,34 +223,158 @@
     </section>
 
     <section id="projects" class="section">
-      <h3>Projetos em destaque</h3>
+      <h3 data-i18n="projects.title">Projetos em destaque</h3>
       <div class="projects">
         <article class="project">
-          <h5>LLMs para Negócios</h5>
-          <p>Aplicações de RAG, chatbots e automação de documentos com LLMs.</p>
-          <a href="projetos/llms-negocios/projetosLLMs.html" class="link">Abrir projeto →</a>
+          <h5 data-i18n="projects.llm.title">LLMs para Negócios</h5>
+          <p data-i18n="projects.llm.desc">Aplicações de RAG, chatbots e automação de documentos com LLMs.</p>
+          <a href="projetos/llms-negocios/projetosLLMs.html" class="link" data-i18n="projects.link">Abrir projeto →</a>
         </article>
         <article class="project">
-          <h5>Análise de Dados</h5>
-          <p>Exploração, visualização e dashboards para gerar insights acionáveis.</p>
-          <a href="projetos/analise-dados/analisededados.html" class="link">Abrir projeto →</a>
+          <h5 data-i18n="projects.data.title">Análise de Dados</h5>
+          <p data-i18n="projects.data.desc">Exploração, visualização e dashboards para gerar insights acionáveis.</p>
+          <a href="projetos/analise-dados/analisededados.html" class="link" data-i18n="projects.link">Abrir projeto →</a>
         </article>
       </div>
     </section>
 
     <section id="contact" class="section">
-      <h3>Contato</h3>
-      <p>Se quiser trabalhar comigo ou discutir um projeto, me envie uma mensagem no LinkedIn ou por email.</p>
+      <h3 data-i18n="contact.title">Contato</h3>
+      <p data-i18n="contact.description">Se quiser trabalhar comigo ou discutir um projeto, me envie uma mensagem no LinkedIn ou por email.</p>
       <p class="contact-links"><a href="https://www.linkedin.com/in/thiagomilanez-itil/" target="_blank" class="link">LinkedIn</a> — <a href="thiagomilanez.gsi@gmail.com" class="link">Thiago Milanez, ITIL®</a></p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="container">
-      <p>Feito por Thiago Milanez C Pinheiro — Última atualização: 27 de Novembro de 2025</p>
+      <p data-i18n="footer.text">Feito por Thiago Milanez C Pinheiro — Última atualização: 27 de Novembro de 2025</p>
     </div>
   </footer>
   <script>
+  // ===== Language Switcher System =====
+  const translations = {
+    pt: {
+      "header.subtitle": "Engenheiro de IA • LLMs • Machine Learning • Data Science",
+      "hero.title": "Construindo soluções de IA práticas para negócios",
+      "hero.description": "Desenvolvo aplicações com LLMs, pipelines de dados e modelos de machine learning prontos para produção. Foco em entregar impacto mensurável e soluções robustas.",
+      "hero.btn.projects": "Ver Projetos",
+      "hero.btn.docs": "Documentação",
+      "hero.areas": "Áreas",
+      "about.title": "💼 Converse com Meu Assistente Virtual",
+      "about.intro": "Criado um <strong>assistente virtual interativo</strong> treinado com meu currículo e experiência profissional. Faça perguntas como se estivesse em uma entrevista de emprego!",
+      "about.ask": "💡 Pergunte sobre:",
+      "about.experience": "Experiência profissional",
+      "about.skills": "Habilidades técnicas",
+      "about.projects": "Projetos realizados",
+      "about.ideal": "🎯 Ideal para:",
+      "about.recruiters": "Recrutadores de RH",
+      "about.managers": "Gestores técnicos",
+      "about.learn": "Conhecer o candidato",
+      "about.access": "🚀 Acesse o Assistente Virtual:",
+      "about.btn": "💼 Conversar com o Assistente",
+      "about.online": "🌐 Online 24/7",
+      "about.powered": "Powered by Groq AI & LangChain",
+      "certifications.title": "Certificações",
+      "skills.title": "Habilidades Técnicas",
+      "skills.infra": "Infraestrutura",
+      "projects.title": "Projetos em destaque",
+      "projects.llm.title": "LLMs para Negócios",
+      "projects.llm.desc": "Aplicações de RAG, chatbots e automação de documentos com LLMs.",
+      "projects.data.title": "Análise de Dados",
+      "projects.data.desc": "Exploração, visualização e dashboards para gerar insights acionáveis.",
+      "projects.link": "Abrir projeto →",
+      "contact.title": "Contato",
+      "contact.description": "Se quiser trabalhar comigo ou discutir um projeto, me envie uma mensagem no LinkedIn ou por email.",
+      "footer.text": "Feito por Thiago Milanez C Pinheiro — Última atualização: 27 de Novembro de 2025"
+    },
+    en: {
+      "header.subtitle": "AI Engineer • LLMs • Machine Learning • Data Science",
+      "hero.title": "Building practical AI solutions for business",
+      "hero.description": "I develop applications with LLMs, data pipelines and production-ready machine learning models. Focus on delivering measurable impact and robust solutions.",
+      "hero.btn.projects": "View Projects",
+      "hero.btn.docs": "Documentation",
+      "hero.areas": "Areas",
+      "about.title": "💼 Chat with My Virtual Assistant",
+      "about.intro": "Created an <strong>interactive virtual assistant</strong> trained with my resume and professional experience. Ask questions as if you were in a job interview!",
+      "about.ask": "💡 Ask about:",
+      "about.experience": "Professional experience",
+      "about.skills": "Technical skills",
+      "about.projects": "Completed projects",
+      "about.ideal": "🎯 Ideal for:",
+      "about.recruiters": "HR Recruiters",
+      "about.managers": "Technical managers",
+      "about.learn": "Learning about the candidate",
+      "about.access": "🚀 Access the Virtual Assistant:",
+      "about.btn": "💼 Chat with the Assistant",
+      "about.online": "🌐 Online 24/7",
+      "about.powered": "Powered by Groq AI & LangChain",
+      "certifications.title": "Certifications",
+      "skills.title": "Technical Skills",
+      "skills.infra": "Infrastructure",
+      "projects.title": "Featured Projects",
+      "projects.llm.title": "LLMs for Business",
+      "projects.llm.desc": "RAG applications, chatbots and document automation with LLMs.",
+      "projects.data.title": "Data Analysis",
+      "projects.data.desc": "Exploration, visualization and dashboards to generate actionable insights.",
+      "projects.link": "Open project →",
+      "contact.title": "Contact",
+      "contact.description": "If you want to work with me or discuss a project, send me a message on LinkedIn or by email.",
+      "footer.text": "Made by Thiago Milanez C Pinheiro — Last updated: November 27, 2025"
+    }
+  };
+
+  // Get saved language or default to Portuguese
+  let currentLanguage = localStorage.getItem('portfolioLanguage') || 'pt';
+
+  // Apply translations to page
+  function applyTranslations(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (translations[lang][key]) {
+        element.innerHTML = translations[lang][key];
+      }
+    });
+    
+    // Update HTML lang attribute
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    
+    // Update button states
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active');
+      btn.style.background = 'rgba(255,255,255,0.05)';
+      btn.style.borderColor = 'rgba(255,255,255,0.1)';
+      btn.style.color = 'rgba(255,255,255,0.6)';
+    });
+    
+    const activeBtn = document.getElementById(`lang-${lang}`);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      activeBtn.style.background = 'rgba(0, 119, 181, 0.2)';
+      activeBtn.style.borderColor = 'rgba(0, 119, 181, 0.4)';
+      activeBtn.style.color = '#fff';
+    }
+  }
+
+  // Change language function
+  function changeLanguage(lang) {
+    currentLanguage = lang;
+    localStorage.setItem('portfolioLanguage', lang);
+    applyTranslations(lang);
+    
+    // Update assistant link to pass language parameter
+    const assistantLink = document.querySelector('a[href*="hf.space"]');
+    if (assistantLink) {
+      const baseUrl = 'https://tjdhmilanez-linkedin-cv-assistant.hf.space';
+      assistantLink.href = `${baseUrl}?lang=${lang}`;
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    applyTranslations(currentLanguage);
+  });
+
+  // ===== AI Avatar Animation =====
   const avatar = document.querySelector('.ai-avatar');
 
   document.addEventListener('mousemove', (e) => {
