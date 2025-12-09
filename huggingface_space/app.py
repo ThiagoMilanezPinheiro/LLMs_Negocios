@@ -41,10 +41,100 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 
 if not groq_api_key:
     logger.error("GROQ_API_KEY não encontrada")
+    # Idioma padrão para erro de configuração
     st.error("⚠️ Configuração incompleta: GROQ_API_KEY não configurada. Configure em Settings → Repository secrets")
+    st.error("⚠️ Incomplete configuration: GROQ_API_KEY not set. Configure in Settings → Repository secrets")
     st.stop()
 
 os.environ["GROQ_API_KEY"] = groq_api_key
+
+# -------------------------
+# Multilingual Support
+# -------------------------
+TRANSLATIONS = {
+    "pt": {
+        "page_title": "Thiago Milanez - Assistente Virtual 💼",
+        "main_title": "💼 Assistente Virtual de Currículo",
+        "subtitle": "Converse comigo para saber mais sobre a experiência profissional de Thiago Milanez",
+        "language": "🌐 Idioma",
+        "about_title": "ℹ️ Sobre este Assistente",
+        "about_text": "Sou um assistente de IA que responde perguntas sobre o currículo e experiência profissional de **Thiago Milanez C Pinheiro**.",
+        "features_title": "✨ Recursos",
+        "feature1": "💬 Conversação natural",
+        "feature2": "📄 Baseado no CV real",
+        "feature3": "⚡ Respostas em < 1 segundo",
+        "feature4": "🎯 Informações precisas",
+        "tech_title": "🛠️ Tecnologias",
+        "portfolio_button": "🏠 Voltar ao Portfólio",
+        "chat_placeholder": "Pergunte sobre a experiência profissional de Thiago...",
+        "loading_index": "🔄 Carregando índice FAISS...",
+        "processing": "🤖 Processando sua pergunta...",
+        "error_config": "⚠️ Configuração incompleta: GROQ_API_KEY não configurada. Configure em Settings → Repository secrets",
+        "error_llm": "⚠️ Erro ao conectar com o serviço de IA:",
+        "error_docs": "⚠️ Erro ao processar documentos:",
+        "no_info": "Essa informação específica não está disponível no meu currículo atual. Posso ajudar com outras questões sobre minha experiência profissional.",
+        "welcome_msg": "👋 Olá! Sou o assistente virtual de Thiago Milanez. Posso responder perguntas sobre experiência profissional, projetos, habilidades técnicas e formação acadêmica. Como posso ajudar?",
+        "system_prompt_qa": """Você é um assistente virtual profissional representando Thiago Milanez C Pinheiro.
+
+INSTRUÇÕES CRÍTICAS:
+1. Use EXCLUSIVAMENTE as informações encontradas no CONTEXTO abaixo
+2. NÃO invente, suponha ou adicione informações que não estejam no contexto
+3. Se a informação não estiver no contexto, responda: "Essa informação específica não está disponível no meu currículo atual. Posso ajudar com outras questões sobre minha experiência profissional."
+4. Seja objetivo, profissional e cite apenas fatos concretos do contexto
+5. Para perguntas técnicas, mencione SOMENTE tecnologias e projetos listados no contexto
+6. Responda em primeira pessoa como se fosse o próprio Thiago
+7. Mantenha respostas concisas (máximo 5-7 linhas), focando no essencial
+
+CONTEXTO DO CURRÍCULO:
+{context}
+
+PERGUNTA DO RECRUTADOR: {input}
+
+RESPOSTA (baseada APENAS no contexto acima):""",
+        "context_system_prompt": "Given the following chat history and the follow-up question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, only reformulate it if needed; otherwise return it as-is."
+    },
+    "en": {
+        "page_title": "Thiago Milanez - Virtual Assistant 💼",
+        "main_title": "💼 CV Virtual Assistant",
+        "subtitle": "Chat with me to learn more about Thiago Milanez's professional experience",
+        "language": "🌐 Language",
+        "about_title": "ℹ️ About this Assistant",
+        "about_text": "I am an AI assistant that answers questions about **Thiago Milanez C Pinheiro**'s resume and professional experience.",
+        "features_title": "✨ Features",
+        "feature1": "💬 Natural conversation",
+        "feature2": "📄 Based on real CV",
+        "feature3": "⚡ Answers in < 1 second",
+        "feature4": "🎯 Accurate information",
+        "tech_title": "🛠️ Technologies",
+        "portfolio_button": "🏠 Back to Portfolio",
+        "chat_placeholder": "Ask about Thiago's professional experience...",
+        "loading_index": "🔄 Loading FAISS index...",
+        "processing": "🤖 Processing your question...",
+        "error_config": "⚠️ Incomplete configuration: GROQ_API_KEY not set. Configure in Settings → Repository secrets",
+        "error_llm": "⚠️ Error connecting to AI service:",
+        "error_docs": "⚠️ Error processing documents:",
+        "no_info": "This specific information is not available in my current resume. I can help with other questions about my professional experience.",
+        "welcome_msg": "👋 Hello! I'm Thiago Milanez's virtual assistant. I can answer questions about professional experience, projects, technical skills, and academic background. How can I help?",
+        "system_prompt_qa": """You are a professional virtual assistant representing Thiago Milanez C Pinheiro.
+
+CRITICAL INSTRUCTIONS:
+1. Use EXCLUSIVELY the information found in the CONTEXT below
+2. DO NOT invent, assume or add information that is not in the context
+3. If the information is not in the context, respond: "This specific information is not available in my current resume. I can help with other questions about my professional experience."
+4. Be objective, professional and cite only concrete facts from the context
+5. For technical questions, mention ONLY technologies and projects listed in the context
+6. Respond in first person as if you were Thiago himself
+7. Keep answers concise (maximum 5-7 lines), focusing on essentials
+
+RESUME CONTEXT:
+{context}
+
+RECRUITER QUESTION: {input}
+
+ANSWER (based ONLY on the context above):""",
+        "context_system_prompt": "Given the following chat history and the follow-up question which might reference context in the chat history, formulate a standalone question which can be understood without the chat history. Do NOT answer the question, only reformulate it if needed; otherwise return it as-is."
+    }
+}
 
 # -------------------------
 # Streamlit UI config
@@ -53,7 +143,7 @@ st.set_page_config(
     page_title="Thiago Milanez - Assistente Virtual 💼",
     page_icon="💼",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # CSS customizado para tema profissional LinkedIn
@@ -176,11 +266,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header customizado
-st.markdown("""
+# Header customizado (bilíngue)
+if st.session_state.language == "pt":
+    st.markdown("""
 <div class="main-header">
     <h1 class="main-title">💼 Thiago Milanez C Pinheiro</h1>
     <p class="subtitle">Assistente Virtual • Currículo Interativo • Engenheiro de IA</p>
+</div>
+""", unsafe_allow_html=True)
+else:
+    st.markdown("""
+<div class="main-header">
+    <h1 class="main-title">💼 Thiago Milanez C Pinheiro</h1>
+    <p class="subtitle">Virtual Assistant • Interactive Resume • AI Engineer</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -304,51 +402,27 @@ def config_retriever(folder_path: str = CONTENT_PATH):
 # -------------------------
 # RAG: contextualize question -> retrieve -> answer
 # -------------------------
-context_q_system_prompt = (
-    "Given the following chat history and the follow-up question which might reference context "
-    "in the chat history, formulate a standalone question which can be understood without the chat history. "
-    "Do NOT answer the question, only reformulate it if needed; otherwise return it as-is."
-)
+def get_context_prompt(language="pt"):
+    """Retorna o prompt de contexto no idioma especificado"""
+    return TRANSLATIONS[language]["context_system_prompt"]
 
-context_q_prompt = ChatPromptTemplate.from_messages(
-    [
+def get_qa_prompt(language="pt"):
+    """Retorna o prompt QA no idioma especificado"""
+    return TRANSLATIONS[language]["system_prompt_qa"]
+
+def history_aware_retriever_fn(input_dict, retriever, language="pt"):
+    """Reformula a pergunta considerando histórico e retorna documentos relevantes"""
+    question = input_dict.get("input")
+    chat_history = input_dict.get("chat_history", [])
+
+    # Criar chain de contextualização dinamicamente
+    context_q_system_prompt = get_context_prompt(language)
+    context_q_prompt = ChatPromptTemplate.from_messages([
         ("system", context_q_system_prompt),
         MessagesPlaceholder("chat_history"),
         ("human", "Question: {input}"),
-    ]
-)
-
-# Prompt especializado para RH e recrutamento
-system_prompt_qa = """Você é um assistente virtual profissional representando Thiago Milanez C Pinheiro.
-
-INSTRUÇÕES CRÍTICAS:
-1. Use EXCLUSIVAMENTE as informações encontradas no CONTEXTO abaixo
-2. NÃO invente, suponha ou adicione informações que não estejam no contexto
-3. Se a informação não estiver no contexto, responda: "Essa informação específica não está disponível no meu currículo atual. Posso ajudar com outras questões sobre minha experiência profissional."
-4. Seja objetivo, profissional e cite apenas fatos concretos do contexto
-5. Para perguntas técnicas, mencione SOMENTE tecnologias e projetos listados no contexto
-6. Responda em primeira pessoa como se fosse o próprio Thiago
-7. Mantenha respostas concisas (máximo 5-7 linhas), focando no essencial
-
-CONTEXTO DO CURRÍCULO:
-{context}
-
-PERGUNTA DO RECRUTADOR: {input}
-
-RESPOSTA (baseada APENAS no contexto acima):"""
-
-qa_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt_qa),
-    ]
-)
-
-contextualize_chain = context_q_prompt | llm | StrOutputParser()
-answer_chain = qa_prompt | llm | StrOutputParser()
-
-def history_aware_retriever_fn(input_dict, retriever):
-    question = input_dict.get("input")
-    chat_history = input_dict.get("chat_history", [])
+    ])
+    contextualize_chain = context_q_prompt | llm | StrOutputParser()
 
     reformulated = contextualize_chain.invoke({"input": question, "chat_history": chat_history})
     logger.info(f"Pergunta reformulada: '{reformulated}'")
@@ -386,9 +460,27 @@ def history_aware_retriever_fn(input_dict, retriever):
 
     return texts
 
-def make_rag_response(question, chat_history, retriever):
+def make_rag_response(question, chat_history, retriever, language="pt"):
     logger.info(f"make_rag_response chamado para pergunta: '{question[:100]}'")
-    texts = history_aware_retriever_fn({"input": question, "chat_history": chat_history}, retriever)
+    
+    # Configurar prompts no idioma correto
+    context_q_system_prompt = get_context_prompt(language)
+    context_q_prompt = ChatPromptTemplate.from_messages([
+        ("system", context_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "Question: {input}"),
+    ])
+    
+    qa_system_prompt = get_qa_prompt(language)
+    qa_prompt = ChatPromptTemplate.from_messages([
+        ("system", qa_system_prompt),
+    ])
+    
+    contextualize_chain = context_q_prompt | llm | StrOutputParser()
+    answer_chain = qa_prompt | llm | StrOutputParser()
+    
+    # Passar idioma para retriever function
+    texts = history_aware_retriever_fn({"input": question, "chat_history": chat_history}, retriever, language)
     logger.info(f"history_aware_retriever_fn retornou {len(texts)} textos")
 
     max_context_len = 4000
@@ -407,8 +499,9 @@ def make_rag_response(question, chat_history, retriever):
     if not context:
         logger.warning("Contexto vazio - retriever não encontrou documentos relevantes!")
         reformulated = contextualize_chain.invoke({"input": question, "chat_history": chat_history})
+        no_info_msg = TRANSLATIONS[language]["no_info"]
         return {
-            "answer": "Desculpe, não encontrei informações suficientes no currículo para responder essa pergunta específica. Você pode reformular ou fazer outra pergunta?",
+            "answer": no_info_msg,
             "reformulated_question": reformulated,
             "similarity_used": 0.0,
             "used_chunks_preview": [],
@@ -429,18 +522,26 @@ def make_rag_response(question, chat_history, retriever):
 # -------------------------
 # Chat handlers (Streamlit)
 # -------------------------
-def chat_llm_flow(retriever, user_input):
+def chat_llm_flow(retriever, user_input, language="pt"):
     try:
+        # Inicializar histórico com mensagem de boas-vindas no idioma correto
         if "chat_history" not in st.session_state:
-            st.session_state.chat_history = [AIMessage(content="Olá! Sou o assistente virtual de Thiago Milanez. Posso responder perguntas sobre sua experiência profissional, habilidades, projetos e qualificações. Como posso ajudar?")]
+            welcome_msg = TRANSLATIONS[language]["welcome_msg"]
+            st.session_state.chat_history = [AIMessage(content=welcome_msg)]
 
         if not user_input or len(user_input.strip()) == 0:
             logger.warning("Input vazio recebido")
-            return "Por favor, digite uma pergunta.", {}
+            if language == "pt":
+                return "Por favor, digite uma pergunta.", {}
+            else:
+                return "Please type a question.", {}
         
         if len(user_input) > 5000:
             logger.warning(f"Input muito longo: {len(user_input)} caracteres")
-            return "Pergunta muito longa. Por favor, seja mais conciso (máximo 5000 caracteres).", {}
+            if language == "pt":
+                return "Pergunta muito longa. Por favor, seja mais conciso (máximo 5000 caracteres).", {}
+            else:
+                return "Question too long. Please be more concise (maximum 5000 characters).", {}
 
         logger.info(f"Processando pergunta: {user_input[:100]}...")
         
@@ -450,7 +551,7 @@ def chat_llm_flow(retriever, user_input):
         if len(st.session_state.chat_history) > 20:
             st.session_state.chat_history = st.session_state.chat_history[-20:]
 
-        rag_result = make_rag_response(user_input, st.session_state.chat_history, retriever)
+        rag_result = make_rag_response(user_input, st.session_state.chat_history, retriever, language)
 
         res_text = rag_result.get("answer", "").strip()
         st.session_state.chat_history.append(AIMessage(content=res_text))
@@ -464,36 +565,90 @@ def chat_llm_flow(retriever, user_input):
     
     except Exception as e:
         logger.error(f"Erro no fluxo de chat: {str(e)}")
-        error_msg = "Desculpe, ocorreu um erro ao processar sua pergunta. Tente novamente."
+        if language == "pt":
+            error_msg = "Desculpe, ocorreu um erro ao processar sua pergunta. Tente novamente."
+        else:
+            error_msg = "Sorry, an error occurred while processing your question. Please try again."
         return error_msg, {"error": str(e)}
 
 # -------------------------
 # Streamlit UI main
 # -------------------------
 
+# Inicializar idioma no session_state
+if "language" not in st.session_state:
+    st.session_state.language = "pt"
+
 # Sidebar com informações
 with st.sidebar:
-    st.markdown("### 👤 Sobre o Profissional")
-    info_html = """
+    # Seletor de idioma
+    st.markdown(f"### {TRANSLATIONS[st.session_state.language]['language']}")
+    
+    language_options = {"🇧🇷 Português": "pt", "🇺🇸 English": "en"}
+    selected_lang = st.radio(
+        "",
+        options=list(language_options.keys()),
+        index=0 if st.session_state.language == "pt" else 1,
+        label_visibility="collapsed"
+    )
+    
+    # Atualizar idioma se mudou
+    new_lang = language_options[selected_lang]
+    if new_lang != st.session_state.language:
+        st.session_state.language = new_lang
+        st.rerun()
+    
+    st.markdown("---")
+    
+    # Sobre o profissional (bilíngue)
+    if st.session_state.language == "pt":
+        st.markdown("### 👤 Sobre o Profissional")
+        info_html = """
 <div class="info-card">
 <strong>Nome:</strong> Thiago Milanez C Pinheiro<br>
 <strong>Cargo:</strong> Engenheiro de IA<br>
 <strong>Especialização:</strong> LLMs & Machine Learning<br>
 <strong>Certificações:</strong> PUC Minas, Oracle, ITIL
 </div>"""
+    else:
+        st.markdown("### 👤 About the Professional")
+        info_html = """
+<div class="info-card">
+<strong>Name:</strong> Thiago Milanez C Pinheiro<br>
+<strong>Position:</strong> AI Engineer<br>
+<strong>Specialization:</strong> LLMs & Machine Learning<br>
+<strong>Certifications:</strong> PUC Minas, Oracle, ITIL
+</div>"""
     st.markdown(info_html, unsafe_allow_html=True)
     
-    st.markdown("### 💡 Perguntas Sugeridas")
-    st.markdown("""
+    # Perguntas sugeridas (bilíngue)
+    if st.session_state.language == "pt":
+        st.markdown("### 💡 Perguntas Sugeridas")
+        st.markdown("""
 - Qual sua experiência profissional?
 - Quais tecnologias você domina?
 - Pode falar sobre seus projetos?
 - Quais suas certificações?
 - Qual sua formação acadêmica?
 - Experiência com LLMs e IA?
-    """)
+        """)
+    else:
+        st.markdown("### 💡 Suggested Questions")
+        st.markdown("""
+- What is your professional experience?
+- What technologies do you master?
+- Can you talk about your projects?
+- What are your certifications?
+- What is your academic background?
+- Experience with LLMs and AI?
+        """)
     
-    st.markdown("### 🔗 Links Profissionais")
+    # Links profissionais
+    if st.session_state.language == "pt":
+        st.markdown("### 🔗 Links Profissionais")
+    else:
+        st.markdown("### 🔗 Professional Links")
+    
     st.markdown("""
 - [💼 LinkedIn](https://www.linkedin.com/in/thiagomilanez-itil/)
 - [🐙 GitHub](https://github.com/ThiagoMilanezPinheiro)
@@ -502,8 +657,9 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Botão para voltar à Home (usando link estilizado)
-    st.markdown("""
+    # Botão para voltar à Home (bilíngue)
+    portfolio_text = TRANSLATIONS[st.session_state.language]["portfolio_button"]
+    st.markdown(f"""
     <a href="https://thiagomilanezpinheiro.github.io/LLMs_Negocios/" target="_blank" style="text-decoration: none;">
         <button style="
             width: 100%;
@@ -517,61 +673,101 @@ with st.sidebar:
             cursor: pointer;
             transition: all 0.3s ease;
         " onmouseover="this.style.background='linear-gradient(135deg, #006097 0%, #004d7a 100%)'; this.style.boxShadow='0 4px 16px rgba(0, 119, 181, 0.4)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='linear-gradient(135deg, #0077b5 0%, #006097 100%)'; this.style.boxShadow='none'; this.style.transform='translateY(0)'">
-            🏠 Voltar ao Portfólio
+            {portfolio_text}
         </button>
     </a>
     """, unsafe_allow_html=True)
 
 # Área de boas-vindas quando não há mensagens
 if len(st.session_state.get("chat_history", [])) <= 1:
-    st.markdown("""
-    <div class="success-card">
-        <h3 style="margin-top: 0;">👋  Bem-vindo ao Currículo Interativo!</h3>
-        <p>Este assistente virtual foi treinado com o currículo e portfólio de <strong>Thiago Milanez</strong> 
-        e pode responder perguntas como se fosse uma entrevista de emprego.</p>
-        <h4>💼 O que você pode perguntar:</h4>
-        <ul>
-            <li>📊 Experiência profissional e trajetória</li>
-            <li>🛠️ Habilidades técnicas e ferramentas</li>
-            <li>🚀 Projetos realizados e resultados</li>
-            <li>🎓 Formação e certificações</li>
-            <li>🤖 Especialização em IA e LLMs</li>
-        </ul>
-        <h4>🎯 Perfeito para:</h4>
-        <p>✅ Recrutadores e profissionais de RH<br>
-            ✅ Gestores técnicos avaliando perfil<br>
-            ✅ Conhecer melhor o candidato de forma interativa</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Aviso sobre inicialização
-    st.info("💡 **Primeira vez aqui?** A primeira pergunta pode levar ~10 segundos para inicializar o modelo de IA. Depois disso, as respostas serão instantâneas!")
-    
-    # Exemplos de perguntas para RH
-    st.markdown("### 💭 Exemplos de perguntas para RH:")
-    col1, col2 = st.columns(2)
-    with col1:
+    if st.session_state.language == "pt":
         st.markdown("""
+        <div class="success-card">
+            <h3 style="margin-top: 0;">👋  Bem-vindo ao Currículo Interativo!</h3>
+            <p>Este assistente virtual foi treinado com o currículo e portfólio de <strong>Thiago Milanez</strong> 
+            e pode responder perguntas como se fosse uma entrevista de emprego.</p>
+            <h4>💼 O que você pode perguntar:</h4>
+            <ul>
+                <li>📊 Experiência profissional e trajetória</li>
+                <li>🛠️ Habilidades técnicas e ferramentas</li>
+                <li>🚀 Projetos realizados e resultados</li>
+                <li>🎓 Formação e certificações</li>
+                <li>🤖 Especialização em IA e LLMs</li>
+            </ul>
+            <h4>🎯 Perfeito para:</h4>
+            <p>✅ Recrutadores e profissionais de RH<br>
+                ✅ Gestores técnicos avaliando perfil<br>
+                ✅ Conhecer melhor o candidato de forma interativa</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.info("💡 **Primeira vez aqui?** A primeira pergunta pode levar ~10 segundos para inicializar o modelo de IA. Depois disso, as respostas serão instantâneas!")
+        
+        st.markdown("### 💭 Exemplos de perguntas para RH:")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
 **Experiência:**
 - Qual sua experiência com IA?
 - Projetos de destaque?
 - Tecnologias que domina?
-        """)
-    with col2:
-        st.markdown("""
+            """)
+        with col2:
+            st.markdown("""
 **Qualificações:**
 - Formação acadêmica?
 - Certificações obtidas?
 - Diferenciais profissionais?
-        """)
+            """)
+    else:
+        st.markdown("""
+        <div class="success-card">
+            <h3 style="margin-top: 0;">👋  Welcome to the Interactive Resume!</h3>
+            <p>This virtual assistant was trained with <strong>Thiago Milanez</strong>'s resume and portfolio 
+            and can answer questions as if it were a job interview.</p>
+            <h4>💼 What you can ask:</h4>
+            <ul>
+                <li>📊 Professional experience and career path</li>
+                <li>🛠️ Technical skills and tools</li>
+                <li>🚀 Completed projects and results</li>
+                <li>🎓 Education and certifications</li>
+                <li>🤖 Specialization in AI and LLMs</li>
+            </ul>
+            <h4>🎯 Perfect for:</h4>
+            <p>✅ Recruiters and HR professionals<br>
+                ✅ Technical managers evaluating profile<br>
+                ✅ Learning more about the candidate interactively</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.info("💡 **First time here?** The first question may take ~10 seconds to initialize the AI model. After that, responses will be instantaneous!")
+        
+        st.markdown("### 💭 Sample questions for HR:")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+**Experience:**
+- What is your AI experience?
+- Notable projects?
+- Technologies you master?
+            """)
+        with col2:
+            st.markdown("""
+**Qualifications:**
+- Academic background?
+- Certifications obtained?
+- Professional differentials?
+            """)
 
 
-# Input do chat
-input_text = st.chat_input("💬 Faça sua pergunta sobre o profissional...")
+# Input do chat (bilíngue)
+chat_placeholder = TRANSLATIONS[st.session_state.language]["chat_placeholder"]
+input_text = st.chat_input(chat_placeholder)
 
-# initialize state variables
+# initialize state variables - com idioma correto
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [AIMessage(content="Olá! Sou o assistente virtual de Thiago Milanez. Posso responder perguntas sobre sua experiência profissional, habilidades, projetos e qualificações. Como posso ajudar?")]
+    welcome_msg = TRANSLATIONS[st.session_state.language]["welcome_msg"]
+    st.session_state.chat_history = [AIMessage(content=welcome_msg)]
 
 # Carregar retriever uma única vez (cache_resource mantém entre reruns)
 if "retriever" not in st.session_state or st.session_state.retriever is None:
@@ -581,7 +777,8 @@ if "retriever" not in st.session_state or st.session_state.retriever is None:
         logger.info("Retriever carregado com sucesso")
     except Exception as e:
         logger.error(f"Erro ao carregar retriever: {e}")
-        st.error(f"⚠️ Erro ao inicializar o assistente: {e}")
+        error_msg = TRANSLATIONS[st.session_state.language]["error_docs"]
+        st.error(f"{error_msg} {e}")
         st.stop()
 
 # render existing chat history
@@ -601,21 +798,36 @@ if input_text is not None:
 
     with st.chat_message("assistant", avatar="💼"):
         try:
-            with st.spinner("🤔 Analisando perfil profissional..."):
-                answer, debug = chat_llm_flow(st.session_state.retriever, input_text)
+            # Mensagem de carregamento bilíngue
+            processing_msg = TRANSLATIONS[st.session_state.language]["processing"]
+            with st.spinner(processing_msg):
+                answer, debug = chat_llm_flow(st.session_state.retriever, input_text, st.session_state.language)
             
             st.markdown(answer)
 
             if debug and "error" not in debug:
-                with st.expander("🔍 Fontes do Currículo", expanded=False):
-                    st.markdown(f"**Pergunta reformulada:** `{debug.get('reformulated_question')}`")
-                    st.markdown("**Trechos do currículo utilizados:**")
+                # Expander bilíngue
+                if st.session_state.language == "pt":
+                    expander_title = "🔍 Fontes do Currículo"
+                    reformulated_label = "**Pergunta reformulada:**"
+                    chunks_label = "**Trechos do currículo utilizados:**"
+                else:
+                    expander_title = "🔍 Resume Sources"
+                    reformulated_label = "**Reformulated question:**"
+                    chunks_label = "**Resume excerpts used:**"
+                
+                with st.expander(expander_title, expanded=False):
+                    st.markdown(f"{reformulated_label} `{debug.get('reformulated_question')}`")
+                    st.markdown(chunks_label)
                     for i, p in enumerate(debug.get("used_chunks_preview", []), 1):
                         st.markdown(f"{i}. {p}")
         
         except Exception as e:
             logger.error(f"Erro crítico na interface: {str(e)}")
-            st.error("⚠️ Ocorreu um erro inesperado. Por favor, recarregue a página.")
+            if st.session_state.language == "pt":
+                st.error("⚠️ Ocorreu um erro inesperado. Por favor, recarregue a página.")
+            else:
+                st.error("⚠️ An unexpected error occurred. Please reload the page.")
             st.exception(e)
 
 # Footer
