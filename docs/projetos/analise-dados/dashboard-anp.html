@@ -139,7 +139,7 @@
     }
 
     .card-content {
-      min-height: 150px;
+      min-height: 200px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -252,21 +252,17 @@
       ← Voltar aos Projetos
     </a>
 
-    <!-- Primeira Linha: Tabela de Produção Acumulada -->
-    <div class="cards-grid" style="grid-template-columns: 1fr;">
+    <!-- Visualizações Principais -->
+    <div class="cards-grid">
       <div class="dashboard-card">
         <div class="card-header">
-          <span class="card-icon">📋</span>
-          <h3 class="card-title">Produção Acumulada por Ambiente</h3>
+          <span class="card-icon">📊</span>
+          <h3 class="card-title">Visão Geral da Produção</h3>
         </div>
-        <div class="card-content" style="min-height: 400px; overflow: auto;">
-          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/65bf393d6d9c47bf914c73b8bd47fc88.png" alt="Tabela de Produção" style="width: 100%; height: auto; border-radius: 8px;">
+        <div class="card-content">
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/65bf393d6d9c47bf914c73b8bd47fc88.png" alt="Visão Geral" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
-    </div>
-
-    <!-- Segunda Linha: Visualizações -->
-    <div class="cards-grid">
 
       <div class="dashboard-card">
         <div class="card-header">
@@ -287,14 +283,17 @@
           <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/3bb2892f986847868b9bfa9a47a257280.png" alt="Mapa de Poços" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
+    </div>
 
+    <!-- Gráfico de Produção Acumulada -->
+    <div class="cards-grid" style="grid-template-columns: 1fr; margin-top: 1rem;">
       <div class="dashboard-card">
         <div class="card-header">
-          <span class="card-icon">📊</span>
-          <h3 class="card-title">Gráfico de Produção</h3>
+          <span class="card-icon">📉</span>
+          <h3 class="card-title">Produção Acumulada por Ambiente</h3>
         </div>
-        <div class="card-content">
-          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/dab0918d318a4f1c80b3c1dfdaf495e40.png" alt="Gráfico de Produção" style="width: 100%; height: auto; border-radius: 8px;">
+        <div class="card-content" style="min-height: 300px;">
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/dab0918d318a4f1c80b3c1dfdaf495e40.png" alt="Produção Acumulada" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
     </div>
