@@ -780,6 +780,15 @@ input_text = st.chat_input(chat_placeholder)
 if "chat_history" not in st.session_state:
     welcome_msg = TRANSLATIONS[st.session_state.language]["welcome_msg"]
     st.session_state.chat_history = [AIMessage(content=welcome_msg)]
+else:
+    # Verificar se a primeira mensagem precisa ser atualizada para o idioma atual
+    if len(st.session_state.chat_history) > 0 and isinstance(st.session_state.chat_history[0], AIMessage):
+        current_welcome = TRANSLATIONS[st.session_state.language]["welcome_msg"]
+        # Se a primeira mensagem não corresponde ao idioma atual, atualizar
+        if st.session_state.chat_history[0].content != current_welcome:
+            # Preservar apenas a mensagem de boas-vindas se for a única mensagem
+            if len(st.session_state.chat_history) == 1:
+                st.session_state.chat_history[0] = AIMessage(content=current_welcome)
 
 # Carregar retriever uma única vez (cache_resource mantém entre reruns)
 if "retriever" not in st.session_state or st.session_state.retriever is None:
