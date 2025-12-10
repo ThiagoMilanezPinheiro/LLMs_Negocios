@@ -212,10 +212,19 @@
   <header class="site-header">
     <div class="container header-inner">
       <div class="brand">
-        <h1>Documentação Técnica</h1>
-        <p class="subtitle">LinkedIn CV Assistant • Arquitetura & Desenvolvimento</p>
+        <h1 data-i18n="doc.title">Documentação Técnica</h1>
+        <p class="subtitle" data-i18n="doc.subtitle">LinkedIn CV Assistant • Arquitetura & Desenvolvimento</p>
       </div>
       <nav class="social">
+        <!-- Language Switcher -->
+        <div class="language-switcher" style="display: inline-flex; gap: 0.5rem; margin-right: 1rem; align-items: center;">
+          <button id="lang-pt" class="lang-btn active" onclick="changeLanguage('pt')" style="background: rgba(0, 119, 181, 0.2); border: 1px solid rgba(0, 119, 181, 0.4); color: #fff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;" title="Português">
+            🇧🇷 PT
+          </button>
+          <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;" title="English">
+            🇺🇸 EN
+          </button>
+        </div>
         <a href="https://www.linkedin.com/in/thiagomilanez-itil/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         <a href="https://github.com/ThiagoMilanezPinheiro" target="_blank" rel="noopener noreferrer">GitHub</a>
       </nav>
@@ -223,34 +232,34 @@
   </header>
 
   <main class="container">
-    <a href="index.html" class="back-button">← Voltar ao Portfólio</a>
+    <a href="index.html" class="back-button" data-i18n="doc.back">← Voltar ao Portfólio</a>
     
     <section class="section">
-      <h2>🏗️ Diagrama de Criação do Agente LinkedIn CV Assistant</h2>
-      <p>Documentação completa do processo de desenvolvimento, arquitetura técnica e decisões de design do assistente virtual baseado em RAG (Retrieval-Augmented Generation).</p>
+      <h2 data-i18n="doc.diagramTitle">🏗️ Diagrama de Criação do Agente LinkedIn CV Assistant</h2>
+      <p data-i18n="doc.diagramDesc">Documentação completa do processo de desenvolvimento, arquitetura técnica e decisões de design do assistente virtual baseado em RAG (Retrieval-Augmented Generation).</p>
       
       <div class="stats-grid">
         <div class="stat-box">
           <div class="stat-number">15</div>
-          <div class="stat-label">Dias de Desenvolvimento</div>
+          <div class="stat-label" data-i18n="doc.stat1">Dias de Desenvolvimento</div>
         </div>
         <div class="stat-box">
           <div class="stat-number">7</div>
-          <div class="stat-label">Problemas Resolvidos</div>
+          <div class="stat-label" data-i18n="doc.stat2">Problemas Resolvidos</div>
         </div>
         <div class="stat-box">
           <div class="stat-number">400+</div>
-          <div class="stat-label">Linhas de Código</div>
+          <div class="stat-label" data-i18n="doc.stat3">Linhas de Código</div>
         </div>
         <div class="stat-box">
           <div class="stat-number">99.8%</div>
-          <div class="stat-label">Uptime</div>
+          <div class="stat-label" data-i18n="doc.stat4">Uptime</div>
         </div>
       </div>
     </section>
 
     <section class="section">
-      <h3>📋 Visão Geral do Fluxo de Desenvolvimento</h3>
+      <h3 data-i18n="doc.flowTitle">📋 Visão Geral do Fluxo de Desenvolvimento</h3>
       <div class="diagram-container">
         <div style="background: rgba(0, 119, 181, 0.1); border: 2px solid rgba(0, 119, 181, 0.3); border-radius: 12px; padding: 2rem;">
           <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -300,7 +309,7 @@
     </section>
 
     <section class="section">
-      <h3>🏛️ Arquitetura Técnica do Sistema</h3>
+      <h3 data-i18n="doc.archTitle">🏛️ Arquitetura Técnica do Sistema</h3>
       <div class="diagram-container">
         <div style="background: rgba(124, 58, 237, 0.1); border: 2px solid rgba(124, 58, 237, 0.3); border-radius: 12px; padding: 2rem;">
           <div style="display: grid; gap: 1.5rem;">
@@ -372,7 +381,7 @@
     </section>
 
     <section class="section">
-      <h3>⏱️ Timeline de Desenvolvimento (15 Dias)</h3>
+      <h3 data-i18n="doc.timelineTitle">⏱️ Timeline de Desenvolvimento (15 Dias)</h3>
       
       <div class="timeline">
         <div class="timeline-item">
@@ -429,7 +438,7 @@
     </section>
 
     <section class="section">
-      <h3>🎯 Marcos do Projeto (Milestones)</h3>
+      <h3 data-i18n="doc.milestonesTitle">🎯 Marcos do Projeto (Milestones)</h3>
       
       <div class="milestone">
         <h4>Marco 1 (Dia 5): MVP Funcional Local</h4>
@@ -453,7 +462,7 @@
     </section>
 
     <section class="section">
-      <h3>🔧 Principais Decisões Técnicas</h3>
+      <h3 data-i18n="doc.decisionsTitle">🔧 Principais Decisões Técnicas</h3>
       
       <div class="phase-card">
         <h4>✅ Streaming OFF</h4>
@@ -481,7 +490,7 @@
     </section>
 
     <section class="section">
-      <h3>🐛 Problemas Resolvidos (7 Críticos)</h3>
+      <h3 data-i18n="doc.problemsTitle">🐛 Problemas Resolvidos (7 Críticos)</h3>
       
       <div style="display: grid; gap: 1rem;">
         <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem;">
@@ -522,7 +531,7 @@
     </section>
 
     <section class="section">
-      <h3>📦 Estrutura Final do Projeto</h3>
+      <h3 data-i18n="doc.structureTitle">📦 Estrutura Final do Projeto</h3>
       <div style="background: rgba(0, 0, 0, 0.5); padding: 1.5rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; overflow-x: auto;">
 <pre style="margin: 0; color: #10b981;">
 huggingface_space/
@@ -545,7 +554,7 @@ huggingface_space/
     </section>
 
     <section class="section">
-      <h3>🚀 Pipeline de Deploy (CI/CD)</h3>
+      <h3 data-i18n="doc.deployTitle">🚀 Pipeline de Deploy (CI/CD)</h3>
       <div class="diagram-container">
         <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 2rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
@@ -600,14 +609,14 @@ huggingface_space/
     </section>
 
     <section class="section">
-      <h3>🔗 Links Úteis</h3>
+      <h3 data-i18n="doc.linksTitle">🔗 Links Úteis</h3>
       <div style="display: grid; gap: 1rem; margin-top: 1rem;">
         <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="phase-card" style="text-decoration: none; display: block;">
           <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="font-size: 2rem;">🚀</span>
             <div>
-              <strong style="color: #0077b5; font-size: 1.1rem;">Assistente em Produção</strong>
-              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">HuggingFace Spaces (Online 24/7)</p>
+              <strong style="color: #0077b5; font-size: 1.1rem;" data-i18n="doc.link1Title">Assistente em Produção</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);" data-i18n="doc.link1Desc">HuggingFace Spaces (Online 24/7)</p>
             </div>
           </div>
         </a>
@@ -616,8 +625,8 @@ huggingface_space/
           <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="font-size: 2rem;">📂</span>
             <div>
-              <strong style="color: #0077b5; font-size: 1.1rem;">Repositório no GitHub</strong>
-              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">Código-fonte completo</p>
+              <strong style="color: #0077b5; font-size: 1.1rem;" data-i18n="doc.link2Title">Repositório no GitHub</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);" data-i18n="doc.link2Desc">Código-fonte completo</p>
             </div>
           </div>
         </a>
@@ -626,8 +635,8 @@ huggingface_space/
           <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="font-size: 2rem;">📖</span>
             <div>
-              <strong style="color: #0077b5; font-size: 1.1rem;">Documentação Técnica Completa</strong>
-              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);">RESUMO_PROJETO.md no GitHub</p>
+              <strong style="color: #0077b5; font-size: 1.1rem;" data-i18n="doc.link3Title">Documentação Técnica Completa</strong>
+              <p style="margin: 0.25rem 0 0 0; color: rgba(255,255,255,0.7);" data-i18n="doc.link3Desc">RESUMO_PROJETO.md no GitHub</p>
             </div>
           </div>
         </a>
@@ -636,9 +645,9 @@ huggingface_space/
 
     <section class="section">
       <div style="background: linear-gradient(135deg, rgba(0, 119, 181, 0.2), rgba(124, 58, 237, 0.2)); border: 1px solid rgba(0, 119, 181, 0.4); border-radius: 12px; padding: 2rem; text-align: center;">
-        <h3 style="margin-top: 0;">💡 Quer saber mais?</h3>
-        <p>Explore o assistente virtual e faça perguntas sobre minha experiência profissional!</p>
-        <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="btn" style="display: inline-block; margin-top: 1rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); padding: 1rem 2rem; font-size: 1.1rem;">
+        <h3 style="margin-top: 0;" data-i18n="doc.ctaTitle">💡 Quer saber mais?</h3>
+        <p data-i18n="doc.ctaDesc">Explore o assistente virtual e faça perguntas sobre minha experiência profissional!</p>
+        <a href="https://tjdhmilanez-linkedin-cv-assistant.hf.space" target="_blank" class="btn" style="display: inline-block; margin-top: 1rem; background: linear-gradient(135deg, #0077b5 0%, #005885 100%); padding: 1rem 2rem; font-size: 1.1rem;" data-i18n="doc.ctaButton">
           💼 Conversar com o Assistente
         </a>
       </div>
@@ -647,8 +656,118 @@ huggingface_space/
 
   <footer class="site-footer">
     <div class="container">
-      <p>Feito por Thiago Milanez C Pinheiro — Última atualização: 3 de Dezembro de 2025</p>
+      <p data-i18n="doc.footer">Feito por Thiago Milanez C Pinheiro — Última atualização: 3 de Dezembro de 2025</p>
     </div>
   </footer>
+
+  <script>
+    // Translations dictionary
+    const translations = {
+      pt: {
+        'doc.title': 'Documentação Técnica',
+        'doc.subtitle': 'LinkedIn CV Assistant • Arquitetura & Desenvolvimento',
+        'doc.back': '← Voltar ao Portfólio',
+        'doc.footer': 'Feito por Thiago Milanez C Pinheiro — Última atualização: 3 de Dezembro de 2025',
+        'doc.diagramTitle': '🏗️ Diagrama de Criação do Agente LinkedIn CV Assistant',
+        'doc.diagramDesc': 'Documentação completa do processo de desenvolvimento, arquitetura técnica e decisões de design do assistente virtual baseado em RAG (Retrieval-Augmented Generation).',
+        'doc.stat1': 'Dias de Desenvolvimento',
+        'doc.stat2': 'Problemas Resolvidos',
+        'doc.stat3': 'Linhas de Código',
+        'doc.stat4': 'Uptime',
+        'doc.flowTitle': '📋 Visão Geral do Fluxo de Desenvolvimento',
+        'doc.archTitle': '🏛️ Arquitetura Técnica do Sistema',
+        'doc.timelineTitle': '⏱️ Timeline de Desenvolvimento (15 Dias)',
+        'doc.milestonesTitle': '🎯 Marcos do Projeto (Milestones)',
+        'doc.decisionsTitle': '🔧 Principais Decisões Técnicas',
+        'doc.problemsTitle': '🐛 Problemas Resolvidos (7 Críticos)',
+        'doc.structureTitle': '📦 Estrutura Final do Projeto',
+        'doc.deployTitle': '🚀 Pipeline de Deploy (CI/CD)',
+        'doc.linksTitle': '🔗 Links Úteis',
+        'doc.link1Title': 'Assistente em Produção',
+        'doc.link1Desc': 'HuggingFace Spaces (Online 24/7)',
+        'doc.link2Title': 'Repositório no GitHub',
+        'doc.link2Desc': 'Código-fonte completo',
+        'doc.link3Title': 'Documentação Técnica Completa',
+        'doc.link3Desc': 'RESUMO_PROJETO.md no GitHub',
+        'doc.ctaTitle': '💡 Quer saber mais?',
+        'doc.ctaDesc': 'Explore o assistente virtual e faça perguntas sobre minha experiência profissional!',
+        'doc.ctaButton': '💼 Conversar com o Assistente'
+      },
+      en: {
+        'doc.title': 'Technical Documentation',
+        'doc.subtitle': 'LinkedIn CV Assistant • Architecture & Development',
+        'doc.back': '← Back to Portfolio',
+        'doc.footer': 'Made by Thiago Milanez C Pinheiro — Last updated: December 3rd, 2025',
+        'doc.diagramTitle': '🏗️ LinkedIn CV Assistant Creation Diagram',
+        'doc.diagramDesc': 'Complete documentation of the development process, technical architecture and design decisions of the RAG-based virtual assistant (Retrieval-Augmented Generation).',
+        'doc.stat1': 'Development Days',
+        'doc.stat2': 'Problems Solved',
+        'doc.stat3': 'Lines of Code',
+        'doc.stat4': 'Uptime',
+        'doc.flowTitle': '📋 Development Flow Overview',
+        'doc.archTitle': '🏛️ System Technical Architecture',
+        'doc.timelineTitle': '⏱️ Development Timeline (15 Days)',
+        'doc.milestonesTitle': '🎯 Project Milestones',
+        'doc.decisionsTitle': '🔧 Key Technical Decisions',
+        'doc.problemsTitle': '🐛 Problems Solved (7 Critical)',
+        'doc.structureTitle': '📦 Final Project Structure',
+        'doc.deployTitle': '🚀 Deploy Pipeline (CI/CD)',
+        'doc.linksTitle': '🔗 Useful Links',
+        'doc.link1Title': 'Assistant in Production',
+        'doc.link1Desc': 'HuggingFace Spaces (Online 24/7)',
+        'doc.link2Title': 'GitHub Repository',
+        'doc.link2Desc': 'Complete source code',
+        'doc.link3Title': 'Complete Technical Documentation',
+        'doc.link3Desc': 'RESUMO_PROJETO.md on GitHub',
+        'doc.ctaTitle': '💡 Want to know more?',
+        'doc.ctaDesc': 'Explore the virtual assistant and ask questions about my professional experience!',
+        'doc.ctaButton': '💼 Chat with the Assistant'
+      }
+    };
+
+    // Get current language from localStorage or default to 'pt'
+    let currentLang = localStorage.getItem('preferredLanguage') || 'pt';
+
+    // Function to change language
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('preferredLanguage', lang);
+      applyTranslations();
+      updateLanguageButtons();
+    }
+
+    // Apply translations to elements with data-i18n attribute
+    function applyTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+          element.textContent = translations[currentLang][key];
+        }
+      });
+    }
+
+    // Update active state of language buttons
+    function updateLanguageButtons() {
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.id === `lang-${currentLang}`) {
+          btn.classList.add('active');
+          btn.style.background = 'rgba(0, 119, 181, 0.2)';
+          btn.style.borderColor = 'rgba(0, 119, 181, 0.4)';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.background = 'rgba(255,255,255,0.05)';
+          btn.style.borderColor = 'rgba(255,255,255,0.1)';
+          btn.style.color = 'rgba(255,255,255,0.6)';
+        }
+      });
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      applyTranslations();
+      updateLanguageButtons();
+    });
+  </script>
 </body>
 </html>
