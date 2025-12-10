@@ -252,22 +252,26 @@
       ← Voltar aos Projetos
     </a>
 
-    <!-- Primeira Linha: Visão Geral -->
-    <div class="cards-grid">
+    <!-- Primeira Linha: Tabela de Produção Acumulada -->
+    <div class="cards-grid" style="grid-template-columns: 1fr;">
       <div class="dashboard-card">
         <div class="card-header">
           <span class="card-icon">📋</span>
-          <h3 class="card-title">Visão Geral</h3>
+          <h3 class="card-title">Produção Acumulada por Ambiente</h3>
         </div>
-        <div class="card-content">
-          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/65bf393d6d9c47bf914c73b8bd47fc88.png" alt="Panorama Nacional" style="width: 100%; height: auto; border-radius: 8px;">
+        <div class="card-content" style="min-height: 400px; overflow: auto;">
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/65bf393d6d9c47bf914c73b8bd47fc88.png" alt="Tabela de Produção" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
+    </div>
+
+    <!-- Segunda Linha: Visualizações -->
+    <div class="cards-grid">
 
       <div class="dashboard-card">
         <div class="card-header">
           <span class="card-icon">📈</span>
-          <h3 class="card-title">Produção Histórica - Petróleo Equivalente (boe/d)</h3>
+          <h3 class="card-title">Produção Histórica</h3>
         </div>
         <div class="card-content">
           <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/1fbdb75ed24241259a7a616c3e5caad60.png" alt="Produção Histórica" style="width: 100%; height: auto; border-radius: 8px;">
@@ -283,39 +287,89 @@
           <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/3bb2892f986847868b9bfa9a47a257280.png" alt="Mapa de Poços" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
-    </div>
 
-    <!-- Segunda Linha: Produção Acumulada -->
-    <div class="category-section">
-      <div class="dashboard-card" style="grid-column: 1 / -1;">
+      <div class="dashboard-card">
         <div class="card-header">
           <span class="card-icon">📊</span>
-          <h3 class="card-title">Produção Acumulada - Petróleo Equivalente (boe/d)</h3>
+          <h3 class="card-title">Gráfico de Produção</h3>
         </div>
         <div class="card-content">
-          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/dab0918d318a4f1c80b3c1dfdaf495e40.png" alt="Produção Acumulada" style="width: 100%; height: auto; border-radius: 8px;">
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/dab0918d318a4f1c80b3c1dfdaf495e40.png" alt="Gráfico de Produção" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
     </div>
 
-    <!-- Informações Técnicas -->
-    <div style="margin-top: 2rem; padding: 2rem; background: rgba(0, 119, 181, 0.1); border: 1px solid rgba(0, 119, 181, 0.3); border-radius: 12px;">
-      <h3 style="margin: 0 0 1rem 0; color: #0077b5; display: flex; align-items: center; gap: 0.5rem;">
-        <span>ℹ️</span> Sobre os Dados
-      </h3>
-      <div style="display: grid; gap: 0.75rem; color: rgba(255,255,255,0.9); line-height: 1.6;">
-        <p style="margin: 0;">
-          <strong>Fonte:</strong> Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP)
-        </p>
-        <p style="margin: 0;">
-          <strong>Dados Públicos:</strong> Produção de óleo e gás no Brasil por campo, ambiente (Pré-sal / Pós-sal), operadores e bacias
-        </p>
-        <p style="margin: 0;">
-          <strong>Principais Campos:</strong> TUPI, BÚZIOS, RONCADOR, MARLIM SUL, SAPINHOÁ, JUBARTE, MERO, entre outros
-        </p>
-        <p style="margin: 0;">
-          <strong>Métricas:</strong> Petróleo Equivalente (boe), Gás Natural (boe/mil m³), Petróleo (bbl), Água produzida (bbl)
-        </p>
+    <!-- Informações Técnicas Expandidas -->
+    <div style="margin-top: 2rem; padding: 3rem; background: linear-gradient(135deg, rgba(0, 119, 181, 0.15), rgba(124, 58, 237, 0.1)); border: 2px solid rgba(0, 119, 181, 0.4); border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 119, 181, 0.2);">
+      <h2 style="margin: 0 0 2rem 0; color: #0077b5; display: flex; align-items: center; gap: 0.75rem; font-size: 1.8rem; font-weight: 700;">
+        <span style="font-size: 2.5rem;">ℹ️</span> Sobre os Dados e Análises
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📊</span> Fonte dos Dados
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP)</strong><br>
+            Base de dados pública oficial contendo informações históricas e atualizadas sobre a produção nacional de petróleo e gás natural.
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🗺️</span> Cobertura Geográfica
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Abrangência Nacional</strong><br>
+            Dados de produção por <strong>campo petrolífero</strong>, <strong>ambiente geológico</strong> (Pré-sal e Pós-sal), <strong>bacias sedimentares</strong> (Santos, Campos, Espírito Santo, etc.) e <strong>operadores</strong> (Petrobras, Shell, etc.).
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🛢️</span> Principais Campos
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Campos de Maior Produção:</strong><br>
+            TUPI, BÚZIOS, RONCADOR, MARLIM SUL, SAPINHOÁ, MARLIM, JUBARTE, MERO, PEREGRINO, ALBACORA LESTE, ATAPU, ALBACORA, SÉPIA, entre outros.
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📏</span> Métricas Analisadas
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Unidades de Medida:</strong><br>
+            • <strong>boe</strong> (barril de óleo equivalente)<br>
+            • <strong>bbl</strong> (barril de petróleo)<br>
+            • <strong>mil m³</strong> (gás natural)<br>
+            • <strong>boe/d</strong> (produção diária)
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🔍</span> Análises Disponíveis
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Visualizações:</strong><br>
+            • Produção acumulada por ambiente<br>
+            • Evolução histórica de produção<br>
+            • Mapeamento geoespacial de poços<br>
+            • Comparativos entre campos
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h4 style="margin: 0 0 1rem 0; color: #7c3aed; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚙️</span> Tecnologia Utilizada
+          </h4>
+          <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.8;">
+            <strong>Spotfire Analytics Platform</strong><br>
+            Ferramenta profissional de Business Intelligence para análise avançada, visualização interativa e dashboards de dados empresariais.
+          </p>
+        </div>
       </div>
     </div>
 
