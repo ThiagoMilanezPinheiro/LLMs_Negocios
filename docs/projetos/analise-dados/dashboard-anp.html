@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard ANP - Análise de Produção de Óleo e Gás</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
+      --secondary: #0077b5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-hover: rgba(124, 58, 237, 0.15);
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background: linear-gradient(rgba(6,10,18,0.4), rgba(6,10,18,0.4)), 
+                  url('https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=1920') center/cover no-repeat fixed;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .dashboard-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0, 119, 181, 0.1));
+      border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #7c3aed, #0077b5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-header p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .dashboard-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 2rem 3rem;
+    }
+
+    /* Grid de Cards Principais */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      background: var(--card-hover);
+      border-color: rgba(124, 58, 237, 0.4);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+    }
+
+    .dashboard-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      filter: drop-shadow(0 2px 4px rgba(124, 58, 237, 0.3));
+    }
+
+    .card-title {
+      font-family: 'Tahoma', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    .card-content {
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    /* Grid de Filtros/Indicadores */
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      padding: 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .filter-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .filter-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .filter-label {
+      font-family: 'Tahoma', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1f35;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .filter-content {
+      min-height: 40px;
+      color: #333;
+    }
+
+    /* Seção de Categorias Especiais */
+    .category-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Footer do Dashboard */
+    .dashboard-footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 3rem;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      transform: translateX(-5px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filters-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-header">
+    <h1>🛢️ Dashboard ANP - Produção de Óleo e Gás</h1>
+    <p>Análise Nacional de Produção • Dados Públicos ANP • TJDH_MILANEZ</p>
+  </div>
+
+  <div class="dashboard-container">
+    <a href="analisededados.html" class="back-button">
+      ← Voltar aos Projetos
+    </a>
+
+    <!-- Primeira Linha: Cards Principais -->
+    <div class="cards-grid">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">🇧🇷</span>
+          <h3 class="card-title">Panorama Nacional</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="bbed16fcca7740809f6d62644b4630f9" />
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h3 class="card-title">Produção por Categoria</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="d081eb1515c7475d9c56b2b10c97d4b5" />
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">🏢</span>
+          <h3 class="card-title">Companhia por Ambiente</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="10bb4c978ca44c4e8da5bb00860672b3" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Segunda Linha: Análises Especiais -->
+    <div class="category-section">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">🗺️</span>
+          <h3 class="card-title">Mapas</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="2c269a289a3e4130afaf7a0bbf9daa24" />
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">📈</span>
+          <h3 class="card-title">Indicadores</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="5c8ebe7095e54f3eaf8f0d4181cf2e29" />
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-header">
+          <span class="card-icon">🏆</span>
+          <h3 class="card-title">Ranking</h3>
+        </div>
+        <div class="card-content">
+          <SpotfireControl id="3a364354c03e4d92bdab2f677746bd87" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros e Métricas -->
+    <div class="filters-grid">
+      <div class="filter-card">
+        <span class="filter-label">🌍 Ambiente</span>
+        <div class="filter-content">
+          <SpotfireControl id="685a88c2c34640f79cea0442158f3058" />
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <span class="filter-label">📅 Período</span>
+        <div class="filter-content">
+          <SpotfireControl id="588750e3f9824e0ca8561e0f625c001a" />
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <span class="filter-label">⚡ Petróleo Equivalente (boe)</span>
+        <div class="filter-content">
+          <SpotfireControl id="5c1283fa5b784583a235b6fbbf2f28a2" />
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <span class="filter-label">🔥 Gás Natural (boe)</span>
+        <div class="filter-content">
+          <SpotfireControl id="869a215bee4247f6b0bf6a90f1892fef" />
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <span class="filter-label">🛢️ Petróleo (bbl)</span>
+        <div class="filter-content">
+          <SpotfireControl id="0d3e1f46391744b9a0c0c88a7761bf59" />
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <span class="filter-label">💨 Gás Natural (mil m³)</span>
+        <div class="filter-content">
+          <SpotfireControl id="54309958e68b47ce9814f77c8ca2bd15" />
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-footer">
+      <p>Dashboard ANP v1.0 • Última atualização: 06/08/2025 20:00</p>
+      <p style="margin-top: 0.5rem; color: rgba(255,255,255,0.3);">
+        Desenvolvido por Thiago Milanez • Dados: Agência Nacional do Petróleo
+      </p>
+    </div>
+  </div>
+</body>
+</html>
