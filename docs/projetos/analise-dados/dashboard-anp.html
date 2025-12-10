@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard ANP - Análise de Produção de Óleo e Gás</title>
   <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/style.css">
+  <script src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/compatibility.js"></script>
+  <script src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/TableText.js"></script>
   <style>
     :root {
       --primary: #7c3aed;
@@ -249,114 +252,70 @@
       ← Voltar aos Projetos
     </a>
 
-    <!-- Primeira Linha: Cards Principais -->
+    <!-- Primeira Linha: Visão Geral -->
     <div class="cards-grid">
       <div class="dashboard-card">
         <div class="card-header">
-          <span class="card-icon">🇧🇷</span>
-          <h3 class="card-title">Panorama Nacional</h3>
+          <span class="card-icon">📋</span>
+          <h3 class="card-title">Visão Geral</h3>
         </div>
         <div class="card-content">
-          <SpotfireControl id="bbed16fcca7740809f6d62644b4630f9" />
-        </div>
-      </div>
-
-      <div class="dashboard-card">
-        <div class="card-header">
-          <span class="card-icon">📊</span>
-          <h3 class="card-title">Produção por Categoria</h3>
-        </div>
-        <div class="card-content">
-          <SpotfireControl id="d081eb1515c7475d9c56b2b10c97d4b5" />
-        </div>
-      </div>
-
-      <div class="dashboard-card">
-        <div class="card-header">
-          <span class="card-icon">🏢</span>
-          <h3 class="card-title">Companhia por Ambiente</h3>
-        </div>
-        <div class="card-content">
-          <SpotfireControl id="10bb4c978ca44c4e8da5bb00860672b3" />
-        </div>
-      </div>
-    </div>
-
-    <!-- Segunda Linha: Análises Especiais -->
-    <div class="category-section">
-      <div class="dashboard-card">
-        <div class="card-header">
-          <span class="card-icon">🗺️</span>
-          <h3 class="card-title">Mapas</h3>
-        </div>
-        <div class="card-content">
-          <SpotfireControl id="2c269a289a3e4130afaf7a0bbf9daa24" />
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/65bf393d6d9c47bf914c73b8bd47fc88.png" alt="Panorama Nacional" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
 
       <div class="dashboard-card">
         <div class="card-header">
           <span class="card-icon">📈</span>
-          <h3 class="card-title">Indicadores</h3>
+          <h3 class="card-title">Produção Histórica - Petróleo Equivalente (boe/d)</h3>
         </div>
         <div class="card-content">
-          <SpotfireControl id="5c8ebe7095e54f3eaf8f0d4181cf2e29" />
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/1fbdb75ed24241259a7a616c3e5caad60.png" alt="Produção Histórica" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
 
       <div class="dashboard-card">
         <div class="card-header">
-          <span class="card-icon">🏆</span>
-          <h3 class="card-title">Ranking</h3>
+          <span class="card-icon">🗺️</span>
+          <h3 class="card-title">Mapa de Poços</h3>
         </div>
         <div class="card-content">
-          <SpotfireControl id="3a364354c03e4d92bdab2f677746bd87" />
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/3bb2892f986847868b9bfa9a47a257280.png" alt="Mapa de Poços" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
     </div>
 
-    <!-- Filtros e Métricas -->
-    <div class="filters-grid">
-      <div class="filter-card">
-        <span class="filter-label">🌍 Ambiente</span>
-        <div class="filter-content">
-          <SpotfireControl id="685a88c2c34640f79cea0442158f3058" />
+    <!-- Segunda Linha: Produção Acumulada -->
+    <div class="category-section">
+      <div class="dashboard-card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h3 class="card-title">Produção Acumulada - Petróleo Equivalente (boe/d)</h3>
+        </div>
+        <div class="card-content">
+          <img src="anp-assets/TJDH Analytics Painel_ANP_V7 2_Files/dab0918d318a4f1c80b3c1dfdaf495e40.png" alt="Produção Acumulada" style="width: 100%; height: auto; border-radius: 8px;">
         </div>
       </div>
+    </div>
 
-      <div class="filter-card">
-        <span class="filter-label">📅 Período</span>
-        <div class="filter-content">
-          <SpotfireControl id="588750e3f9824e0ca8561e0f625c001a" />
-        </div>
-      </div>
-
-      <div class="filter-card">
-        <span class="filter-label">⚡ Petróleo Equivalente (boe)</span>
-        <div class="filter-content">
-          <SpotfireControl id="5c1283fa5b784583a235b6fbbf2f28a2" />
-        </div>
-      </div>
-
-      <div class="filter-card">
-        <span class="filter-label">🔥 Gás Natural (boe)</span>
-        <div class="filter-content">
-          <SpotfireControl id="869a215bee4247f6b0bf6a90f1892fef" />
-        </div>
-      </div>
-
-      <div class="filter-card">
-        <span class="filter-label">🛢️ Petróleo (bbl)</span>
-        <div class="filter-content">
-          <SpotfireControl id="0d3e1f46391744b9a0c0c88a7761bf59" />
-        </div>
-      </div>
-
-      <div class="filter-card">
-        <span class="filter-label">💨 Gás Natural (mil m³)</span>
-        <div class="filter-content">
-          <SpotfireControl id="54309958e68b47ce9814f77c8ca2bd15" />
-        </div>
+    <!-- Informações Técnicas -->
+    <div style="margin-top: 2rem; padding: 2rem; background: rgba(0, 119, 181, 0.1); border: 1px solid rgba(0, 119, 181, 0.3); border-radius: 12px;">
+      <h3 style="margin: 0 0 1rem 0; color: #0077b5; display: flex; align-items: center; gap: 0.5rem;">
+        <span>ℹ️</span> Sobre os Dados
+      </h3>
+      <div style="display: grid; gap: 0.75rem; color: rgba(255,255,255,0.9); line-height: 1.6;">
+        <p style="margin: 0;">
+          <strong>Fonte:</strong> Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP)
+        </p>
+        <p style="margin: 0;">
+          <strong>Dados Públicos:</strong> Produção de óleo e gás no Brasil por campo, ambiente (Pré-sal / Pós-sal), operadores e bacias
+        </p>
+        <p style="margin: 0;">
+          <strong>Principais Campos:</strong> TUPI, BÚZIOS, RONCADOR, MARLIM SUL, SAPINHOÁ, JUBARTE, MERO, entre outros
+        </p>
+        <p style="margin: 0;">
+          <strong>Métricas:</strong> Petróleo Equivalente (boe), Gás Natural (boe/mil m³), Petróleo (bbl), Água produzida (bbl)
+        </p>
       </div>
     </div>
 
