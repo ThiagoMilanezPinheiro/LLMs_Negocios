@@ -605,6 +605,9 @@ with st.sidebar:
     new_lang = language_options[selected_lang]
     if new_lang != st.session_state.language:
         st.session_state.language = new_lang
+        # Resetar chat history com mensagem de boas-vindas no novo idioma
+        welcome_msg = TRANSLATIONS[new_lang]["welcome_msg"]
+        st.session_state.chat_history = [AIMessage(content=welcome_msg)]
         st.rerun()
     
     st.markdown("---")
