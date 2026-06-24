@@ -1,6 +1,7 @@
 import os
 import logging
 import gc
+from langchain.schema import Document
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -299,7 +300,7 @@ else:
 # Configs / hyperparams
 # -------------------------
 ID_MODEL = os.getenv("GROQ_MODEL_ID", "llama-3.3-70b-versatile")
-TEMPERATURE = float(os.getenv("GROQ_TEMPERATURE", 0.7))
+TEMPERATURE = float(os.getenv("GROQ_TEMPERATURE", 0.2))
 CONTENT_PATH = os.getenv("CONTENT_PATH_LINKEDIN", "./content_linkedin")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 FAISS_INDEX_DIR = os.getenv("FAISS_INDEX_DIR_LINKEDIN", "index_faiss_linkedin")
@@ -361,7 +362,7 @@ def config_retriever(folder_path: str = CONTENT_PATH):
                 encode_kwargs={'batch_size': 1, 'show_progress_bar': False}
             )
             vectorstore = FAISS.load_local(FAISS_INDEX_DIR, embeddings, allow_dangerous_deserialization=True)
-            retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 3, "fetch_k": 4})
+            retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 8, "fetch_k": 20})
             logger.info("Índice FAISS carregado com sucesso")
             # Forçar garbage collection após carregar modelo pesado
             gc.collect()
@@ -387,7 +388,7 @@ def config_retriever(folder_path: str = CONTENT_PATH):
         loaded_documents = [extract_text_pdf(pdf) for pdf in pdf_files]
 
         logger.info("Criando chunks de texto...")
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)
         chunks = []
         for doc_text in loaded_documents:
             chunks.extend(text_splitter.split_text(doc_text))
@@ -402,7 +403,7 @@ def config_retriever(folder_path: str = CONTENT_PATH):
         vectorstore.save_local(FAISS_INDEX_DIR)
         logger.info(f"Índice salvo em: {FAISS_INDEX_DIR}")
 
-        retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 3, "fetch_k": 4})
+        retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 8, "fetch_k": 20})
         logger.info("Retriever configurado com sucesso")
 
         return retriever
