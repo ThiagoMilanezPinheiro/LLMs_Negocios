@@ -20,6 +20,7 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain.schema import Document
 
 # -------------------------
 # Logging config
@@ -75,16 +76,49 @@ TRANSLATIONS = {
         "error_docs": "⚠️ Erro ao processar documentos:",
         "no_info": "Essa informação específica não está disponível no meu currículo atual. Posso ajudar com outras questões sobre minha experiência profissional.",
         "welcome_msg": "👋 Olá! Sou o assistente virtual de Thiago Milanez. Posso responder perguntas sobre experiência profissional, projetos, habilidades técnicas e formação acadêmica. Como posso ajudar?",
-        "system_prompt_qa": """Você é um assistente virtual profissional representando Thiago Milanez C Pinheiro.
+        "system_prompt_qa": """Você é o assistente virtual profissional de Thiago Milanez.
 
-INSTRUÇÕES CRÍTICAS:
-1. Use EXCLUSIVAMENTE as informações encontradas no CONTEXTO abaixo
-2. NÃO invente, suponha ou adicione informações que não estejam no contexto
-3. Se a informação não estiver no contexto, responda: "Essa informação específica não está disponível no meu currículo atual. Posso ajudar com outras questões sobre minha experiência profissional."
-4. Seja objetivo, profissional e cite apenas fatos concretos do contexto
-5. Para perguntas técnicas, mencione SOMENTE tecnologias e projetos listados no contexto
-6. Responda em primeira pessoa como se fosse o próprio Thiago
-7. Mantenha respostas concisas (máximo 5-7 linhas), focando no essencial
+        OBJETIVO
+
+        Responder perguntas sobre:
+
+        - carreira
+        - experiência profissional
+        - projetos
+        - tecnologias
+        - certificações
+        - formação acadêmica
+
+        REGRAS
+
+        1. Utilize SOMENTE informações presentes no contexto.
+        2. Nunca invente experiências.
+        3. Nunca invente tecnologias.
+        4. Nunca invente certificações.
+        5. Se não encontrar a informação responda:
+
+        "Essa informação não está disponível nos documentos atualmente indexados."
+
+        6. Responda em primeira pessoa.
+        7. Seja profissional e natural.
+        8. Destaque resultados e impactos.
+        9. Responda no idioma da pergunta.
+
+        FORMATO
+
+        Perguntas simples:
+        → resposta direta.
+
+        Projetos:
+        → contexto
+        → tecnologias
+        → resultado.
+
+        Experiências:
+        → empresa
+        → cargo
+        → atividades
+        → tecnologias.
 
 CONTEXTO DO CURRÍCULO:
 {context}
@@ -385,12 +419,30 @@ def config_retriever(folder_path: str = CONTENT_PATH):
             st.stop()
 
         logger.info("Processando documentos PDF...")
-        loaded_documents = [extract_text_pdf(pdf) for pdf in pdf_files]
+        documents = []
 
+        for pdf in pdf_files:
+
+            content = extract_text_pdf(pdf)
+
+            documents.append(
+                Document(
+                    page_content=content,
+                    metadata={
+                        "source": pdf.name
+                    }
+                )
+            )
+        chunks = text_splitter.split_documents(documents)
+        vectorstore = FAISS.from_documents(
+            chunks,
+            embedding=embeddings
+        )
         logger.info("Criando chunks de texto...")
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)
         chunks = []
-        for doc_text in loaded_documents:
+        
+        for doc_text in documents:
             chunks.extend(text_splitter.split_text(doc_text))
         logger.info(f"Total de {len(chunks)} chunks criados")
 
