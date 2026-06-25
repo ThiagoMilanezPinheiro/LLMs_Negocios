@@ -333,12 +333,82 @@ else:
 # -------------------------
 # Configs / hyperparams
 # -------------------------
-ID_MODEL = os.getenv("GROQ_MODEL_ID", "llama-3.3-70b-versatile")
-TEMPERATURE = float(os.getenv("GROQ_TEMPERATURE", 0.2))
-CONTENT_PATH = os.getenv("CONTENT_PATH_LINKEDIN", "./content_linkedin")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
-FAISS_INDEX_DIR = os.getenv("FAISS_INDEX_DIR_LINKEDIN", "index_faiss_linkedin")
+# ==========================
+# LLM
+# ==========================
+ID_MODEL = os.getenv(
+    "GROQ_MODEL_ID",
+    "llama-3.3-70b-versatile"
+)
 
+TEMPERATURE = float(
+    os.getenv("GROQ_TEMPERATURE", 0.2)
+)
+
+# ==========================
+# Embeddings
+# ==========================
+EMBEDDING_MODEL = os.getenv(
+    "EMBEDDING_MODEL",
+    "BAAI/bge-m3"
+)
+
+# ==========================
+# Conteúdo
+# ==========================
+CONTENT_PATH = os.getenv(
+    "CONTENT_PATH",
+    "./content"
+)
+
+LINKEDIN_PROFILE_PATH = os.getenv(
+    "LINKEDIN_PROFILE_PATH",
+    "./content/linkedin_profile.pdf"
+)
+
+LINKEDIN_POSTS_PATH = os.getenv(
+    "LINKEDIN_POSTS_PATH",
+    "./content/linkedin_posts.md"
+)
+
+PROJECTS_PATH = os.getenv(
+    "PROJECTS_PATH",
+    "./content/projects.md"
+)
+
+CERTIFICATIONS_PATH = os.getenv(
+    "CERTIFICATIONS_PATH",
+    "./content/certifications.md"
+)
+
+GITHUB_PORTFOLIO_PATH = os.getenv(
+    "GITHUB_PORTFOLIO_PATH",
+    "./content/github_projects.md"
+)
+
+# ==========================
+# Vetorização
+# ==========================
+FAISS_INDEX_DIR = os.getenv(
+    "FAISS_INDEX_DIR",
+    "index_faiss"
+)
+
+CHUNK_SIZE = int(
+    os.getenv("CHUNK_SIZE", 600)
+)
+
+CHUNK_OVERLAP = int(
+    os.getenv("CHUNK_OVERLAP", 100)
+)
+
+TOP_K = int(
+    os.getenv("TOP_K", 8)
+)
+
+FETCH_K = int(
+    os.getenv("FETCH_K", 20)
+)
 # -------------------------
 # LLM loader
 # -------------------------
