@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard Executivo - Terremotos</title>
+  <link rel="stylesheet" href="../../../styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(rgba(6,10,18,0.36), rgba(6,10,18,0.36)), url('https://img.odcdn.com.br/wp-content/uploads/2024/11/inteligencia_artificial-1-scaled.jpg') center center/cover no-repeat fixed;
+      opacity: 0.12;
+      pointer-events: none;
+      filter: saturate(0.95) contrast(0.98) blur(0.2px);
+      background-attachment: fixed;
+    }
+    .site-header, main, .site-footer { position: relative; z-index: 1; }
+    .dashboard-shell { display: grid; gap: 1.25rem; }
+    .panel { background: rgba(8, 15, 29, 0.86); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.1rem; box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+    .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+    .filters label { display: grid; gap: 0.35rem; font-size: 0.9rem; color: rgba(255,255,255,0.75); }
+    .filters select, .filters button { width: 100%; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: white; padding: 0.72rem 0.8rem; border-radius: 10px; }
+    .filters button { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); font-weight: 700; cursor: pointer; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; }
+    .kpi-card { background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(255,255,255,0.04)); border: 1px solid rgba(124,58,237,0.25); border-radius: 14px; padding: 1rem; }
+    .kpi-title { font-size: 0.9rem; color: rgba(255,255,255,0.75); margin-bottom: 0.4rem; }
+    .kpi-value { font-size: 1.45rem; font-weight: 700; color: white; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    canvas { width: 100% !important; height: 260px !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { padding: 0.7rem 0.6rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    th { color: #b59cff; }
+    .summary { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <h1>Thiago Milanez C Pinheiro</h1>
+        <p class="subtitle">Engenheiro de IA • LLMs • Machine Learning • Data Science</p>
+      </div>
+      <nav class="social">
+        <a href="../index.html" class="link">Voltar ao projeto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Dashboard Executivo de Sismos</h2>
+        <p>Visualização interativa com filtros por região, país, ano, mês e dia, permitindo analisar tendências e concentração dos eventos com maior profundidade analítica.</p>
+      </div>
+    </section>
+
+    <section class="dashboard-shell">
+      <div class="panel">
+        <div class="filters">
+          <label>Região
+            <select id="regionFilter"><option value="">Todas</option></select>
+          </label>
+          <label>País
+            <select id="countryFilter"><option value="">Todos</option></select>
+          </label>
+          <label>Ano
+            <select id="yearFilter"><option value="">Todos</option></select>
+          </label>
+          <label>Mês
+            <select id="monthFilter"><option value="">Todos</option></select>
+          </label>
+          <label>Dia
+            <select id="dayFilter"><option value="">Todos</option></select>
+          </label>
+          <label>
+            <button id="resetFilters">Limpar filtros</button>
+          </label>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi-card"><div class="kpi-title">Eventos filtrados</div><div class="kpi-value" id="kpiEvents">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Magnitude média</div><div class="kpi-value" id="kpiMagnitude">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Profundidade média (km)</div><div class="kpi-value" id="kpiDepth">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Último evento</div><div class="kpi-value" id="kpiLastDate">—</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-top:0;">Eventos por região</h3>
+          <canvas id="regionChart"></canvas>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0;">Tendência diária</h3>
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-top:0;">Magnitude por país</h3>
+          <canvas id="countryChart"></canvas>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0;">Resumo da seleção</h3>
+          <div class="summary" id="summaryText"></div>
+          <table style="margin-top: 0.8rem;">
+            <thead>
+              <tr><th>Top região</th><th>Top país</th><th>Maior magnitude</th></tr>
+            </thead>
+            <tbody>
+              <tr><td id="topRegion">—</td><td id="topCountry">—</td><td id="topMagnitude">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-top:0;">Detalhes dos eventos</h3>
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Local</th><th>Região</th><th>País</th><th>Data</th><th>Magnitude</th><th>Profundidade</th></tr>
+            </thead>
+            <tbody id="detailsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="dashboard-data.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
