@@ -1,0 +1,18 @@
+RELATÓRIO DA ANÁLISE
+========================================
+Linhas: 100
+Colunas: ['id', 'mag', 'place', 'time', 'data_hora', 'status', 'tsunami', 'tipo', 'longitude', 'latitude', 'profundidade_km', 'regiao', 'pais']
+
+Resumo:
+                id         mag                               place          time                            data_hora    status  tsunami        tipo   longitude    latitude  profundidade_km  regiao            pais
+count          100  100.000000                                 100  1.000000e+02                                  100       100    100.0         100  100.000000  100.000000       100.000000     100             100
+unique         100         NaN                                  89           NaN                                  NaN         2      NaN           1         NaN         NaN              NaN       6              16
+top     nc75415272         NaN  233 km ESE of Attu Station, Alaska           NaN                                  NaN  reviewed      NaN  earthquake         NaN         NaN              NaN  Outros  Estados Unidos
+freq             1         NaN                                   5           NaN                                  NaN        83      NaN         100         NaN         NaN              NaN      47              41
+mean           NaN    3.583300                                 NaN  1.786302e+12  2026-08-09 18:53:07.171389952+00:00       NaN      0.0         NaN  -11.738326   28.452837        48.307085     NaN             NaN
+min            NaN    2.500000                                 NaN  1.786220e+12     2026-08-08 20:10:15.400000+00:00       NaN      0.0         NaN -179.870400  -37.403800         1.340000     NaN             NaN
+25%            NaN    2.657500                                 NaN  1.786257e+12  2026-08-09 06:37:08.009999872+00:00       NaN      0.0         NaN -145.318125   15.978625         9.757000     NaN             NaN
+50%            NaN    3.135000                                 NaN  1.786308e+12  2026-08-09 20:41:01.723500032+00:00       NaN      0.0         NaN  -67.772383   32.569800        10.480000     NaN             NaN
+75%            NaN    4.600000                                 NaN  1.786341e+12  2026-08-10 05:50:39.093500160+00:00       NaN      0.0         NaN  131.865025   51.783000        33.412500     NaN             NaN
+max            NaN    7.400000                                 NaN  1.786386e+12     2026-08-10 18:26:02.810000+00:00       NaN      0.0         NaN  178.806000   70.031600       655.670000     NaN             NaN
+std            NaN    1.028484                                 NaN  4.628405e+07                                  NaN       NaN      0.0         NaN  136.434476   24.302324       118.275250     NaN             NaN

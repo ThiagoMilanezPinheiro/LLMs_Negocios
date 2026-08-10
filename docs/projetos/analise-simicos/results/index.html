@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gráficos da Análise de Terremotos</title>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(rgba(6,10,18,0.36), rgba(6,10,18,0.36)), url('https://img.odcdn.com.br/wp-content/uploads/2024/11/inteligencia_artificial-1-scaled.jpg') center center/cover no-repeat fixed;
+      opacity: 0.12;
+      pointer-events: none;
+      filter: saturate(0.95) contrast(0.98) blur(0.2px);
+      background-attachment: fixed;
+    }
+    .site-header, main, .site-footer { position: relative; z-index: 1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 1rem; }
+    img { width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <h1>Thiago Milanez C Pinheiro</h1>
+        <p class="subtitle">Engenheiro de IA • LLMs • Machine Learning • Data Science</p>
+      </div>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Gráficos da Análise de Terremotos</h2>
+        <p>Visualizações geradas automaticamente pelo pipeline para explorar eventos sísmicos por região, país e tempo.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="grid">
+        <div class="card"><h3>Eventos por Região</h3><img src="eventos_por_regiao.png" alt="Eventos por região"></div>
+        <div class="card"><h3>Eventos por País</h3><img src="eventos_por_pais.png" alt="Eventos por país"></div>
+        <div class="card"><h3>Eventos por Dia</h3><img src="eventos_por_dia.png" alt="Eventos por dia"></div>
+        <div class="card"><h3>Magnitude Média por Dia</h3><img src="magnitude_media_por_dia.png" alt="Magnitude média por dia"></div>
+        <div class="card"><h3>Distribuição Geográfica</h3><img src="distribuicao_geografica.png" alt="Distribuição geográfica"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
