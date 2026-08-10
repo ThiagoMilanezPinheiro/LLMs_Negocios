@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard Executivo - Terremotos</title>
   <link rel="stylesheet" href="../../../styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     body::before {
       content: '';
@@ -35,6 +34,8 @@
     th, td { padding: 0.7rem 0.6rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
     th { color: #b59cff; }
     .summary { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
+    .chart-canvas { width: 100%; min-height: 260px; }
+    .chart-canvas svg { width: 100%; height: 100%; }
     @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -93,18 +94,18 @@
       <div class="grid-2">
         <div class="panel">
           <h3 style="margin-top:0;">Eventos por região</h3>
-          <canvas id="regionChart"></canvas>
+          <div class="chart-canvas" id="regionChart"></div>
         </div>
         <div class="panel">
           <h3 style="margin-top:0;">Tendência diária</h3>
-          <canvas id="trendChart"></canvas>
+          <div class="chart-canvas" id="trendChart"></div>
         </div>
       </div>
 
       <div class="grid-2">
         <div class="panel">
           <h3 style="margin-top:0;">Magnitude por país</h3>
-          <canvas id="countryChart"></canvas>
+          <div class="chart-canvas" id="countryChart"></div>
         </div>
         <div class="panel">
           <h3 style="margin-top:0;">Resumo da seleção</h3>

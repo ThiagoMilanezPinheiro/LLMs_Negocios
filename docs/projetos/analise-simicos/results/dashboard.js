@@ -88,6 +88,117 @@ function updateDashboard() {
   renderDetails(filtered);
 }
 
+function createSvgElement(tag, attrs = {}) {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+  return element;
+}
+
+function renderBarChart(container, labels, values) {
+  container.innerHTML = '';
+  const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
+  const maxValue = Math.max(...values, 1);
+  const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
+
+  const chartHeight = 150;
+  const chartWidth = 280;
+  const paddingLeft = 30;
+  const paddingBottom = 40;
+  const barWidth = 40;
+  const gap = 18;
+
+  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: 20, x2: paddingLeft, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: chartHeight + 20, x2: paddingLeft + chartWidth, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+
+  labels.forEach((label, index) => {
+    const value = values[index];
+    const barHeight = (value / maxValue) * chartHeight;
+    const x = paddingLeft + index * (barWidth + gap);
+    const y = chartHeight + 20 - barHeight;
+    const rect = createSvgElement('rect', { x, y, width: barWidth, height: barHeight, rx: 6, fill: colors[index % colors.length] });
+    svg.appendChild(rect);
+
+    const labelText = createSvgElement('text', { x: x + barWidth / 2, y: chartHeight + 40, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '10' });
+    labelText.textContent = label;
+    svg.appendChild(labelText);
+
+    const valueText = createSvgElement('text', { x: x + barWidth / 2, y: y - 6, 'text-anchor': 'middle', fill: 'white', 'font-size': '10' });
+    valueText.textContent = value;
+    svg.appendChild(valueText);
+  });
+
+  container.appendChild(svg);
+}
+
+function renderLineChart(container, labels, values) {
+  container.innerHTML = '';
+  const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
+  const maxValue = Math.max(...values, 1);
+  const paddingLeft = 25;
+  const paddingBottom = 35;
+  const chartHeight = 150;
+  const chartWidth = 280;
+  const step = chartWidth / Math.max(labels.length - 1, 1);
+
+  const points = values.map((value, index) => {
+    const x = paddingLeft + index * step;
+    const y = chartHeight + 20 - (value / maxValue) * chartHeight;
+    return `${x},${y}`;
+  }).join(' ');
+
+  svg.appendChild(createSvgElement('polyline', { points, fill: 'none', stroke: '#7c3aed', 'stroke-width': 3 }));
+  svg.appendChild(createSvgElement('path', { d: `M ${points.split(' ').join(' L ')} L ${paddingLeft + (labels.length - 1) * step},${chartHeight + 20} L ${paddingLeft},${chartHeight + 20} Z`, fill: 'rgba(124,58,237,0.16)' }));
+
+  labels.forEach((label, index) => {
+    const x = paddingLeft + index * step;
+    const y = chartHeight + 20;
+    const circle = createSvgElement('circle', { cx: x, cy: chartHeight + 20 - (values[index] / maxValue) * chartHeight, r: 4, fill: '#ffffff', stroke: '#7c3aed', 'stroke-width': 2 });
+    svg.appendChild(circle);
+
+    const text = createSvgElement('text', { x, y: y + 20, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '9' });
+    text.textContent = label.slice(5);
+    svg.appendChild(text);
+  });
+
+  container.appendChild(svg);
+}
+
+function renderDonutChart(container, labels, values) {
+  container.innerHTML = '';
+  const size = 180;
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
+  const total = values.reduce((sum, value) => sum + value, 0);
+  let offset = 0;
+
+  const svg = createSvgElement('svg', { viewBox: '0 0 220 220' });
+  const baseCircle = createSvgElement('circle', { cx: 110, cy: 110, r: radius, fill: 'none', stroke: 'rgba(255,255,255,0.12)', 'stroke-width': 30 });
+  svg.appendChild(baseCircle);
+
+  values.forEach((value, index) => {
+    const segment = (value / total) * circumference;
+    const circle = createSvgElement('circle', { cx: 110, cy: 110, r: radius, fill: 'none', stroke: colors[index % colors.length], 'stroke-width': 30, 'stroke-dasharray': `${segment} ${circumference - segment}`, 'stroke-dashoffset': -offset, transform: 'rotate(-90 110 110)' });
+    svg.appendChild(circle);
+    offset += segment;
+  });
+
+  const centerText = createSvgElement('text', { x: 110, y: 110, 'text-anchor': 'middle', 'dominant-baseline': 'middle', fill: 'white', 'font-size': '20' });
+  centerText.textContent = total;
+  svg.appendChild(centerText);
+
+  const legend = document.createElement('div');
+  legend.style.display = 'grid';
+  legend.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
+  legend.style.gap = '0.4rem';
+  legend.style.marginTop = '0.6rem';
+  legend.innerHTML = labels.map((label, index) => `<div style="font-size:0.85rem;color:rgba(255,255,255,0.85)"><span style="color:${colors[index % colors.length]}">■</span> ${label}</div>`).join('');
+
+  container.innerHTML = '';
+  container.appendChild(svg);
+  container.appendChild(legend);
+}
+
 function renderCharts(regionCounts, trendCounts, countryCounts) {
   const regionLabels = regionCounts.map(item => item[0]);
   const regionValues = regionCounts.map(item => item[1]);
@@ -98,36 +209,23 @@ function renderCharts(regionCounts, trendCounts, countryCounts) {
   const countryLabels = countryCounts.map(item => item[0]);
   const countryValues = countryCounts.map(item => item[1]);
 
-  if (window.regionChart) window.regionChart.destroy();
-  if (window.trendChart) window.trendChart.destroy();
-  if (window.countryChart) window.countryChart.destroy();
+  if (regionLabels.length) {
+    renderBarChart(regionChartEl, regionLabels, regionValues);
+  } else {
+    regionChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
+  }
 
-  window.regionChart = new Chart(regionChartEl, {
-    type: 'bar',
-    data: {
-      labels: regionLabels,
-      datasets: [{ label: 'Eventos', data: regionValues, backgroundColor: ['#7c3aed','#16a34a','#f59e0b','#0ea5e9','#ef4444'] }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
-  });
+  if (trendLabels.length) {
+    renderLineChart(trendChartEl, trendLabels, trendValues);
+  } else {
+    trendChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
+  }
 
-  window.trendChart = new Chart(trendChartEl, {
-    type: 'line',
-    data: {
-      labels: trendLabels,
-      datasets: [{ label: 'Eventos', data: trendValues, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.2)', tension: 0.35, fill: true }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
-  });
-
-  window.countryChart = new Chart(countryChartEl, {
-    type: 'doughnut',
-    data: {
-      labels: countryLabels,
-      datasets: [{ data: countryValues, backgroundColor: ['#7c3aed','#16a34a','#f59e0b','#0ea5e9','#ef4444'] }]
-    },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-  });
+  if (countryLabels.length) {
+    renderDonutChart(countryChartEl, countryLabels, countryValues);
+  } else {
+    countryChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
+  }
 }
 
 function renderDetails(filtered) {
