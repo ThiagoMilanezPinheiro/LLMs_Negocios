@@ -41,6 +41,8 @@ const insightTemporalMetaEl = document.getElementById('insightTemporalMeta');
 const attentionListEl = document.getElementById('attentionList');
 const topSummaryEl = document.getElementById('topSummary');
 const answerListEl = document.getElementById('answerList');
+const executiveSignalMainEl = document.getElementById('executiveSignalMain');
+const executiveSignalMetaEl = document.getElementById('executiveSignalMeta');
 
 function getDashboardData() {
   if (window.dashboardData && Array.isArray(window.dashboardData)) {
@@ -230,26 +232,49 @@ function updateDashboard() {
   });
 
   const dayValues = filtered.map(item => item.date).sort();
-  const temporalInsight = dayValues.length >= 2 ? (dayValues.length > 1 ? `${dayValues.length} days in the selected range` : 'Single-day sample') : 'Insufficient data';
+  const temporalInsight = dayValues.length >= 2 ? `${dayValues.length} dias no intervalo selecionado` : 'amostra de um único dia';
   const magnitudeProfile = magnitudeValues.reduce((maxIndex, value, index) => value > magnitudeValues[maxIndex] ? index : maxIndex, 0);
   const dominantBand = magnitudeBands[magnitudeProfile];
   const dominantBandCount = magnitudeValues[magnitudeProfile];
+  const m6Events = filtered.filter(item => item.mag >= 6).length;
+  const m7Events = filtered.filter(item => item.mag >= 7).length;
+  const tsunamiEvents = filtered.filter(item => item.tsunami).length;
+  const alertEvents = filtered.filter(item => item.alert).length;
+  const significantEvents = filtered.filter(item => (item.significance || 0) >= 100).length;
+  const hourlySpread = filtered.reduce((acc, item) => {
+    const hour = new Date(item.date).getHours();
+    acc[hour] = (acc[hour] || 0) + 1;
+    return acc;
+  }, {});
+  const dominantHour = Object.entries(hourlySpread).sort((a, b) => b[1] - a[1])[0];
+  const hourlyLabel = dominantHour ? `${dominantHour[0]}h` : '—';
 
   topRegion.textContent = topRegionItem;
   topCountry.textContent = topCountryItem;
   topMagnitude.textContent = `${topMagnitudeItem} (${topMagnitudePlace})`;
 
-  summaryText.innerHTML = `<strong>Analytical Severity:</strong> ${getSeverityLabel(maxMag)} • ${count} events • median depth ${medianDepth.toFixed(1)} km • dominant region ${topRegionItem}.`;
-  topSummaryEl.innerHTML = `<strong>${topRegionItem}</strong> concentrates ${regionCounts[0] ? regionCounts[0][1] : 0} events, while the largest event reached magnitude ${topMagnitudeItem} in ${topMagnitudePlace}.`;
+  const regionShare = count ? ((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0) : 0;
+  const geographicLabel = topRegionItem === 'Outros' && topCountryItem === 'Outros'
+    ? 'a classificação geográfica do catálogo permanece agregada em Outros'
+    : `${topRegionItem} como principal concentração regional e ${topCountryItem} como principal país da seleção`;
+
+  summaryText.innerHTML = `<strong>Analytical Severity:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
+  topSummaryEl.innerHTML = `<strong>${topRegionItem}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
+  if (executiveSignalMainEl) {
+    executiveSignalMainEl.textContent = `${topRegionItem} é o centro da seleção • ${count} eventos monitorados`;
+  }
+  if (executiveSignalMetaEl) {
+    executiveSignalMetaEl.textContent = `Maior evento: ${topMagnitudePlace} (M ${topMagnitudeItem}) • tendência ${trendStatus} • ${m6Events} eventos M6+`;
+  }
 
   insightHighestEl.textContent = `${maxMag.toFixed(1)} M`; 
-  insightHighestMetaEl.textContent = `${topMagnitudePlace} • ${lastDate}`;
+  insightHighestMetaEl.textContent = `${topMagnitudePlace} • ${lastDate} • ${m7Events} eventos M7+`;
   insightRegionEl.textContent = `${topRegionItem}`;
-  insightRegionMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} events • ${((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0)}% of total`;
+  insightRegionMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} eventos • ${((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0)}% do total`;
   insightMagnitudeBandEl.textContent = dominantBand;
-  insightMagnitudeMetaEl.textContent = `${dominantBandCount} events • ${((dominantBandCount / count) * 100).toFixed(0)}% of selection`;
+  insightMagnitudeMetaEl.textContent = `${dominantBandCount} eventos • ${m6Events} M6+ • ${m7Events} M7+`;
   insightTemporalEl.textContent = temporalInsight;
-  insightTemporalMetaEl.textContent = `Average magnitude ${avgMag} • average depth ${avgDepth} km`;
+  insightTemporalMetaEl.textContent = `magnitude média ${avgMag} • profundidade média ${avgDepth} km • pico horário ${hourlyLabel}`;
 
   lastUpdatedEl.textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
   dataSourceEl.textContent = window.dashboardSource === 'api' ? 'Fonte: USGS Earthquake Catalog (ao vivo)' : 'Fonte: dados locais / fallback';
@@ -257,12 +282,12 @@ function updateDashboard() {
   dateRangeEl.textContent = `Período: ${filtered[0] ? filtered[0].date : '—'} → ${lastDate}`;
 
   answerListEl.innerHTML = `
-    <div class="answer-item"><strong>Onde acontecem?</strong><br>Os eventos estão mais concentrados em ${topRegionItem} e, dentro desse contexto, ${topCountryItem} aparece como o principal foco da seleção.</div>
-    <div class="answer-item"><strong>Quais são os mais relevantes?</strong><br>O evento mais relevante na seleção é ${topEvent.place} com magnitude ${topEvent.mag.toFixed(1)} e score ${getSeismicScore(topEvent)}.</div>
-    <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado.</div>
-    <div class="answer-item"><strong>Existe relação entre magnitude e profundidade?</strong><br>A correlação estimada é ${correlationLabel} (${correlation.toFixed(2)}), o que sugere ${correlation > 0.3 ? 'tendência de eventos mais fortes em maiores profundidades' : correlation < -0.3 ? 'tendência de eventos mais fortes em menores profundidades' : 'pouca relação linear entre os dois parâmetros'}.</div>
-    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registra a maior magnitude média da seleção: ${mostIntenseRegion.avgMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
-    <div class="answer-item"><strong>Qual foi o evento mais significativo?</strong><br>${topEvent.place} foi o ponto mais significativo da seleção, com magnitude ${topEvent.mag.toFixed(1)} e severidade ${getSeverityLabel(topEvent.mag)}.</div>
+    <div class="answer-item"><strong>Onde acontecem?</strong><br>A maior concentração da seleção está em ${topRegionItem}; ${topCountryItem} aparece como o principal agrupamento geográfico dentro do contexto analisado.</div>
+    <div class="answer-item"><strong>Quais são os mais relevantes?</strong><br>O evento de maior relevância analítica foi ${topEvent.place}, com magnitude ${topEvent.mag.toFixed(1)}, score ${getSeismicScore(topEvent)} e severidade ${getSeverityLabel(topEvent.mag)}.</div>
+    <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado, com ${dayValues.length} dias registrados e pico horário ${hourlyLabel}.</div>
+    <div class="answer-item"><strong>Existe relação entre magnitude e profundidade?</strong><br>A correlação estimada é ${correlationLabel} (${correlation.toFixed(2)}), o que sugere ${correlation > 0.3 ? 'uma leve tendência de eventos mais fortes em maiores profundidades' : correlation < -0.3 ? 'uma leve tendência de eventos mais fortes em menores profundidades' : 'pouca relação linear entre magnitude e profundidade'}.</div>
+    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registrou a maior magnitude média da seleção: ${mostIntenseRegion.avgMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
+    <div class="answer-item"><strong>Há sinais de eventos críticos?</strong><br>Há ${m6Events} eventos M6+, ${m7Events} eventos M7+, ${tsunamiEvents} com tsunami e ${alertEvents} com alerta, além de ${significantEvents} eventos de alta significance.</div>
   `;
 
   const attentionItems = filtered.filter(item => item.mag >= 5 || item.tsunami || item.alert || item.mag >= 6 || (item.significance || 0) >= 50)

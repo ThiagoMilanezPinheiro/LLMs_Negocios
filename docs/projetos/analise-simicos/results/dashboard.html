@@ -45,6 +45,10 @@
     .insight-card strong { font-size: 1.05rem; color: white; display: block; }
     .insight-card small { color: rgba(255,255,255,0.65); }
     .tag { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.25rem 0.55rem; font-size: 0.78rem; background: rgba(124,58,237,0.2); color: #d8b4fe; }
+    .executive-signal { margin-top: 1rem; padding: 1rem 1.1rem; border-radius: 14px; background: linear-gradient(135deg, rgba(124,58,237,0.24), rgba(15,23,42,0.45)); border: 1px solid rgba(192,132,252,0.24); }
+    .signal-pill { display: inline-block; margin-bottom: 0.45rem; padding: 0.28rem 0.6rem; border-radius: 999px; background: rgba(255,255,255,0.12); color: #e9d5ff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .signal-main { font-size: 1.08rem; font-weight: 700; color: white; margin-bottom: 0.3rem; }
+    .signal-meta { color: rgba(255,255,255,0.77); font-size: 0.95rem; }
     .attention-list { display: grid; gap: 0.6rem; margin-top: 0.7rem; }
     .attention-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.7rem; }
     .attention-item strong { color: white; }
@@ -78,7 +82,7 @@
     <section class="hero">
       <div class="hero-content">
         <h2>Dashboard Executivo de Sismos</h2>
-        <p>Visualização interativa com filtros por região, país, ano, mês e dia, permitindo analisar tendências e concentração dos eventos com maior profundidade analítica.</p>
+        <p>Painel executivo para acompanhar atividade sísmica, concentração regional e eventos de maior atenção operacional com filtragem analítica em tempo real.</p>
       </div>
     </section>
 
@@ -110,7 +114,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
           <div>
             <h3 style="margin:0;">Executive Overview</h3>
-            <p style="margin:0.35rem 0 0; color:rgba(255,255,255,0.72);">Monitoramento operacional e contexto analítico da atividade sísmica registrada.</p>
+            <p style="margin:0.35rem 0 0; color:rgba(255,255,255,0.72);">Resumo executivo para decisão, priorização e contexto operacional da atividade sísmica.</p>
           </div>
           <div class="meta-strip">
             <span class="meta-pill" id="lastUpdated">Última atualização: --</span>
@@ -118,6 +122,11 @@
             <span class="meta-pill" id="recordsLoaded">Eventos carregados: 0</span>
             <span class="meta-pill" id="dateRange">Período: --</span>
           </div>
+        </div>
+        <div class="executive-signal">
+          <span class="signal-pill">Board signal</span>
+          <div class="signal-main" id="executiveSignalMain">—</div>
+          <div class="signal-meta" id="executiveSignalMeta">—</div>
         </div>
       </div>
 
