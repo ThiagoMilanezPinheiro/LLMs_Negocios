@@ -4,6 +4,7 @@ const yearFilter = document.getElementById('yearFilter');
 const monthFilter = document.getElementById('monthFilter');
 const dayFilter = document.getElementById('dayFilter');
 const resetButton = document.getElementById('resetFilters');
+const refreshButton = document.getElementById('refreshData');
 
 const regionChartEl = document.getElementById('regionChart');
 const trendChartEl = document.getElementById('trendChart');
@@ -280,6 +281,48 @@ function renderDetails(filtered) {
   `).join('') : '<tr><td colspan="7">Nenhum evento encontrado para os filtros aplicados.</td></tr>';
 }
 
+function refreshDashboardData() {
+  if (!refreshButton) return;
+
+  refreshButton.disabled = true;
+  refreshButton.textContent = 'Atualizando...';
+
+  fetch('https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&limit=100&minmagnitude=2.5')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Falha ao buscar dados');
+      }
+      return response.json();
+    })
+    .then(payload => {
+      const normalized = (payload.features || []).map(feature => {
+        const props = feature.properties || {};
+        const coords = feature.geometry?.coordinates || [];
+        return {
+          id: feature.id,
+          place: props.place,
+          region: props.region || 'Outros',
+          country: props.country || 'Outros',
+          date: new Date(props.time).toISOString().slice(0, 10),
+          mag: Number(props.mag || 0),
+          depth: Number(coords[2] || 0)
+        };
+      });
+
+      window.dashboardData = normalized;
+      updateDashboard();
+    })
+    .catch(() => {
+      summaryText.innerHTML = '<strong>Não foi possível atualizar os dados.</strong> Tente novamente mais tarde.';
+    })
+    .finally(() => {
+      if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.textContent = 'Atualizar dados';
+      }
+    });
+}
+
 function initFilters() {
   const dashboardData = getDashboardData();
   populateSelect(regionFilter, dashboardData.map(item => item.region));
@@ -293,7 +336,13 @@ function initFilters() {
   });
 
   if (detailsLimit) {
-    detailsLimit.addEventListener('change', () => updateDashboard());
+    detailsLimit.addEventListener('change', () => {
+      updateDashboard();
+    });
+  }
+
+  if (refreshButton) {
+    refreshButton.addEventListener('click', refreshDashboardData);
   }
 
   resetButton.addEventListener('click', () => {

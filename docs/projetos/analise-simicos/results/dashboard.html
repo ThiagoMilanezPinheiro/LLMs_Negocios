@@ -125,15 +125,18 @@
       <div class="panel">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:0.8rem;">
           <h3 style="margin:0;">Detalhes dos eventos</h3>
-          <label style="display:flex; align-items:center; gap:0.5rem; color:rgba(255,255,255,0.8); font-size:0.95rem;">
-            Mostrar
-            <select id="detailsLimit" style="min-width:110px;">
-              <option value="5">As 5 primeiras</option>
-              <option value="10">As 10</option>
-              <option value="30">As 30</option>
-              <option value="all">Todas</option>
-            </select>
-          </label>
+          <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:0.5rem; color:rgba(255,255,255,0.8); font-size:0.95rem;">
+              Mostrar
+              <select id="detailsLimit" style="min-width:110px;">
+                <option value="5">As 5 primeiras</option>
+                <option value="10">As 10</option>
+                <option value="30">As 30</option>
+                <option value="all">Todas</option>
+              </select>
+            </label>
+            <button id="refreshData" type="button" style="padding:0.6rem 0.9rem; border:none; border-radius:10px; background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-weight:700; cursor:pointer;">Atualizar dados</button>
+          </div>
         </div>
         <div style="overflow:auto;">
           <table>
