@@ -18,6 +18,7 @@ const topRegion = document.getElementById('topRegion');
 const topCountry = document.getElementById('topCountry');
 const topMagnitude = document.getElementById('topMagnitude');
 const detailsTable = document.getElementById('detailsTable');
+const detailsLimit = document.getElementById('detailsLimit');
 
 function getDashboardData() {
   if (window.dashboardData && Array.isArray(window.dashboardData)) {
@@ -263,7 +264,10 @@ function renderCharts(regionCounts, trendCounts, countryCounts) {
 }
 
 function renderDetails(filtered) {
-  detailsTable.innerHTML = filtered.length ? filtered.map(item => `
+  const limitValue = detailsLimit ? detailsLimit.value : 'all';
+  const sliced = limitValue === 'all' ? filtered : filtered.slice(0, Number(limitValue));
+
+  detailsTable.innerHTML = sliced.length ? sliced.map(item => `
     <tr>
       <td>${item.id}</td>
       <td>${item.place}</td>
@@ -287,6 +291,10 @@ function initFilters() {
   [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
     select.addEventListener('change', updateDashboard);
   });
+
+  if (detailsLimit) {
+    detailsLimit.addEventListener('change', () => updateDashboard());
+  }
 
   resetButton.addEventListener('click', () => {
     [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => select.value = '');
