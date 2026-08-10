@@ -4,6 +4,9 @@ Bem-vindo à seção de **Análise de Dados**! Aqui estão projetos de análise 
 
 ## 📋 Subpastas
 
+### [Análise de Terremotos e Sismos](../../../docs/projetos/analise-simicos/index.html)
+Pipeline para coletar dados recentes da API USGS, normalizar eventos, inferir regiões/países e gerar gráficos e relatórios com drill-down temporal e geográfico.
+
 ### [Análise de Vendas Q3](./analise-vendas-q3/) *(Exemplo)*
 Análise exploratória de dados de vendas do terceiro trimestre.
 

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Análise de Terremotos e Sismos</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(rgba(6,10,18,0.36), rgba(6,10,18,0.36)), url('https://img.odcdn.com.br/wp-content/uploads/2024/11/inteligencia_artificial-1-scaled.jpg') center center/cover no-repeat fixed;
+      opacity: 0.12;
+      pointer-events: none;
+      filter: saturate(0.95) contrast(0.98) blur(0.2px);
+      background-attachment: fixed;
+    }
+    .site-header, main, .site-footer { position: relative; z-index: 1; }
+    .project-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .chip {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      margin: 0 0.35rem 0.35rem 0;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      color: rgba(255,255,255,0.9);
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <h1>Thiago Milanez C Pinheiro</h1>
+        <p class="subtitle">Engenheiro de IA • LLMs • Machine Learning • Data Science</p>
+      </div>
+      <nav class="social">
+        <a href="../../index.html" class="link">Home</a>
+        <a href="https://www.linkedin.com/in/thiagomilanez-itil/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://github.com/ThiagoMilanezPinheiro" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Análise de Terremotos e Sismos</h2>
+        <p>Pipeline de análise criado para coletar dados recentes da API do USGS, normalizar eventos, inferir regiões e países, e gerar gráficos e relatórios com foco em drill-down temporal e geográfico.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="project-card">
+        <h3 style="margin-top:0; color:#7c3aed;">📍 Visão Geral do Projeto</h3>
+        <p>Este projeto reúne dados reais de terremotos e organiza a informação em visualizações por região, país, ano, mês e dia, permitindo uma navegação mais precisa dos eventos sísmicos mais recentes.</p>
+
+        <div style="margin: 1rem 0;">
+          <span class="chip">🌍 API USGS</span>
+          <span class="chip">📊 Gráficos automáticos</span>
+          <span class="chip">🧭 Drill-down temporal</span>
+          <span class="chip">📈 Relatórios e resumo</span>
+        </div>
+
+        <a class="btn" href="../../../projetos/analise-simicos/results/relatorio.txt" target="_blank" rel="noopener noreferrer">📄 Abrir relatório</a>
+        <a class="btn" href="../../../projetos/analise-simicos/results" target="_blank" rel="noopener noreferrer" style="background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); margin-left:0.5rem;">🖼️ Ver gráficos</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -17,6 +17,7 @@ Análises exploratórias e business intelligence.
 - Visualizações avançadas
 - Dashboards interativos
 - Relatórios automatizados
+- Destaque: [Análise de Terremotos e Sismos](./analise-simicos/)
 
 ### 🤖 [Machine Learning](./machine-learning/)
 Modelos de ML e NLP.
