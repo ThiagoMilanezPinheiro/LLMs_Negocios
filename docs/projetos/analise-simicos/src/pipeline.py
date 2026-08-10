@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -18,6 +17,8 @@ def run_pipeline(
     min_magnitude: float = 2.5,
     start_time: str | None = "2026-01-01",
     end_time: str | None = "2026-12-31",
+    fetch_all: bool = False,
+    max_results: int = 20000,
 ) -> Dict[str, Any]:
     ensure_directories(str(BASE_DIR))
     ingestion_timestamp = datetime.now(timezone.utc)
@@ -26,6 +27,8 @@ def run_pipeline(
         min_magnitude=min_magnitude,
         start_time=start_time,
         end_time=end_time,
+        fetch_all=fetch_all,
+        max_results=max_results,
     )
 
     normalized_rows = [normalize_usgs_feature(feature, ingestion_timestamp) for feature in raw_features]
@@ -47,6 +50,8 @@ def run_pipeline(
         "date_window": {"start_time": start_time, "end_time": end_time},
         "records_received": len(raw_features),
         "records_processed": len(validated_rows),
+        "fetch_all": fetch_all,
+        "max_results": max_results,
         "records_valid": sum(1 for row in validated_rows if row.get("data_quality_flag") == "VALID"),
         "records_warning": sum(1 for row in validated_rows if row.get("data_quality_flag") == "WARNING"),
         "parquet_path": str(parquet_path),

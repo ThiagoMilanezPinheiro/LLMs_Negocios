@@ -3,6 +3,7 @@ const countryFilter = document.getElementById('countryFilter');
 const yearFilter = document.getElementById('yearFilter');
 const monthFilter = document.getElementById('monthFilter');
 const dayFilter = document.getElementById('dayFilter');
+const datasetModeFilter = document.getElementById('datasetModeFilter');
 const resetButton = document.getElementById('resetFilters');
 const refreshButton = document.getElementById('refreshData');
 const exportButton = document.getElementById('exportData');
@@ -44,6 +45,13 @@ const answerListEl = document.getElementById('answerList');
 const executiveSignalMainEl = document.getElementById('executiveSignalMain');
 const executiveSignalMetaEl = document.getElementById('executiveSignalMeta');
 
+const DASHBOARD_START_TIME = '2026-01-01';
+const DASHBOARD_END_TIME = '2026-12-31';
+const DASHBOARD_HISTORY_LIMIT = 20000;
+const DASHBOARD_LATEST_LIMIT = 100;
+const DASHBOARD_24H_LIMIT = 5000;
+const DASHBOARD_7D_LIMIT = 20000;
+
 function getDashboardData() {
   if (window.dashboardData && Array.isArray(window.dashboardData)) {
     return window.dashboardData;
@@ -71,6 +79,33 @@ function populateSelect(select, values) {
     option.value = value;
     option.textContent = value;
     select.appendChild(option);
+  });
+}
+
+function populateDataFilters() {
+  const dashboardData = getDashboardData();
+  populateSelect(regionFilter, dashboardData.map(item => item.region));
+  populateSelect(countryFilter, dashboardData.map(item => item.country));
+  populateSelect(yearFilter, dashboardData.map(item => new Date(item.date).getFullYear().toString()));
+  populateSelect(monthFilter, dashboardData.map(item => (new Date(item.date).getMonth() + 1).toString()));
+  populateSelect(dayFilter, dashboardData.map(item => new Date(item.date).getDate().toString()));
+}
+
+function getIsoUtcFromNow(daysBack = 0) {
+  const dt = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+  return dt.toISOString();
+}
+
+function getDatasetModeLabel(mode) {
+  if (mode === 'latest_24h') return 'últimas 24h';
+  if (mode === 'latest_7d') return 'últimos 7 dias';
+  if (mode === 'historical_2026') return 'histórico 2026';
+  return 'últimos 100';
+}
+
+function resetDimensionFilters() {
+  [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
+    select.value = '';
   });
 }
 
@@ -232,7 +267,8 @@ function updateDashboard() {
   });
 
   const dayValues = filtered.map(item => item.date).sort();
-  const temporalInsight = dayValues.length >= 2 ? `${dayValues.length} dias no intervalo selecionado` : 'amostra de um único dia';
+  const distinctDays = [...new Set(dayValues)];
+  const temporalInsight = distinctDays.length >= 2 ? `${distinctDays.length} dias no intervalo selecionado` : 'amostra de um único dia';
   const magnitudeProfile = magnitudeValues.reduce((maxIndex, value, index) => value > magnitudeValues[maxIndex] ? index : maxIndex, 0);
   const dominantBand = magnitudeBands[magnitudeProfile];
   const dominantBandCount = magnitudeValues[magnitudeProfile];
@@ -277,14 +313,20 @@ function updateDashboard() {
   insightTemporalMetaEl.textContent = `magnitude média ${avgMag} • profundidade média ${avgDepth} km • pico horário ${hourlyLabel}`;
 
   lastUpdatedEl.textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
-  dataSourceEl.textContent = window.dashboardSource === 'api' ? 'Fonte: USGS Earthquake Catalog (ao vivo)' : 'Fonte: dados locais / fallback';
+  if (window.dashboardSource === 'api') {
+    const modeLabel = getDatasetModeLabel(window.dashboardMode);
+    dataSourceEl.textContent = `Fonte: USGS Earthquake Catalog (ao vivo) • ${modeLabel}`;
+  } else {
+    dataSourceEl.textContent = 'Fonte: dados locais / fallback';
+  }
   recordsLoadedEl.textContent = `Eventos carregados: ${dashboardData.length}`;
-  dateRangeEl.textContent = `Período: ${filtered[0] ? filtered[0].date : '—'} → ${lastDate}`;
+  const minDate = dayValues[0] || '—';
+  dateRangeEl.textContent = `Período: ${minDate} → ${lastDate}`;
 
   answerListEl.innerHTML = `
     <div class="answer-item"><strong>Onde acontecem?</strong><br>A maior concentração da seleção está em ${topRegionItem}; ${topCountryItem} aparece como o principal agrupamento geográfico dentro do contexto analisado.</div>
     <div class="answer-item"><strong>Quais são os mais relevantes?</strong><br>O evento de maior relevância analítica foi ${topEvent.place}, com magnitude ${topEvent.mag.toFixed(1)}, score ${getSeismicScore(topEvent)} e severidade ${getSeverityLabel(topEvent.mag)}.</div>
-    <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado, com ${dayValues.length} dias registrados e pico horário ${hourlyLabel}.</div>
+    <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado, com ${distinctDays.length} dias registrados e pico horário ${hourlyLabel}.</div>
     <div class="answer-item"><strong>Existe relação entre magnitude e profundidade?</strong><br>A correlação estimada é ${correlationLabel} (${correlation.toFixed(2)}), o que sugere ${correlation > 0.3 ? 'uma leve tendência de eventos mais fortes em maiores profundidades' : correlation < -0.3 ? 'uma leve tendência de eventos mais fortes em menores profundidades' : 'pouca relação linear entre magnitude e profundidade'}.</div>
     <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registrou a maior magnitude média da seleção: ${mostIntenseRegion.avgMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
     <div class="answer-item"><strong>Há sinais de eventos críticos?</strong><br>Há ${m6Events} eventos M6+, ${m7Events} eventos M7+, ${tsunamiEvents} com tsunami e ${alertEvents} com alerta, além de ${significantEvents} eventos de alta significance.</div>
@@ -548,8 +590,50 @@ function normalizeFeature(feature) {
   };
 }
 
-function loadDashboardDataFromApi() {
-  return fetch('https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&limit=100&minmagnitude=2.5')
+function buildModeParams(mode) {
+  const baseParams = {
+    format: 'geojson',
+    eventtype: 'earthquake',
+    orderby: 'time',
+    minmagnitude: '2.5',
+  };
+
+  if (mode === 'latest_24h') {
+    return {
+      ...baseParams,
+      limit: String(DASHBOARD_24H_LIMIT),
+      starttime: getIsoUtcFromNow(1),
+      endtime: new Date().toISOString(),
+    };
+  }
+
+  if (mode === 'latest_7d') {
+    return {
+      ...baseParams,
+      limit: String(DASHBOARD_7D_LIMIT),
+      starttime: getIsoUtcFromNow(7),
+      endtime: new Date().toISOString(),
+    };
+  }
+
+  if (mode === 'historical_2026') {
+    return {
+      ...baseParams,
+      limit: String(DASHBOARD_HISTORY_LIMIT),
+      starttime: DASHBOARD_START_TIME,
+      endtime: DASHBOARD_END_TIME,
+    };
+  }
+
+  return {
+    ...baseParams,
+    limit: String(DASHBOARD_LATEST_LIMIT),
+  };
+}
+
+function loadDashboardDataFromApi(mode = 'latest_24h') {
+  const params = new URLSearchParams(buildModeParams(mode));
+  return fetch(`https://earthquake.usgs.gov/fdsnws/event/1/query?${params.toString()}`)
     .then(response => {
       if (!response.ok) {
         throw new Error('Falha ao buscar dados');
@@ -560,10 +644,12 @@ function loadDashboardDataFromApi() {
       const normalized = (payload.features || []).map(normalizeFeature);
       window.dashboardData = normalized;
       window.dashboardSource = 'api';
+      window.dashboardMode = mode;
       return normalized;
     })
     .catch(() => {
       window.dashboardSource = 'fallback';
+      window.dashboardMode = mode;
       return getDashboardData();
     });
 }
@@ -571,11 +657,13 @@ function loadDashboardDataFromApi() {
 function refreshDashboardData() {
   if (!refreshButton) return;
 
+  const selectedMode = datasetModeFilter ? datasetModeFilter.value : 'latest_24h';
   refreshButton.disabled = true;
   refreshButton.textContent = 'Atualizando...';
 
-  loadDashboardDataFromApi()
+  loadDashboardDataFromApi(selectedMode)
     .then(() => {
+      populateDataFilters();
       updateDashboard();
     })
     .catch(() => {
@@ -589,13 +677,35 @@ function refreshDashboardData() {
     });
 }
 
+function changeDatasetMode() {
+  if (!datasetModeFilter) return;
+
+  const selectedMode = datasetModeFilter.value;
+  datasetModeFilter.disabled = true;
+  if (refreshButton) {
+    refreshButton.disabled = true;
+  }
+  summaryText.innerHTML = '<strong>Atualizando base de dados selecionada...</strong>';
+
+  loadDashboardDataFromApi(selectedMode)
+    .then(() => {
+      resetDimensionFilters();
+      populateDataFilters();
+      updateDashboard();
+    })
+    .catch(() => {
+      summaryText.innerHTML = '<strong>Não foi possível trocar o modo de dados.</strong> Tente novamente mais tarde.';
+    })
+    .finally(() => {
+      datasetModeFilter.disabled = false;
+      if (refreshButton) {
+        refreshButton.disabled = false;
+      }
+    });
+}
+
 function initFilters() {
-  const dashboardData = getDashboardData();
-  populateSelect(regionFilter, dashboardData.map(item => item.region));
-  populateSelect(countryFilter, dashboardData.map(item => item.country));
-  populateSelect(yearFilter, dashboardData.map(item => new Date(item.date).getFullYear().toString()));
-  populateSelect(monthFilter, dashboardData.map(item => (new Date(item.date).getMonth() + 1).toString()));
-  populateSelect(dayFilter, dashboardData.map(item => new Date(item.date).getDate().toString()));
+  populateDataFilters();
 
   [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
     select.addEventListener('change', updateDashboard);
@@ -611,6 +721,10 @@ function initFilters() {
     refreshButton.addEventListener('click', refreshDashboardData);
   }
 
+  if (datasetModeFilter) {
+    datasetModeFilter.addEventListener('change', changeDatasetMode);
+  }
+
   if (exportButton) {
     exportButton.addEventListener('click', () => {
       exportFilteredData(getFilteredData());
@@ -618,13 +732,14 @@ function initFilters() {
   }
 
   resetButton.addEventListener('click', () => {
-    [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => select.value = '');
+    resetDimensionFilters();
     updateDashboard();
   });
 }
 
 function initDashboard() {
-  loadDashboardDataFromApi().then(() => {
+  const initialMode = datasetModeFilter ? datasetModeFilter.value : 'latest_24h';
+  loadDashboardDataFromApi(initialMode).then(() => {
     initFilters();
     updateDashboard();
   });

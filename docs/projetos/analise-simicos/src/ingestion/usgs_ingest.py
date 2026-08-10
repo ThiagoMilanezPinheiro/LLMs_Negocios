@@ -1,5 +1,3 @@
-import json
-import os
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List
@@ -10,25 +8,7 @@ import requests
 USGS_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 
 
-def fetch_usgs_events(
-    limit: int = 100,
-    min_magnitude: float = 2.5,
-    start_time: str | None = None,
-    end_time: str | None = None,
-    max_results: int = 20000,
-) -> List[Dict[str, Any]]:
-    params = {
-        "format": "geojson",
-        "eventtype": "earthquake",
-        "orderby": "time",
-        "limit": min(limit, 20000),
-        "minmagnitude": min_magnitude,
-    }
-    if start_time:
-        params["starttime"] = start_time
-    if end_time:
-        params["endtime"] = end_time
-
+def _request_usgs_page(params: Dict[str, Any]) -> List[Dict[str, Any]]:
     for attempt in range(3):
         try:
             response = requests.get(USGS_URL, params=params, timeout=60)
@@ -37,14 +17,61 @@ def fetch_usgs_events(
                 continue
             response.raise_for_status()
             payload = response.json()
-            features = payload.get("features", [])
-            return features[:max_results]
+            return payload.get("features", [])
         except requests.RequestException:
             if attempt == 2:
                 raise
             time.sleep(1.5 * (attempt + 1))
-
     return []
+
+
+def fetch_usgs_events(
+    limit: int = 100,
+    min_magnitude: float = 2.5,
+    start_time: str | None = None,
+    end_time: str | None = None,
+    max_results: int = 20000,
+    fetch_all: bool = False,
+) -> List[Dict[str, Any]]:
+    page_size = max(1, min(limit, 20000))
+    params = {
+        "format": "geojson",
+        "eventtype": "earthquake",
+        "orderby": "time",
+        "limit": page_size,
+        "minmagnitude": min_magnitude,
+    }
+    if start_time:
+        params["starttime"] = start_time
+    if end_time:
+        params["endtime"] = end_time
+
+    if not fetch_all:
+        batch = _request_usgs_page(params)
+        return batch[:max_results]
+
+    features: List[Dict[str, Any]] = []
+    offset = 1
+    remaining = max_results
+
+    while remaining > 0:
+        current_limit = min(page_size, remaining)
+        params["limit"] = current_limit
+        params["offset"] = offset
+
+        batch = _request_usgs_page(params)
+        if not batch:
+            break
+
+        features.extend(batch)
+        remaining -= len(batch)
+        if len(batch) < current_limit:
+            break
+
+        offset += len(batch)
+        time.sleep(0.2)
+
+    return features[:max_results]
 
 
 def normalize_usgs_feature(feature: Dict[str, Any], ingestion_timestamp: datetime) -> Dict[str, Any]:
