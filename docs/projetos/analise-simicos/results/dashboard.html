@@ -37,6 +37,27 @@
     .summary { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
     .chart-canvas { width: 100%; min-height: 260px; }
     .chart-canvas svg { width: 100%; height: 100%; }
+    .meta-strip { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.8rem; color: rgba(255,255,255,0.72); font-size: 0.9rem; }
+    .meta-pill { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 0.35rem 0.7rem; }
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
+    .insight-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem; }
+    .insight-card h4 { margin: 0 0 0.35rem; font-size: 0.95rem; color: rgba(255,255,255,0.75); }
+    .insight-card strong { font-size: 1.05rem; color: white; display: block; }
+    .insight-card small { color: rgba(255,255,255,0.65); }
+    .tag { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.25rem 0.55rem; font-size: 0.78rem; background: rgba(124,58,237,0.2); color: #d8b4fe; }
+    .attention-list { display: grid; gap: 0.6rem; margin-top: 0.7rem; }
+    .attention-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.7rem; }
+    .attention-item strong { color: white; }
+    .attention-item small { color: rgba(255,255,255,0.7); }
+    .answer-list { display: grid; gap: 0.65rem; margin-top: 0.75rem; }
+    .answer-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 0.85rem; color: rgba(255,255,255,0.82); }
+    .answer-item strong { color: white; }
+    .severity-pill { display: inline-block; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 700; }
+    .severity-low { background: rgba(34,197,94,0.16); color: #bbf7d0; }
+    .severity-moderate { background: rgba(59,130,246,0.16); color: #bfdbfe; }
+    .severity-significant { background: rgba(249,115,22,0.16); color: #fed7aa; }
+    .severity-high { background: rgba(239,68,68,0.16); color: #fecaca; }
+    .severity-major { background: rgba(168,85,247,0.16); color: #e9d5ff; }
     @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -85,35 +106,94 @@
         </div>
       </div>
 
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <div>
+            <h3 style="margin:0;">Executive Overview</h3>
+            <p style="margin:0.35rem 0 0; color:rgba(255,255,255,0.72);">Monitoramento operacional e contexto analítico da atividade sísmica registrada.</p>
+          </div>
+          <div class="meta-strip">
+            <span class="meta-pill" id="lastUpdated">Última atualização: --</span>
+            <span class="meta-pill" id="dataSource">Fonte: USGS Earthquake Catalog</span>
+            <span class="meta-pill" id="recordsLoaded">Eventos carregados: 0</span>
+            <span class="meta-pill" id="dateRange">Período: --</span>
+          </div>
+        </div>
+      </div>
+
       <div class="kpis">
-        <div class="kpi-card"><div class="kpi-title">Eventos filtrados</div><div class="kpi-value" id="kpiEvents">0</div></div>
-        <div class="kpi-card"><div class="kpi-title">Magnitude média</div><div class="kpi-value" id="kpiMagnitude">0</div></div>
-        <div class="kpi-card"><div class="kpi-title">Profundidade média (km)</div><div class="kpi-value" id="kpiDepth">0</div></div>
-        <div class="kpi-card"><div class="kpi-title">Último evento</div><div class="kpi-value" id="kpiLastDate">—</div></div>
+        <div class="kpi-card"><div class="kpi-title">Total events</div><div class="kpi-value" id="kpiEvents">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">M4+ events</div><div class="kpi-value" id="kpiM4">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">M5+ events</div><div class="kpi-value" id="kpiM5">0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Max magnitude</div><div class="kpi-value" id="kpiMaxMag">0.0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Median depth (km)</div><div class="kpi-value" id="kpiMedianDepth">0.0</div></div>
+        <div class="kpi-card"><div class="kpi-title">Latest event</div><div class="kpi-value" id="kpiLastDate">—</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="tag">Analytical Severity</div>
+        <div class="summary" id="summaryText" style="margin-top:0.7rem;"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-top:0;">Direct answers</h3>
+        <div class="answer-list" id="answerList"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-top:0;">Seismic Intelligence</h3>
+        <div class="insight-grid">
+          <div class="insight-card"><h4>Highest magnitude</h4><strong id="insightHighest">—</strong><small id="insightHighestMeta">—</small></div>
+          <div class="insight-card"><h4>Regional concentration</h4><strong id="insightRegion">—</strong><small id="insightRegionMeta">—</small></div>
+          <div class="insight-card"><h4>Magnitude profile</h4><strong id="insightMagnitudeBand">—</strong><small id="insightMagnitudeMeta">—</small></div>
+          <div class="insight-card"><h4>Temporal pattern</h4><strong id="insightTemporal">—</strong><small id="insightTemporalMeta">—</small></div>
+        </div>
       </div>
 
       <div class="grid-2">
         <div class="panel">
-          <h3 style="margin-top:0;">Eventos por região</h3>
+          <h3 style="margin-top:0;">Events over time</h3>
+          <div class="chart-canvas" id="trendChart"></div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0;">Magnitude profile</h3>
+          <div class="chart-canvas" id="magnitudeChart"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-top:0;">Magnitude × Depth</h3>
+          <div class="chart-canvas" id="scatterChart"></div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0;">Depth distribution</h3>
+          <div class="chart-canvas" id="depthChart"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-top:0;">Geographic concentration</h3>
           <div class="chart-canvas" id="regionChart"></div>
         </div>
         <div class="panel">
-          <h3 style="margin-top:0;">Tendência diária</h3>
-          <div class="chart-canvas" id="trendChart"></div>
+          <h3 style="margin-top:0;">Top countries</h3>
+          <div class="chart-canvas" id="countryChart"></div>
         </div>
       </div>
 
       <div class="grid-2">
         <div class="panel">
-          <h3 style="margin-top:0;">Magnitude por país</h3>
-          <div class="chart-canvas" id="countryChart"></div>
+          <h3 style="margin-top:0;">Attention required</h3>
+          <div class="attention-list" id="attentionList"></div>
         </div>
         <div class="panel">
-          <h3 style="margin-top:0;">Resumo da seleção</h3>
-          <div class="summary" id="summaryText"></div>
+          <h3 style="margin-top:0;">Event intelligence</h3>
+          <div class="summary" id="topSummary"></div>
           <table style="margin-top: 0.8rem;">
             <thead>
-              <tr><th>Top região</th><th>Top país</th><th>Maior magnitude</th></tr>
+              <tr><th>Top region</th><th>Top country</th><th>Max magnitude</th></tr>
             </thead>
             <tbody>
               <tr><td id="topRegion">—</td><td id="topCountry">—</td><td id="topMagnitude">—</td></tr>
@@ -124,7 +204,7 @@
 
       <div class="panel">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:0.8rem;">
-          <h3 style="margin:0;">Detalhes dos eventos</h3>
+          <h3 style="margin:0;">Details of events</h3>
           <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
             <label style="display:flex; align-items:center; gap:0.5rem; color:rgba(255,255,255,0.8); font-size:0.95rem;">
               Mostrar
@@ -135,13 +215,14 @@
                 <option value="all">Todas</option>
               </select>
             </label>
+            <button id="exportData" type="button" style="padding:0.6rem 0.9rem; border:none; border-radius:10px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color:white; font-weight:700; cursor:pointer;">Exportar CSV</button>
             <button id="refreshData" type="button" style="padding:0.6rem 0.9rem; border:none; border-radius:10px; background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-weight:700; cursor:pointer;">Atualizar dados</button>
           </div>
         </div>
         <div style="overflow:auto;">
           <table>
             <thead>
-              <tr><th>ID</th><th>Local</th><th>Região</th><th>País</th><th>Data</th><th>Magnitude</th><th>Profundidade</th></tr>
+              <tr><th>ID</th><th>Local</th><th>Região</th><th>País</th><th>Data</th><th>Magnitude</th><th>Profundidade</th><th>Score</th><th>Severidade</th></tr>
             </thead>
             <tbody id="detailsTable"></tbody>
           </table>
