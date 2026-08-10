@@ -19,9 +19,29 @@ const topCountry = document.getElementById('topCountry');
 const topMagnitude = document.getElementById('topMagnitude');
 const detailsTable = document.getElementById('detailsTable');
 
-function populateSelect(select, values, label) {
-  const options = [...new Set(values)].sort();
-  options.forEach(value => {
+function getDashboardData() {
+  if (window.dashboardData && Array.isArray(window.dashboardData)) {
+    return window.dashboardData;
+  }
+  if (typeof data !== 'undefined' && Array.isArray(data)) {
+    return data;
+  }
+  return [];
+}
+
+function populateSelect(select, values) {
+  const uniqueValues = [...new Set(values.filter(Boolean))].sort();
+  select.innerHTML = '<option value="">Todos</option>';
+
+  if (!uniqueValues.length) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Sem dados';
+    select.appendChild(option);
+    return;
+  }
+
+  uniqueValues.forEach(value => {
     const option = document.createElement('option');
     option.value = value;
     option.textContent = value;
@@ -30,13 +50,14 @@ function populateSelect(select, values, label) {
 }
 
 function getFilteredData() {
+  const dashboardData = getDashboardData();
   const region = regionFilter.value;
   const country = countryFilter.value;
   const year = yearFilter.value;
   const month = monthFilter.value;
   const day = dayFilter.value;
 
-  return data.filter(item => {
+  return dashboardData.filter(item => {
     const date = new Date(item.date);
     const matchesRegion = !region || item.region === region;
     const matchesCountry = !country || item.country === country;
@@ -49,6 +70,19 @@ function getFilteredData() {
 
 function updateDashboard() {
   const filtered = getFilteredData();
+  if (!filtered.length) {
+    kpiEvents.textContent = '0';
+    kpiMagnitude.textContent = '0.0';
+    kpiDepth.textContent = '0.0';
+    kpiLastDate.textContent = '—';
+    topRegion.textContent = '—';
+    topCountry.textContent = '—';
+    topMagnitude.textContent = '—';
+    summaryText.innerHTML = '<strong>Sem dados para esta seleção.</strong>';
+    renderCharts([], [], []);
+    renderDetails([]);
+    return;
+  }
   const count = filtered.length;
   const avgMag = count ? (filtered.reduce((sum, item) => sum + item.mag, 0) / count).toFixed(1) : '0.0';
   const avgDepth = count ? (filtered.reduce((sum, item) => sum + item.depth, 0) / count).toFixed(1) : '0.0';
@@ -243,11 +277,12 @@ function renderDetails(filtered) {
 }
 
 function initFilters() {
-  populateSelect(regionFilter, data.map(item => item.region), 'Região');
-  populateSelect(countryFilter, data.map(item => item.country), 'País');
-  populateSelect(yearFilter, data.map(item => new Date(item.date).getFullYear().toString()), 'Ano');
-  populateSelect(monthFilter, data.map(item => (new Date(item.date).getMonth() + 1).toString()), 'Mês');
-  populateSelect(dayFilter, data.map(item => new Date(item.date).getDate().toString()), 'Dia');
+  const dashboardData = getDashboardData();
+  populateSelect(regionFilter, dashboardData.map(item => item.region));
+  populateSelect(countryFilter, dashboardData.map(item => item.country));
+  populateSelect(yearFilter, dashboardData.map(item => new Date(item.date).getFullYear().toString()));
+  populateSelect(monthFilter, dashboardData.map(item => (new Date(item.date).getMonth() + 1).toString()));
+  populateSelect(dayFilter, dashboardData.map(item => new Date(item.date).getDate().toString()));
 
   [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
     select.addEventListener('change', updateDashboard);

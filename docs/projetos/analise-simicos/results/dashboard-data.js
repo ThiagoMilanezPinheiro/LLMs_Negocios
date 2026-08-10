@@ -900,3 +900,5 @@ const data = [
     "depth": 20.0
   }
 ];
+
+window.dashboardData = data;
