@@ -1419,12 +1419,14 @@ function drawYAxisScale(svg, options) {
 
   const safeMin = Number.isFinite(minValue) ? minValue : 0;
   const safeMax = Number.isFinite(maxValue) ? maxValue : 1;
-  const span = Math.max(safeMax - safeMin, 1);
   const scale = buildNiceScale(safeMin, safeMax, tickCount);
-  const tickValues = scale.ticks.filter(value => value >= safeMin - span * 0.001 && value <= safeMax + span * 0.001);
+  const domainMin = scale.min;
+  const domainMax = scale.max;
+  const span = Math.max(domainMax - domainMin, 1);
+  const tickValues = scale.ticks;
 
   tickValues.forEach(value => {
-    const ratio = (value - safeMin) / span;
+    const ratio = (value - domainMin) / span;
     const y = invert ? topY + ratio * chartHeight : topY + chartHeight - ratio * chartHeight;
 
     const gridLine = createSvgElement('line', {
@@ -1451,36 +1453,70 @@ function drawYAxisScale(svg, options) {
   return scale;
 }
 
+function getPaddedDomain(minValue, maxValue, options = {}) {
+  const { ratio = 0.08, minPadding = 0.1, clampMin = null } = options;
+  const safeMin = Number.isFinite(minValue) ? minValue : 0;
+  const safeMax = Number.isFinite(maxValue) ? maxValue : 1;
+  const span = Math.max(safeMax - safeMin, 1);
+  const pad = Math.max(minPadding, span * ratio);
+  let min = safeMin - pad;
+  let max = safeMax + pad;
+  if (Number.isFinite(clampMin)) {
+    min = Math.max(clampMin, min);
+  }
+  if (max <= min) {
+    max = min + 1;
+  }
+  return { min, max };
+}
+
 function renderBarChart(container, labels, values, options = {}) {
   container.innerHTML = '';
-  const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
+  const svg = createSvgElement('svg', { viewBox: '0 0 360 260' });
   const maxValue = Math.max(...values, 1);
   const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
 
-  const chartHeight = 150;
-  const chartWidth = 280;
-  const paddingLeft = 30;
-  const paddingBottom = 40;
-  const barWidth = 40;
-  const gap = 18;
+  const chartHeight = 165;
+  const chartWidth = 296;
+  const paddingLeft = 46;
+  const paddingTop = 26;
+  const paddingBottom = 68;
+  const slotWidth = chartWidth / Math.max(labels.length, 1);
+  const barWidth = Math.max(18, Math.min(42, slotWidth * 0.62));
+  const startX = paddingLeft + (slotWidth - barWidth) / 2;
 
-  drawYAxisScale(svg, {
+  const yDomain = getPaddedDomain(0, maxValue, { ratio: 0.14, minPadding: 1, clampMin: 0 });
+  const yScale = drawYAxisScale(svg, {
     paddingLeft,
-    topY: 20,
+    topY: paddingTop,
     chartHeight,
     chartWidth,
-    maxValue,
+    minValue: yDomain.min,
+    maxValue: yDomain.max,
     tickCount: 5,
     formatter: (value) => String(Math.round(value)),
   });
-  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: 20, x2: paddingLeft, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
-  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: chartHeight + 20, x2: paddingLeft + chartWidth, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: paddingTop, x2: paddingLeft, y2: paddingTop + chartHeight, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: paddingTop + chartHeight, x2: paddingLeft + chartWidth, y2: paddingTop + chartHeight, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+
+  const yAxisTitle = createSvgElement('text', {
+    x: 14,
+    y: paddingTop + chartHeight / 2,
+    transform: `rotate(-90 14 ${paddingTop + chartHeight / 2})`,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.78)',
+    'font-size': '10',
+  });
+  yAxisTitle.textContent = 'Quantidade de eventos';
+  svg.appendChild(yAxisTitle);
 
   labels.forEach((label, index) => {
     const value = values[index];
-    const barHeight = (value / maxValue) * chartHeight;
-    const x = paddingLeft + index * (barWidth + gap);
-    const y = chartHeight + 20 - barHeight;
+    const ySpan = Math.max(yScale.max - yScale.min, 1);
+    const valueRatio = (value - yScale.min) / ySpan;
+    const barHeight = Math.max(0, Math.min(chartHeight, valueRatio * chartHeight));
+    const x = startX + index * slotWidth;
+    const y = paddingTop + chartHeight - barHeight;
     const rect = createSvgElement('rect', { x, y, width: barWidth, height: barHeight, rx: 6, fill: colors[index % colors.length] });
     svg.appendChild(rect);
 
@@ -1495,14 +1531,37 @@ function renderBarChart(container, labels, values, options = {}) {
     };
     attachChartHover(rect, tooltipBuilder);
 
-    const labelText = createSvgElement('text', { x: x + barWidth / 2, y: chartHeight + 40, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '10' });
-    labelText.textContent = label;
-    svg.appendChild(labelText);
+    const labelY = paddingTop + chartHeight + 18;
+    const labelParts = String(label).split(' ');
+    if (labelParts.length > 1) {
+      const line1 = createSvgElement('text', { x: x + barWidth / 2, y: labelY, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '9' });
+      line1.textContent = labelParts[0];
+      svg.appendChild(line1);
 
-    const valueText = createSvgElement('text', { x: x + barWidth / 2, y: y - 6, 'text-anchor': 'middle', fill: 'white', 'font-size': '10' });
+      const line2 = createSvgElement('text', { x: x + barWidth / 2, y: labelY + 12, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '9' });
+      line2.textContent = labelParts.slice(1).join(' ');
+      svg.appendChild(line2);
+    } else {
+      const labelText = createSvgElement('text', { x: x + barWidth / 2, y: labelY, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '9' });
+      labelText.textContent = label;
+      svg.appendChild(labelText);
+    }
+
+    const valueTextY = Math.max(paddingTop + 11, y - 6);
+    const valueText = createSvgElement('text', { x: x + barWidth / 2, y: valueTextY, 'text-anchor': 'middle', fill: 'white', 'font-size': '10', 'font-weight': '700' });
     valueText.textContent = value;
     svg.appendChild(valueText);
   });
+
+  const xAxisTitle = createSvgElement('text', {
+    x: paddingLeft + chartWidth / 2,
+    y: paddingTop + chartHeight + paddingBottom - 12,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.78)',
+    'font-size': '10',
+  });
+  xAxisTitle.textContent = 'Faixas';
+  svg.appendChild(xAxisTitle);
 
   container.appendChild(svg);
 }
@@ -1577,6 +1636,8 @@ const REGION_LABELS_PT = {
   'Africa': 'África',
   'Oceania': 'Oceania',
 };
+
+let scatterPlotClipCounter = 0;
 
 function formatRegionPt(region) {
   return REGION_LABELS_PT[region] || region || UNKNOWN_REGION;
@@ -1736,21 +1797,48 @@ function computeScatterStats(filtered) {
 }
 
 function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note, isDeepPanel = false) {
-  const svg = createSvgElement('svg', { viewBox: '0 0 760 320', role: 'img', 'aria-label': title });
-  const paddingLeft = 58;
-  const paddingRight = 18;
-  const paddingTop = 20;
-  const paddingBottom = 52;
+  const svg = createSvgElement('svg', { viewBox: '0 0 760 360', role: 'img', 'aria-label': title });
+  const paddingLeft = 64;
+  const paddingRight = 24;
+  const paddingTop = 56;
+  const paddingBottom = 72;
   const chartWidth = 760 - paddingLeft - paddingRight;
-  const chartHeight = 320 - paddingTop - paddingBottom;
-  const xScale = buildNiceScale(stats.magnitudeMin, stats.magnitudeMax, 6);
-  const yMax = Math.max(depthDomain.max, depthDomain.min + 1);
+  const chartHeight = 360 - paddingTop - paddingBottom;
+  const xSourceMin = points.length ? Math.min(...points.map(item => item.mag)) : stats.magnitudeMin;
+  const xSourceMax = points.length ? Math.max(...points.map(item => item.mag)) : stats.magnitudeMax;
+  const ySourceMin = points.length ? Math.min(...points.map(item => item.depth)) : depthDomain.min;
+  const ySourceMax = points.length ? Math.max(...points.map(item => item.depth)) : depthDomain.max;
+
+  const xDomainBase = getPaddedDomain(xSourceMin, xSourceMax, { ratio: 0.1, minPadding: 0.15, clampMin: 0 });
+  const yDomainBase = getPaddedDomain(ySourceMin, ySourceMax, {
+    ratio: isDeepPanel ? 0.12 : 0.1,
+    minPadding: isDeepPanel ? 2 : 1,
+    clampMin: 0,
+  });
+
+  const maxPointRadius = points.length
+    ? Math.max(...points.map(item => getScatterPointRadius(item, stats)))
+    : 0;
+  const xDomainSpanBase = Math.max(xDomainBase.max - xDomainBase.min, 1);
+  const yDomainSpanBase = Math.max(yDomainBase.max - yDomainBase.min, 1);
+  const pixelPad = maxPointRadius + 3;
+  const xPadFromRadius = (pixelPad / chartWidth) * xDomainSpanBase;
+  const yPadFromRadius = (pixelPad / chartHeight) * yDomainSpanBase;
+
+  const xDomain = {
+    min: Math.max(0, xDomainBase.min - xPadFromRadius),
+    max: xDomainBase.max + xPadFromRadius,
+  };
+  const yDomain = {
+    min: Math.max(0, yDomainBase.min - yPadFromRadius),
+    max: yDomainBase.max + yPadFromRadius,
+  };
 
   svg.appendChild(createSvgElement('rect', {
     x: 0,
     y: 0,
     width: 760,
-    height: 320,
+    height: 360,
     rx: 12,
     fill: 'rgba(255,255,255,0.01)',
     stroke: 'rgba(255,255,255,0.06)',
@@ -1758,9 +1846,9 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
 
   const titleText = createSvgElement('text', {
     x: paddingLeft,
-    y: 16,
+    y: 22,
     fill: 'rgba(255,255,255,0.96)',
-    'font-size': '13',
+    'font-size': '14',
     'font-weight': '700',
   });
   titleText.textContent = title;
@@ -1768,32 +1856,43 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
 
   const subtitleText = createSvgElement('text', {
     x: paddingLeft,
-    y: 32,
+    y: 40,
     fill: 'rgba(255,255,255,0.62)',
-    'font-size': '10',
+    'font-size': '10.5',
   });
   subtitleText.textContent = subtitle;
   svg.appendChild(subtitleText);
 
-  drawYAxisScale(svg, {
+  scatterPlotClipCounter += 1;
+  const clipId = `plot-clip-${isDeepPanel ? 'deep' : 'main'}-${scatterPlotClipCounter}`;
+  const plotClip = createSvgElement('clipPath', { id: clipId });
+  plotClip.appendChild(createSvgElement('rect', {
+    x: paddingLeft,
+    y: paddingTop,
+    width: chartWidth,
+    height: chartHeight,
+  }));
+  svg.appendChild(plotClip);
+
+  const yScale = drawYAxisScale(svg, {
     paddingLeft,
     topY: paddingTop,
     chartHeight,
     chartWidth,
-    minValue: depthDomain.min,
-    maxValue: yMax,
+    minValue: yDomain.min,
+    maxValue: yDomain.max,
     tickCount: isDeepPanel ? 5 : 6,
     invert: true,
     formatter: (value) => `${formatAxisNumber(value, value >= 100 ? 0 : 1)} km`,
   });
 
-  drawXAxisScale(svg, {
+  const xScale = drawXAxisScale(svg, {
     paddingLeft,
     topY: paddingTop,
     chartHeight,
     chartWidth,
-    minValue: xScale.min,
-    maxValue: xScale.max,
+    minValue: xDomain.min,
+    maxValue: xDomain.max,
     tickCount: 6,
     formatter: (value) => formatAxisNumber(value, value % 1 === 0 ? 0 : 1),
   });
@@ -1817,37 +1916,42 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
 
   const xAxisLabel = createSvgElement('text', {
     x: paddingLeft + chartWidth / 2,
-    y: 315,
+    y: 340,
     'text-anchor': 'middle',
     fill: 'rgba(255,255,255,0.8)',
-    'font-size': '10',
+    'font-size': '11',
   });
   xAxisLabel.textContent = 'Magnitude';
   svg.appendChild(xAxisLabel);
 
   const yAxisLabel = createSvgElement('text', {
-    x: 14,
+    x: 18,
     y: paddingTop + chartHeight / 2,
-    transform: `rotate(-90 14 ${paddingTop + chartHeight / 2})`,
+    transform: `rotate(-90 18 ${paddingTop + chartHeight / 2})`,
     'text-anchor': 'middle',
     fill: 'rgba(255,255,255,0.8)',
-    'font-size': '10',
+    'font-size': '11',
   });
   yAxisLabel.textContent = 'Profundidade (km)';
   svg.appendChild(yAxisLabel);
 
   const pointDomain = Math.max(xScale.max - xScale.min, 1);
-  const depthSpan = Math.max(depthDomain.max - depthDomain.min, 1);
+  const depthSpan = Math.max(yScale.max - yScale.min, 1);
   const sortedPoints = points.slice().sort((a, b) => {
     const diff = getScatterPointMetric(a, stats) - getScatterPointMetric(b, stats);
     if (diff !== 0) return diff;
     return a.depth - b.depth;
   });
 
+  const pointsLayer = createSvgElement('g', { 'clip-path': `url(#${clipId})` });
+  svg.appendChild(pointsLayer);
+
   sortedPoints.forEach(item => {
-    const x = paddingLeft + ((item.mag - xScale.min) / pointDomain) * chartWidth;
-    const y = paddingTop + ((item.depth - depthDomain.min) / depthSpan) * chartHeight;
     const radius = getScatterPointRadius(item, stats);
+    const xRaw = paddingLeft + ((item.mag - xScale.min) / pointDomain) * chartWidth;
+    const yRaw = paddingTop + ((item.depth - yScale.min) / depthSpan) * chartHeight;
+    const x = clampValue(xRaw, paddingLeft + radius + 1, paddingLeft + chartWidth - radius - 1);
+    const y = clampValue(yRaw, paddingTop + radius + 1, paddingTop + chartHeight - radius - 1);
     const fill = getRegionColor(item.region);
     const isDeepest = item.id && stats.deepestEvent && item.id === stats.deepestEvent.id;
     const isLargest = item.id && stats.maxMagnitudeEvent && item.id === stats.maxMagnitudeEvent.id;
@@ -1864,27 +1968,27 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
       stroke,
       'stroke-width': strokeWidth,
     });
-    svg.appendChild(circle);
+    pointsLayer.appendChild(circle);
 
     attachChartHover(circle, () => getScatterTooltip(item, stats));
 
     if (isDeepest || isLargest) {
       const marker = createSvgElement('text', {
-        x: x + 8,
-        y: y - 8,
+        x: Math.min(paddingLeft + chartWidth - 80, x + 8),
+        y: Math.max(paddingTop + 12, y - 8),
         fill: isDeepest ? '#f59e0b' : '#22c55e',
         'font-size': '9',
         'font-weight': '700',
       });
       marker.textContent = isDeepest ? 'Mais profundo' : 'Maior M';
-      svg.appendChild(marker);
+      pointsLayer.appendChild(marker);
     }
   });
 
   if (note) {
     const noteText = createSvgElement('text', {
       x: paddingLeft,
-      y: 303,
+      y: 354,
       fill: 'rgba(255,255,255,0.7)',
       'font-size': '9',
     });
