@@ -8,9 +8,7 @@ const resetButton = document.getElementById('resetFilters');
 const refreshButton = document.getElementById('refreshData');
 const exportButton = document.getElementById('exportData');
 
-const regionChartEl = document.getElementById('regionChart');
 const trendChartEl = document.getElementById('trendChart');
-const countryChartEl = document.getElementById('countryChart');
 const magnitudeChartEl = document.getElementById('magnitudeChart');
 const scatterChartEl = document.getElementById('scatterChart');
 const depthChartEl = document.getElementById('depthChart');
@@ -51,6 +49,79 @@ const DASHBOARD_HISTORY_LIMIT = 20000;
 const DASHBOARD_LATEST_LIMIT = 100;
 const DASHBOARD_24H_LIMIT = 5000;
 const DASHBOARD_7D_LIMIT = 20000;
+const CONTINENTS = [
+  { name: 'Africa', code: 'AF' },
+  { name: 'Antarctica', code: 'AN' },
+  { name: 'Asia', code: 'AS' },
+  { name: 'Europe', code: 'EU' },
+  { name: 'North America', code: 'NA' },
+  { name: 'South America', code: 'SA' },
+  { name: 'Oceania', code: 'OC' },
+];
+const CONTINENT_NAMES = CONTINENTS.map(item => item.name);
+const UNKNOWN_REGION = 'Oceania';
+const UNKNOWN_COUNTRY = 'Águas internacionais';
+const US_STATE_CODES = new Set(['AK', 'AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY']);
+const US_STATE_NAMES = new Set(['alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire', 'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio', 'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota', 'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia', 'wisconsin', 'wyoming']);
+const COUNTRY_ALIASES = {
+  us: 'Estados Unidos',
+  usa: 'Estados Unidos',
+  'united states': 'Estados Unidos',
+  mx: 'México',
+  mexico: 'México',
+  br: 'Brasil',
+  brazil: 'Brasil',
+  co: 'Colômbia',
+  colombia: 'Colômbia',
+  jp: 'Japão',
+  japan: 'Japão',
+  ru: 'Rússia',
+  russia: 'Rússia',
+  id: 'Indonesia',
+  indonesia: 'Indonesia',
+  ir: 'Irã',
+  iran: 'Irã',
+};
+const COUNTRY_TO_CONTINENT = {
+  'Estados Unidos': 'North America',
+  'México': 'North America',
+  'Canadá': 'North America',
+  'Colômbia': 'South America',
+  'Brasil': 'South America',
+  'Peru': 'South America',
+  'Chile': 'South America',
+  'Argentina': 'South America',
+  'Equador': 'South America',
+  'Bolívia': 'South America',
+  'Paraguai': 'South America',
+  'Uruguai': 'South America',
+  'Venezuela': 'South America',
+  'Indonesia': 'Asia',
+  'Irã': 'Asia',
+  'Japão': 'Asia',
+  'Rússia': 'Asia',
+  'China': 'Asia',
+  'Filipinas': 'Asia',
+  'Turquia': 'Asia',
+  'Índia': 'Asia',
+  'Fiji': 'Oceania',
+  'Vanuatu': 'Oceania',
+  'Papua New Guinea': 'Oceania',
+  'New Zealand': 'Oceania',
+  'Águas internacionais': 'Oceania',
+};
+
+const COUNTRY_PATTERNS = [
+  { regex: /\b(united states|u\.s\.|usa|alaska|hawaii|california|nevada|montana|washington|oregon|idaho|oklahoma|texas|puerto rico|virgin islands)\b/i, country: 'Estados Unidos', region: 'North America' },
+  { regex: /\b(mexico|baja california)\b/i, country: 'México', region: 'North America' },
+  { regex: /\b(canada|british columbia|yukon)\b/i, country: 'Canadá', region: 'North America' },
+  { regex: /\b(colombia|peru|chile|argentina|brazil|ecuador|bolivia|paraguay|uruguay|venezuela)\b/i, country: null, region: 'South America' },
+  { regex: /\b(indonesia|philippines|japan|iran|turkey|india|russia|china|pakistan|afghanistan)\b/i, country: null, region: 'Asia' },
+  { regex: /\b(greece|italy|spain|portugal|iceland)\b/i, country: null, region: 'Europe' },
+  { regex: /\b(ethiopia|kenya|tanzania|morocco|algeria)\b/i, country: null, region: 'Africa' },
+  { regex: /\b(new zealand|fiji|tonga|vanuatu|papua new guinea|solomon islands)\b/i, country: null, region: 'Oceania' },
+  { regex: /\b(atlantic ocean|pacific ocean|indian ocean|caribbean sea|mediterranean sea|sea of)\b/i, country: 'Águas internacionais', region: 'Oceania' },
+];
 
 function getDashboardData() {
   if (window.dashboardData && Array.isArray(window.dashboardData)) {
@@ -62,8 +133,151 @@ function getDashboardData() {
   return [];
 }
 
-function populateSelect(select, values) {
-  const uniqueValues = [...new Set(values.filter(Boolean))].sort();
+function getStaticDashboardData() {
+  if (typeof data !== 'undefined' && Array.isArray(data)) {
+    return data;
+  }
+  return [];
+}
+
+function titleCaseWord(value) {
+  if (!value) return value;
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+function inferCountryRegionFromPlace(place) {
+  if (!place) {
+    return { country: UNKNOWN_COUNTRY, region: UNKNOWN_REGION };
+  }
+
+  const text = String(place).trim();
+  const lowerText = text.toLowerCase();
+  for (const stateName of US_STATE_NAMES) {
+    if (lowerText.includes(stateName)) {
+      return { country: 'Estados Unidos', region: 'North America' };
+    }
+  }
+
+  for (const pattern of COUNTRY_PATTERNS) {
+    if (pattern.regex.test(text)) {
+      const matched = text.match(pattern.regex);
+      const token = matched ? matched[0] : null;
+      const country = pattern.country || (token ? titleCaseWord(token) : UNKNOWN_COUNTRY);
+      const normalizedCountry = country
+        .replace(/^Usa$/i, 'Estados Unidos')
+        .replace(/^United states$/i, 'Estados Unidos')
+        .replace(/^U\.s\.$/i, 'Estados Unidos')
+        .replace(/^Brazil$/i, 'Brasil')
+        .replace(/^Colombia$/i, 'Colômbia')
+        .replace(/^Peru$/i, 'Peru')
+        .replace(/^Mexico$/i, 'México')
+        .replace(/^Canada$/i, 'Canadá');
+      return { country: normalizedCountry, region: pattern.region || UNKNOWN_REGION };
+    }
+  }
+
+  const parts = text.split(',').map(item => item.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const lastPart = parts[parts.length - 1];
+    if (US_STATE_CODES.has(lastPart.toUpperCase())) {
+      return { country: 'Estados Unidos', region: 'North America' };
+    }
+
+    const codeKey = lastPart.toLowerCase();
+    if (COUNTRY_ALIASES[codeKey]) {
+      const country = COUNTRY_ALIASES[codeKey];
+      if (country === 'Estados Unidos' || country === 'México' || country === 'Canadá') {
+        return { country, region: 'North America' };
+      }
+      return { country, region: UNKNOWN_REGION };
+    }
+
+    if (/\b(ocean|sea|ridge|trench|junction|region)\b/i.test(text)) {
+      return { country: 'Águas internacionais', region: 'Oceania' };
+    }
+
+    if (/^[A-Za-z\s\-\.]+$/.test(lastPart) && lastPart.length <= 25) {
+      return { country: titleCaseWord(lastPart), region: UNKNOWN_REGION };
+    }
+  }
+
+  return { country: UNKNOWN_COUNTRY, region: UNKNOWN_REGION };
+}
+
+function normalizeGeoValue(value, fallback) {
+  if (!value) return fallback;
+  const text = String(value).trim();
+  if (!text || /^outros$/i.test(text) || /^none$/i.test(text) || /^null$/i.test(text)) {
+    return fallback;
+  }
+  return text;
+}
+
+function normalizeCountryValue(rawCountry, inferredCountry, place) {
+  const raw = String(rawCountry || '').trim();
+  const key = raw.toLowerCase();
+
+  if (!raw || /^outros$/i.test(raw) || /^none$/i.test(raw) || /^null$/i.test(raw)) {
+    if (inferredCountry) {
+      const inferredKey = String(inferredCountry).toLowerCase();
+      return COUNTRY_ALIASES[inferredKey] || inferredCountry;
+    }
+    return UNKNOWN_COUNTRY;
+  }
+
+  if (US_STATE_CODES.has(raw.toUpperCase()) || US_STATE_NAMES.has(key)) {
+    return 'Estados Unidos';
+  }
+
+  if (COUNTRY_ALIASES[key]) {
+    return COUNTRY_ALIASES[key];
+  }
+
+  if (raw.length <= 2 && inferredCountry) {
+    return inferredCountry;
+  }
+
+  if (/\b(ocean|sea|ridge|trench|junction|region)\b/i.test(String(place || ''))) {
+    return 'Águas internacionais';
+  }
+
+  return raw;
+}
+
+function normalizeRegionValue(rawRegion, country, inferredRegion) {
+  const raw = normalizeGeoValue(rawRegion, inferredRegion || UNKNOWN_REGION);
+  const alias = {
+    'América do Norte': 'North America',
+    'América do Sul': 'South America',
+    'Ásia': 'Asia',
+    'Europa': 'Europe',
+    'África': 'Africa',
+    'Oceano': 'Oceania',
+  };
+
+  const normalized = alias[raw] || raw;
+  if (CONTINENT_NAMES.includes(normalized)) {
+    return normalized;
+  }
+
+  if (COUNTRY_TO_CONTINENT[country]) {
+    return COUNTRY_TO_CONTINENT[country];
+  }
+
+  if (inferredRegion && CONTINENT_NAMES.includes(inferredRegion)) {
+    return inferredRegion;
+  }
+
+  return UNKNOWN_REGION;
+}
+
+function populateSelect(select, values, sortMode = 'alpha') {
+  const uniqueValues = [...new Set(values.filter(Boolean))];
+  if (sortMode === 'numeric') {
+    uniqueValues.sort((a, b) => Number(a) - Number(b));
+  } else {
+    uniqueValues.sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'));
+  }
   select.innerHTML = '<option value="">Todos</option>';
 
   if (!uniqueValues.length) {
@@ -82,13 +296,56 @@ function populateSelect(select, values) {
   });
 }
 
+function populateRegionFilter() {
+  regionFilter.innerHTML = '<option value="">Todos</option>';
+  CONTINENTS.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.name;
+    option.textContent = `${item.name} (${item.code})`;
+    regionFilter.appendChild(option);
+  });
+}
+
+function getDataFilteredByNonGeoDimensions(rows) {
+  const year = yearFilter.value;
+  const month = monthFilter.value;
+  const day = dayFilter.value;
+  return rows.filter(item => {
+    const date = new Date(item.date);
+    const matchesYear = !year || date.getFullYear() === Number(year);
+    const matchesMonth = !month || (date.getMonth() + 1) === Number(month);
+    const matchesDay = !day || date.getDate() === Number(day);
+    return matchesYear && matchesMonth && matchesDay;
+  });
+}
+
+function refreshCountryFilterOptions() {
+  const dashboardData = getDashboardData();
+  const selectedRegion = regionFilter.value;
+  const rowsByDate = getDataFilteredByNonGeoDimensions(dashboardData);
+  const candidates = rowsByDate.filter(item => !selectedRegion || item.region === selectedRegion);
+  const selectedCountry = countryFilter.value;
+  populateSelect(countryFilter, candidates.map(item => normalizeGeoValue(item.country, UNKNOWN_COUNTRY)));
+  if (selectedCountry && Array.from(countryFilter.options).some(opt => opt.value === selectedCountry)) {
+    countryFilter.value = selectedCountry;
+  }
+}
+
 function populateDataFilters() {
   const dashboardData = getDashboardData();
-  populateSelect(regionFilter, dashboardData.map(item => item.region));
-  populateSelect(countryFilter, dashboardData.map(item => item.country));
-  populateSelect(yearFilter, dashboardData.map(item => new Date(item.date).getFullYear().toString()));
-  populateSelect(monthFilter, dashboardData.map(item => (new Date(item.date).getMonth() + 1).toString()));
-  populateSelect(dayFilter, dashboardData.map(item => new Date(item.date).getDate().toString()));
+  const selectedRegion = regionFilter.value;
+  const selectedCountry = countryFilter.value;
+  populateRegionFilter();
+  if (selectedRegion && CONTINENT_NAMES.includes(selectedRegion)) {
+    regionFilter.value = selectedRegion;
+  }
+  populateSelect(yearFilter, dashboardData.map(item => new Date(item.date).getFullYear().toString()), 'numeric');
+  populateSelect(monthFilter, dashboardData.map(item => (new Date(item.date).getMonth() + 1).toString()), 'numeric');
+  populateSelect(dayFilter, dashboardData.map(item => new Date(item.date).getDate().toString()), 'numeric');
+  refreshCountryFilterOptions();
+  if (selectedCountry && Array.from(countryFilter.options).some(opt => opt.value === selectedCountry)) {
+    countryFilter.value = selectedCountry;
+  }
 }
 
 function getIsoUtcFromNow(daysBack = 0) {
@@ -101,6 +358,34 @@ function getDatasetModeLabel(mode) {
   if (mode === 'latest_7d') return 'últimos 7 dias';
   if (mode === 'historical_2026') return 'histórico 2026';
   return 'últimos 100';
+}
+
+function getMedian(values) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+function filterRowsByMode(rows, mode) {
+  if (!rows.length) return [];
+
+  const sortedDesc = rows
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  if (mode === 'latest_100') {
+    return sortedDesc.slice(0, DASHBOARD_LATEST_LIMIT);
+  }
+
+  if (mode === 'historical_2026') {
+    return rows.filter(item => item.date >= DASHBOARD_START_TIME && item.date <= DASHBOARD_END_TIME);
+  }
+
+  const maxDate = sortedDesc.length ? new Date(sortedDesc[0].date) : new Date();
+  const daysBack = mode === 'latest_24h' ? 1 : 7;
+  const floorDate = new Date(maxDate.getTime() - daysBack * 24 * 60 * 60 * 1000);
+  return rows.filter(item => new Date(item.date) >= floorDate && new Date(item.date) <= maxDate);
 }
 
 function resetDimensionFilters() {
@@ -119,21 +404,23 @@ function getFilteredData() {
 
   return dashboardData.filter(item => {
     const date = new Date(item.date);
-    const matchesRegion = !region || item.region === region;
-    const matchesCountry = !country || item.country === country;
-    const matchesYear = !year || date.getFullYear().toString() === year;
-    const matchesMonth = !month || (date.getMonth() + 1).toString() === month;
-    const matchesDay = !day || date.getDate().toString() === day;
+    const itemRegion = normalizeGeoValue(item.region, UNKNOWN_REGION);
+    const itemCountry = normalizeGeoValue(item.country, UNKNOWN_COUNTRY);
+    const matchesRegion = !region || itemRegion === region;
+    const matchesCountry = !country || itemCountry === country;
+    const matchesYear = !year || date.getFullYear() === Number(year);
+    const matchesMonth = !month || (date.getMonth() + 1) === Number(month);
+    const matchesDay = !day || date.getDate() === Number(day);
     return matchesRegion && matchesCountry && matchesYear && matchesMonth && matchesDay;
   });
 }
 
 function getSeverityLabel(magnitude) {
-  if (magnitude >= 7) return 'MAJOR';
-  if (magnitude >= 6) return 'HIGH';
-  if (magnitude >= 5) return 'SIGNIFICANT';
-  if (magnitude >= 4) return 'MODERATE';
-  return 'LOW';
+  if (magnitude >= 7) return 'CRITICA';
+  if (magnitude >= 6) return 'ALTA';
+  if (magnitude >= 5) return 'SIGNIFICATIVA';
+  if (magnitude >= 4) return 'MODERADA';
+  return 'BAIXA';
 }
 
 function getTrendStatus(filtered) {
@@ -160,10 +447,10 @@ function getCorrelation(filtered) {
 }
 
 function getSeverityClass(label) {
-  if (label === 'MAJOR') return 'severity-major';
-  if (label === 'HIGH') return 'severity-high';
-  if (label === 'SIGNIFICANT') return 'severity-significant';
-  if (label === 'MODERATE') return 'severity-moderate';
+  if (label === 'CRITICA') return 'severity-major';
+  if (label === 'ALTA') return 'severity-high';
+  if (label === 'SIGNIFICATIVA') return 'severity-significant';
+  if (label === 'MODERADA') return 'severity-moderate';
   return 'severity-low';
 }
 
@@ -199,11 +486,9 @@ function updateDashboard() {
   const m4Events = filtered.filter(item => item.mag >= 4).length;
   const m5Events = filtered.filter(item => item.mag >= 5).length;
   const maxMag = filtered.reduce((max, item) => item.mag > max ? item.mag : max, 0);
-  const depths = filtered.map(item => item.depth).sort((a, b) => a - b);
-  const mid = Math.floor(depths.length / 2);
-  const medianDepth = depths.length % 2 === 0 ? (depths[mid - 1] + depths[mid]) / 2 : depths[mid];
-  const avgMag = (filtered.reduce((sum, item) => sum + item.mag, 0) / count).toFixed(1);
-  const avgDepth = (filtered.reduce((sum, item) => sum + item.depth, 0) / count).toFixed(1);
+  const medianDepth = getMedian(filtered.map(item => item.depth));
+  const medianMag = getMedian(filtered.map(item => item.mag)).toFixed(1);
+  const medianDepthAll = getMedian(filtered.map(item => item.depth)).toFixed(1);
   const lastDate = filtered.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0].date;
 
   kpiEvents.textContent = count;
@@ -214,12 +499,14 @@ function updateDashboard() {
   kpiLastDate.textContent = lastDate;
 
   const regionCounts = Object.entries(filtered.reduce((acc, item) => {
-    acc[item.region] = (acc[item.region] || 0) + 1;
+    const region = normalizeGeoValue(item.region, UNKNOWN_REGION);
+    acc[region] = (acc[region] || 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
 
   const countryCounts = Object.entries(filtered.reduce((acc, item) => {
-    acc[item.country] = (acc[item.country] || 0) + 1;
+    const country = normalizeGeoValue(item.country, UNKNOWN_COUNTRY);
+    acc[country] = (acc[country] || 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1]);
 
@@ -241,10 +528,10 @@ function updateDashboard() {
     return {
       name,
       count,
-      avgMagnitude: regionEvents.reduce((sum, item) => sum + item.mag, 0) / regionEvents.length
+      medianMagnitude: getMedian(regionEvents.map(item => item.mag))
     };
-  }).sort((a, b) => b.avgMagnitude - a.avgMagnitude);
-  const mostIntenseRegion = regionIntensity[0] || { name: '—', count: 0, avgMagnitude: 0 };
+  }).sort((a, b) => b.medianMagnitude - a.medianMagnitude);
+  const mostIntenseRegion = regionIntensity[0] || { name: '—', count: 0, medianMagnitude: 0 };
 
   const magnitudeBands = ['<2', '2–3', '3–4', '4–5', '5–6', '6–7', '7+'];
   const magnitudeValues = magnitudeBands.map((band) => {
@@ -291,10 +578,10 @@ function updateDashboard() {
 
   const regionShare = count ? ((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0) : 0;
   const geographicLabel = topRegionItem === 'Outros' && topCountryItem === 'Outros'
-    ? 'a classificação geográfica do catálogo permanece agregada em Outros'
+    ? 'a classificação geográfica do catálogo permanece agregada'
     : `${topRegionItem} como principal concentração regional e ${topCountryItem} como principal país da seleção`;
 
-  summaryText.innerHTML = `<strong>Analytical Severity:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
+  summaryText.innerHTML = `<strong>Severidade Analítica:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
   topSummaryEl.innerHTML = `<strong>${topRegionItem}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
   if (executiveSignalMainEl) {
     executiveSignalMainEl.textContent = `${topRegionItem} é o centro da seleção • ${count} eventos monitorados`;
@@ -310,7 +597,7 @@ function updateDashboard() {
   insightMagnitudeBandEl.textContent = dominantBand;
   insightMagnitudeMetaEl.textContent = `${dominantBandCount} eventos • ${m6Events} M6+ • ${m7Events} M7+`;
   insightTemporalEl.textContent = temporalInsight;
-  insightTemporalMetaEl.textContent = `magnitude média ${avgMag} • profundidade média ${avgDepth} km • pico horário ${hourlyLabel}`;
+  insightTemporalMetaEl.textContent = `magnitude mediana ${medianMag} • profundidade mediana ${medianDepthAll} km • pico horário ${hourlyLabel}`;
 
   lastUpdatedEl.textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
   if (window.dashboardSource === 'api') {
@@ -328,8 +615,8 @@ function updateDashboard() {
     <div class="answer-item"><strong>Quais são os mais relevantes?</strong><br>O evento de maior relevância analítica foi ${topEvent.place}, com magnitude ${topEvent.mag.toFixed(1)}, score ${getSeismicScore(topEvent)} e severidade ${getSeverityLabel(topEvent.mag)}.</div>
     <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado, com ${distinctDays.length} dias registrados e pico horário ${hourlyLabel}.</div>
     <div class="answer-item"><strong>Existe relação entre magnitude e profundidade?</strong><br>A correlação estimada é ${correlationLabel} (${correlation.toFixed(2)}), o que sugere ${correlation > 0.3 ? 'uma leve tendência de eventos mais fortes em maiores profundidades' : correlation < -0.3 ? 'uma leve tendência de eventos mais fortes em menores profundidades' : 'pouca relação linear entre magnitude e profundidade'}.</div>
-    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registrou a maior magnitude média da seleção: ${mostIntenseRegion.avgMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
-    <div class="answer-item"><strong>Há sinais de eventos críticos?</strong><br>Há ${m6Events} eventos M6+, ${m7Events} eventos M7+, ${tsunamiEvents} com tsunami e ${alertEvents} com alerta, além de ${significantEvents} eventos de alta significance.</div>
+    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registrou a maior magnitude mediana da seleção: ${mostIntenseRegion.medianMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
+    <div class="answer-item"><strong>Há sinais de eventos críticos?</strong><br>Há ${m6Events} eventos M6+, ${m7Events} eventos M7+, ${tsunamiEvents} com tsunami e ${alertEvents} com alerta, além de ${significantEvents} eventos de alta significância.</div>
   `;
 
   const attentionItems = filtered.filter(item => item.mag >= 5 || item.tsunami || item.alert || item.mag >= 6 || (item.significance || 0) >= 50)
@@ -338,9 +625,9 @@ function updateDashboard() {
   attentionListEl.innerHTML = attentionItems.length ? attentionItems.map(item => {
     const severity = getSeverityLabel(item.mag);
     return `<div class="attention-item"><strong>${item.place}</strong><br><small>${item.date} • M ${item.mag.toFixed(1)} • ${item.country}</small><br><span class="severity-pill ${getSeverityClass(severity)}">${severity}</span></div>`;
-  }).join('') : '<div class="attention-item"><strong>No attention events in current selection.</strong></div>';
+  }).join('') : '<div class="attention-item"><strong>Nenhum evento crítico na seleção atual.</strong></div>';
 
-  renderCharts(regionCounts, trendCounts, countryCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues);
+  renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues);
   renderDetails(filtered);
 }
 
@@ -443,57 +730,10 @@ function renderScatterChart(container, filtered) {
   container.appendChild(svg);
 }
 
-function renderDonutChart(container, labels, values) {
-  container.innerHTML = '';
-  const size = 180;
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
-  const total = values.reduce((sum, value) => sum + value, 0);
-  let offset = 0;
-
-  const svg = createSvgElement('svg', { viewBox: '0 0 220 220' });
-  const baseCircle = createSvgElement('circle', { cx: 110, cy: 110, r: radius, fill: 'none', stroke: 'rgba(255,255,255,0.12)', 'stroke-width': 30 });
-  svg.appendChild(baseCircle);
-
-  values.forEach((value, index) => {
-    const segment = (value / total) * circumference;
-    const circle = createSvgElement('circle', { cx: 110, cy: 110, r: radius, fill: 'none', stroke: colors[index % colors.length], 'stroke-width': 30, 'stroke-dasharray': `${segment} ${circumference - segment}`, 'stroke-dashoffset': -offset, transform: 'rotate(-90 110 110)' });
-    svg.appendChild(circle);
-    offset += segment;
-  });
-
-  const centerText = createSvgElement('text', { x: 110, y: 110, 'text-anchor': 'middle', 'dominant-baseline': 'middle', fill: 'white', 'font-size': '20' });
-  centerText.textContent = total;
-  svg.appendChild(centerText);
-
-  const legend = document.createElement('div');
-  legend.style.display = 'grid';
-  legend.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
-  legend.style.gap = '0.4rem';
-  legend.style.marginTop = '0.6rem';
-  legend.innerHTML = labels.map((label, index) => `<div style="font-size:0.85rem;color:rgba(255,255,255,0.85)"><span style="color:${colors[index % colors.length]}">■</span> ${label}</div>`).join('');
-
-  container.innerHTML = '';
-  container.appendChild(svg);
-  container.appendChild(legend);
-}
-
-function renderCharts(regionCounts, trendCounts, countryCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues) {
-  const regionLabels = regionCounts.map(item => item[0]);
-  const regionValues = regionCounts.map(item => item[1]);
+function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues) {
 
   const trendLabels = trendCounts.map(item => item[0]);
   const trendValues = trendCounts.map(item => item[1]);
-
-  const countryLabels = countryCounts.map(item => item[0]);
-  const countryValues = countryCounts.map(item => item[1]);
-
-  if (regionLabels.length) {
-    renderBarChart(regionChartEl, regionLabels, regionValues);
-  } else {
-    regionChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
-  }
 
   if (trendLabels.length) {
     renderLineChart(trendChartEl, trendLabels, trendValues);
@@ -519,11 +759,6 @@ function renderCharts(regionCounts, trendCounts, countryCounts, filtered, magnit
     depthChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
   }
 
-  if (countryLabels.length) {
-    renderDonutChart(countryChartEl, countryLabels, countryValues);
-  } else {
-    countryChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
-  }
 }
 
 function exportFilteredData(filtered) {
@@ -555,10 +790,13 @@ function renderDetails(filtered) {
     const severity = getSeverityLabel(item.mag);
     const score = getSeismicScore(item);
     const enrichedLocation = [item.city, item.nearestCity].filter(Boolean).join(' • ') || item.place;
+    const locationMeta = enrichedLocation && enrichedLocation !== item.place
+      ? `<br><small style="color:rgba(255,255,255,0.6);">${enrichedLocation}</small>`
+      : '';
     return `
       <tr>
         <td>${item.id}</td>
-        <td>${item.place}<br><small style="color:rgba(255,255,255,0.6);">${enrichedLocation}</small></td>
+        <td>${item.place}${locationMeta}</td>
         <td>${item.region}</td>
         <td>${item.country}</td>
         <td>${item.date}</td>
@@ -574,11 +812,14 @@ function renderDetails(filtered) {
 function normalizeFeature(feature) {
   const props = feature.properties || {};
   const coords = feature.geometry?.coordinates || [];
+  const inferredGeo = inferCountryRegionFromPlace(props.place);
+  const country = normalizeCountryValue(props.country, inferredGeo.country, props.place);
+  const region = normalizeRegionValue(props.region, country, inferredGeo.region);
   return {
     id: feature.id,
     place: props.place,
-    region: props.region || 'Outros',
-    country: props.country || 'Outros',
+    region,
+    country,
     city: props.city || null,
     nearestCity: props.nearest_city || null,
     date: new Date(props.time).toISOString().slice(0, 10),
@@ -631,6 +872,28 @@ function buildModeParams(mode) {
   };
 }
 
+function buildLocalModeData(mode) {
+  const staticRows = getStaticDashboardData();
+  const normalizedRows = staticRows.map(item => {
+    const place = item.place || item.place_raw || '';
+    const inferredGeo = inferCountryRegionFromPlace(place);
+    const country = normalizeCountryValue(item.country, inferredGeo.country, place);
+    const region = normalizeRegionValue(item.region, country, inferredGeo.region);
+    return {
+      ...item,
+      region,
+      country,
+    date: String(item.date || ''),
+    mag: Number(item.mag || 0),
+    depth: Number(item.depth || 0),
+    tsunami: Boolean(item.tsunami),
+    alert: Boolean(item.alert),
+    significance: Number(item.significance || item.sig || 0),
+    };
+  });
+  return filterRowsByMode(normalizedRows, mode);
+}
+
 function loadDashboardDataFromApi(mode = 'latest_24h') {
   const params = new URLSearchParams(buildModeParams(mode));
   return fetch(`https://earthquake.usgs.gov/fdsnws/event/1/query?${params.toString()}`)
@@ -642,15 +905,21 @@ function loadDashboardDataFromApi(mode = 'latest_24h') {
     })
     .then(payload => {
       const normalized = (payload.features || []).map(normalizeFeature);
-      window.dashboardData = normalized;
-      window.dashboardSource = 'api';
+      if (!normalized.length) {
+        window.dashboardData = buildLocalModeData(mode);
+        window.dashboardSource = 'fallback';
+      } else {
+        window.dashboardData = normalized;
+        window.dashboardSource = 'api';
+      }
       window.dashboardMode = mode;
-      return normalized;
+      return window.dashboardData;
     })
     .catch(() => {
+      window.dashboardData = buildLocalModeData(mode);
       window.dashboardSource = 'fallback';
       window.dashboardMode = mode;
-      return getDashboardData();
+      return window.dashboardData;
     });
 }
 
@@ -708,7 +977,12 @@ function initFilters() {
   populateDataFilters();
 
   [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
-    select.addEventListener('change', updateDashboard);
+    select.addEventListener('change', () => {
+      if (select === regionFilter || select === yearFilter || select === monthFilter || select === dayFilter) {
+        refreshCountryFilterOptions();
+      }
+      updateDashboard();
+    });
   });
 
   if (detailsLimit) {
