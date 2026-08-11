@@ -82,7 +82,7 @@
     .scatter-analytical-panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem; }
     .scatter-analytical-panel h4 { margin: 0 0 0.25rem; color: #fff; font-size: 1rem; }
     .scatter-analytical-panel p { margin: 0 0 0.6rem; color: rgba(255,255,255,0.68); font-size: 0.86rem; }
-    .scatter-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; margin-top: 0.85rem; }
+    .scatter-summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.75rem; margin-top: 0.85rem; }
     .scatter-summary-card { display: grid; grid-template-columns: 34px 1fr; gap: 0.8rem; align-items: center; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 0.85rem 0.9rem; min-height: 76px; }
     .scatter-summary-card small { display: block; color: rgba(255,255,255,0.68); font-size: 0.78rem; line-height: 1.2; margin-bottom: 0.16rem; }
     .scatter-summary-card strong { display: block; color: #fff; font-size: 1.02rem; line-height: 1.15; }
@@ -106,7 +106,13 @@
     .severity-significant { background: rgba(249,115,22,0.16); color: #fed7aa; }
     .severity-high { background: rgba(239,68,68,0.16); color: #fecaca; }
     .severity-major { background: rgba(168,85,247,0.16); color: #e9d5ff; }
-    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 1400px) { .scatter-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 1180px) { .scatter-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .scatter-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) { .scatter-summary-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
