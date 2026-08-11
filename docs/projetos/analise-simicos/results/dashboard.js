@@ -16,6 +16,10 @@ const mapEl = document.getElementById('seismicMap');
 const mapStatusEl = document.getElementById('mapStatus');
 const mapAssetLayerFilter = document.getElementById('mapAssetLayerFilter');
 const chartHoverTooltipEl = document.getElementById('chartHoverTooltip');
+const toggleAnswersPanelBtn = document.getElementById('toggleAnswersPanel');
+const toggleWellComparisonPanelBtn = document.getElementById('toggleWellComparisonPanel');
+const answersPanelContent = document.getElementById('answersPanelContent');
+const wellComparisonPanelContent = document.getElementById('wellComparisonPanelContent');
 
 const kpiEvents = document.getElementById('kpiEvents');
 const kpiM4 = document.getElementById('kpiM4');
@@ -455,6 +459,13 @@ function resetDimensionFilters() {
   [regionFilter, countryFilter, yearFilter, monthFilter, dayFilter].forEach(select => {
     select.value = '';
   });
+}
+
+function togglePanelContent(button, content) {
+  if (!button || !content) return;
+  const isCollapsed = content.classList.toggle('panel-collapsed-content');
+  button.textContent = isCollapsed ? 'Abrir' : 'Fechar';
+  button.setAttribute('aria-expanded', String(!isCollapsed));
 }
 
 function getFilteredData() {
@@ -1716,6 +1727,18 @@ function initFilters() {
   if (exportButton) {
     exportButton.addEventListener('click', () => {
       exportFilteredData(getFilteredData());
+    });
+  }
+
+  if (toggleAnswersPanelBtn && answersPanelContent) {
+    toggleAnswersPanelBtn.addEventListener('click', () => {
+      togglePanelContent(toggleAnswersPanelBtn, answersPanelContent);
+    });
+  }
+
+  if (toggleWellComparisonPanelBtn && wellComparisonPanelContent) {
+    toggleWellComparisonPanelBtn.addEventListener('click', () => {
+      togglePanelContent(toggleWellComparisonPanelBtn, wellComparisonPanelContent);
     });
   }
 

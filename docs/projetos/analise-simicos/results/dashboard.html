@@ -25,6 +25,9 @@
     .filters select, .filters button { width: 100%; border: 1px solid rgba(15, 23, 42, 0.2); background: rgba(255,255,255,0.95); color: #0f172a; padding: 0.72rem 0.8rem; border-radius: 10px; }
     .filters select { appearance: auto; }
     .filters button { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; font-weight: 700; cursor: pointer; }
+    .panel-toggle-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-bottom: 0.4rem; }
+    .panel-toggle-btn { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #e2e8f0; font-weight: 700; padding: 0.4rem 0.7rem; border-radius: 9px; cursor: pointer; }
+    .panel-collapsed-content { display: none; }
     .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; }
     .kpi-card { background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(255,255,255,0.04)); border: 1px solid rgba(124,58,237,0.25); border-radius: 14px; padding: 1rem; }
     .kpi-title { font-size: 0.9rem; color: rgba(255,255,255,0.75); margin-bottom: 0.4rem; }
@@ -173,8 +176,13 @@
       </div>
 
       <div class="panel">
-        <h3 style="margin-top:0;">Respostas Diretas</h3>
-        <div class="answer-list" id="answerList"></div>
+        <div class="panel-toggle-head">
+          <h3 style="margin-top:0;">Respostas Diretas</h3>
+          <button id="toggleAnswersPanel" class="panel-toggle-btn" type="button" aria-expanded="true">Fechar</button>
+        </div>
+        <div id="answersPanelContent">
+          <div class="answer-list" id="answerList"></div>
+        </div>
       </div>
 
       <div class="panel">
@@ -188,24 +196,29 @@
       </div>
 
       <div class="panel">
-        <h3 style="margin-top:0;">Comparação Poço x Abalo Sísmico (ANP)</h3>
-        <p style="margin:0.2rem 0 0.8rem; color:rgba(255,255,255,0.72);">Base oficial ANP (poços públicos georreferenciados) comparada com os abalos filtrados para estimar distância mínima geodésica.</p>
-        <div class="meta-strip" style="margin-top:0; margin-bottom:0.85rem;">
-          <span class="meta-pill" id="wellDatasetStatus">Base de poços: carregando...</span>
+        <div class="panel-toggle-head">
+          <h3 style="margin-top:0;">Comparação Poço x Abalo Sísmico (ANP)</h3>
+          <button id="toggleWellComparisonPanel" class="panel-toggle-btn" type="button" aria-expanded="true">Fechar</button>
         </div>
-        <div class="kpis" style="margin-bottom:0.85rem;">
-          <div class="kpi-card"><div class="kpi-title">Poços comparados</div><div class="kpi-value" id="kpiWellsCompared">0</div></div>
-          <div class="kpi-card"><div class="kpi-title">Poços até 50 km</div><div class="kpi-value" id="kpiWells50km">0</div></div>
-          <div class="kpi-card"><div class="kpi-title">Poços até 100 km</div><div class="kpi-value" id="kpiWells100km">0</div></div>
-          <div class="kpi-card"><div class="kpi-title">Menor distância poço-abalo</div><div class="kpi-value" id="kpiMinWellDistance">—</div></div>
-        </div>
-        <div style="overflow:auto;">
-          <table>
-            <thead>
-              <tr><th>Poço</th><th>Operador</th><th>Bacia</th><th>Estado</th><th>Abalo mais próximo</th><th>M</th><th>Distância (km)</th></tr>
-            </thead>
-            <tbody id="wellComparisonTable"><tr><td colspan="7">Aguardando dados...</td></tr></tbody>
-          </table>
+        <div id="wellComparisonPanelContent">
+          <p style="margin:0.2rem 0 0.8rem; color:rgba(255,255,255,0.72);">Base oficial ANP (poços públicos georreferenciados) comparada com os abalos filtrados para estimar distância mínima geodésica.</p>
+          <div class="meta-strip" style="margin-top:0; margin-bottom:0.85rem;">
+            <span class="meta-pill" id="wellDatasetStatus">Base de poços: carregando...</span>
+          </div>
+          <div class="kpis" style="margin-bottom:0.85rem;">
+            <div class="kpi-card"><div class="kpi-title">Poços comparados</div><div class="kpi-value" id="kpiWellsCompared">0</div></div>
+            <div class="kpi-card"><div class="kpi-title">Poços até 50 km</div><div class="kpi-value" id="kpiWells50km">0</div></div>
+            <div class="kpi-card"><div class="kpi-title">Poços até 100 km</div><div class="kpi-value" id="kpiWells100km">0</div></div>
+            <div class="kpi-card"><div class="kpi-title">Menor distância poço-abalo</div><div class="kpi-value" id="kpiMinWellDistance">—</div></div>
+          </div>
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr><th>Poço</th><th>Operador</th><th>Bacia</th><th>Estado</th><th>Abalo mais próximo</th><th>M</th><th>Distância (km)</th></tr>
+              </thead>
+              <tbody id="wellComparisonTable"><tr><td colspan="7">Aguardando dados...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
