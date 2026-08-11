@@ -369,7 +369,7 @@ function populateRegionFilter() {
   CONTINENTS.forEach(item => {
     const option = document.createElement('option');
     option.value = item.name;
-    option.textContent = `${item.name} (${item.code})`;
+    option.textContent = `${formatRegionPt(item.name)} (${item.code})`;
     regionFilter.appendChild(option);
   });
 }
@@ -1002,7 +1002,7 @@ function formatUtcTime(ms) {
 
 function formatLocalTime(ms) {
   if (!Number.isFinite(ms)) return null;
-  return new Date(ms).toLocaleTimeString('en-GB', { hour12: false });
+  return new Date(ms).toLocaleTimeString('pt-BR', { hour12: false });
 }
 
 function formatAlert(value) {
@@ -1031,27 +1031,27 @@ function buildMapPopupHtml(item) {
   const depth = Number.isFinite(item.depth) ? `${item.depth.toFixed(1)} km` : null;
   const latitude = Number.isFinite(item.latitude) ? item.latitude.toFixed(4) : null;
   const longitude = Number.isFinite(item.longitude) ? item.longitude.toFixed(4) : null;
-  const tsunami = typeof item.tsunami === 'boolean' ? (item.tsunami ? 'Yes' : 'No') : null;
+  const tsunami = typeof item.tsunami === 'boolean' ? (item.tsunami ? 'Sim' : 'Não') : null;
   const alert = formatAlert(item.alert);
   const significance = Number.isFinite(item.significance) ? String(Math.round(item.significance)) : null;
   const distance = Number.isFinite(item.distanceToCityKm) ? `${item.distanceToCityKm.toFixed(1)} km` : null;
 
   const rows = [
-    mapDetailRow('Event ID', item.id),
+    mapDetailRow('ID do Evento', item.id),
     mapDetailRow('Magnitude', magnitude),
-    mapDetailRow('Depth', depth),
-    mapDetailRow('Date', date),
-    mapDetailRow('Time UTC', utcTime),
-    mapDetailRow('Local Time', localTime),
-    mapDetailRow('Location', item.place),
-    mapDetailRow('Country', item.country),
+    mapDetailRow('Profundidade', depth),
+    mapDetailRow('Data', date),
+    mapDetailRow('Hora UTC', utcTime),
+    mapDetailRow('Hora Local', localTime),
+    mapDetailRow('Localização', item.place),
+    mapDetailRow('País', item.country),
     mapDetailRow('Latitude', latitude),
     mapDetailRow('Longitude', longitude),
     mapDetailRow('Tsunami', tsunami),
-    mapDetailRow('Alert', alert),
-    mapDetailRow('Significance', significance),
-    mapDetailRow('Nearest City', item.nearestCity),
-    mapDetailRow('Distance', distance),
+    mapDetailRow('Alerta', alert),
+    mapDetailRow('Significância', significance),
+    mapDetailRow('Cidade mais próxima', item.nearestCity),
+    mapDetailRow('Distância', distance),
   ].filter(Boolean);
 
   return `<div class="map-popup-scroll">${rows.join('<hr style="border:none;border-top:1px solid rgba(0,0,0,0.12);margin:6px 0;">')}</div>`;
@@ -1279,6 +1279,7 @@ function updateDashboard() {
   }, {})).sort((a, b) => a[0].localeCompare(b[0]));
 
   const topRegionItem = regionCounts[0] ? regionCounts[0][0] : '—';
+  const topRegionLabel = topRegionItem === '—' ? '—' : formatRegionPt(topRegionItem);
   const topCountryItem = countryCounts[0] ? countryCounts[0][0] : '—';
   const topMagnitudeItem = filtered.reduce((max, item) => item.mag > max.mag ? item : max, filtered[0]).mag.toFixed(1);
   const topMagnitudePlace = filtered.reduce((max, item) => item.mag > max.mag ? item : max, filtered[0]).place;
@@ -1295,6 +1296,7 @@ function updateDashboard() {
     };
   }).sort((a, b) => b.medianMagnitude - a.medianMagnitude);
   const mostIntenseRegion = regionIntensity[0] || { name: '—', count: 0, medianMagnitude: 0 };
+  const mostIntenseRegionLabel = mostIntenseRegion.name === '—' ? '—' : formatRegionPt(mostIntenseRegion.name);
 
   const magnitudeBands = ['<2', '2–3', '3–4', '4–5', '5–6', '6–7', '7+'];
   const magnitudeValues = magnitudeBands.map((band) => {
@@ -1335,19 +1337,19 @@ function updateDashboard() {
   const dominantHour = Object.entries(hourlySpread).sort((a, b) => b[1] - a[1])[0];
   const hourlyLabel = dominantHour ? `${dominantHour[0]}h` : '—';
 
-  topRegion.textContent = topRegionItem;
+  topRegion.textContent = topRegionLabel;
   topCountry.textContent = topCountryItem;
   topMagnitude.textContent = `${topMagnitudeItem} (${topMagnitudePlace})`;
 
   const regionShare = count ? ((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0) : 0;
   const geographicLabel = topRegionItem === 'Outros' && topCountryItem === 'Outros'
     ? 'a classificação geográfica do catálogo permanece agregada'
-    : `${topRegionItem} como principal concentração regional e ${topCountryItem} como principal país da seleção`;
+    : `${topRegionLabel} como principal concentração regional e ${topCountryItem} como principal país da seleção`;
 
   summaryText.innerHTML = `<strong>Severidade Analítica:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
-  topSummaryEl.innerHTML = `<strong>${topRegionItem}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
+  topSummaryEl.innerHTML = `<strong>${topRegionLabel}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
   if (executiveSignalMainEl) {
-    executiveSignalMainEl.textContent = `${topRegionItem} é o centro da seleção • ${count} eventos monitorados`;
+    executiveSignalMainEl.textContent = `${topRegionLabel} é o centro da seleção • ${count} eventos monitorados`;
   }
   if (executiveSignalMetaEl) {
     executiveSignalMetaEl.textContent = `Maior evento: ${topMagnitudePlace} (M ${topMagnitudeItem}) • tendência ${trendStatus} • ${m6Events} eventos M6+`;
@@ -1355,7 +1357,7 @@ function updateDashboard() {
 
   insightHighestEl.textContent = `${maxMag.toFixed(1)} M`; 
   insightHighestMetaEl.textContent = `${topMagnitudePlace} • ${lastDate} • ${m7Events} eventos M7+`;
-  insightRegionEl.textContent = `${topRegionItem}`;
+  insightRegionEl.textContent = `${topRegionLabel}`;
   insightRegionMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} eventos • ${((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0)}% do total`;
   insightMagnitudeBandEl.textContent = dominantBand;
   insightMagnitudeMetaEl.textContent = `${dominantBandCount} eventos • ${m6Events} M6+ • ${m7Events} M7+`;
@@ -1367,18 +1369,18 @@ function updateDashboard() {
     const modeLabel = getDatasetModeLabel(window.dashboardMode);
     dataSourceEl.textContent = `Fonte: USGS Earthquake Catalog (ao vivo) • ${modeLabel}`;
   } else {
-    dataSourceEl.textContent = 'Fonte: dados locais / fallback';
+    dataSourceEl.textContent = 'Fonte: dados locais / contingência';
   }
   recordsLoadedEl.textContent = `Eventos carregados: ${dashboardData.length}`;
   const minDate = dayValues[0] || '—';
   dateRangeEl.textContent = `Período: ${minDate} → ${lastDate}`;
 
   answerListEl.innerHTML = `
-    <div class="answer-item"><strong>Onde acontecem?</strong><br>A maior concentração da seleção está em ${topRegionItem}; ${topCountryItem} aparece como o principal agrupamento geográfico dentro do contexto analisado.</div>
+    <div class="answer-item"><strong>Onde acontecem?</strong><br>A maior concentração da seleção está em ${topRegionLabel}; ${topCountryItem} aparece como o principal agrupamento geográfico dentro do contexto analisado.</div>
     <div class="answer-item"><strong>Quais são os mais relevantes?</strong><br>O evento de maior relevância analítica foi ${topEvent.place}, com magnitude ${topEvent.mag.toFixed(1)}, score ${getSeismicScore(topEvent)} e severidade ${getSeverityLabel(topEvent.mag)}.</div>
     <div class="answer-item"><strong>A atividade está aumentando ou diminuindo?</strong><br>A tendência observada é ${trendStatus} ao longo do intervalo analisado, com ${distinctDays.length} dias registrados e pico horário ${hourlyLabel}.</div>
     <div class="answer-item"><strong>Existe relação entre magnitude e profundidade?</strong><br>A correlação estimada é ${correlationLabel} (${correlation.toFixed(2)}), o que sugere ${correlation > 0.3 ? 'uma leve tendência de eventos mais fortes em maiores profundidades' : correlation < -0.3 ? 'uma leve tendência de eventos mais fortes em menores profundidades' : 'pouca relação linear entre magnitude e profundidade'}.</div>
-    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegion.name} registrou a maior magnitude mediana da seleção: ${mostIntenseRegion.medianMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
+    <div class="answer-item"><strong>Quais regiões apresentam maior intensidade?</strong><br>${mostIntenseRegionLabel} registrou a maior magnitude mediana da seleção: ${mostIntenseRegion.medianMagnitude.toFixed(1)} M em ${mostIntenseRegion.count} eventos.</div>
     <div class="answer-item"><strong>Há sinais de eventos críticos?</strong><br>Há ${m6Events} eventos M6+, ${m7Events} eventos M7+, ${tsunamiEvents} com tsunami e ${alertEvents} com alerta, além de ${significantEvents} eventos de alta significância.</div>
   `;
 
@@ -1567,6 +1569,19 @@ const REGION_COLORS = {
   [UNKNOWN_REGION]: '#94a3b8',
 };
 
+const REGION_LABELS_PT = {
+  'North America': 'América do Norte',
+  'South America': 'América do Sul',
+  'Asia': 'Ásia',
+  'Europe': 'Europa',
+  'Africa': 'África',
+  'Oceania': 'Oceania',
+};
+
+function formatRegionPt(region) {
+  return REGION_LABELS_PT[region] || region || UNKNOWN_REGION;
+}
+
 function getRegionColor(region) {
   return REGION_COLORS[region] || REGION_COLORS[UNKNOWN_REGION];
 }
@@ -1586,35 +1601,57 @@ function getScatterPointRadius(item, stats) {
   return 4 + Math.sqrt(normalized) * 8;
 }
 
+function getSummaryIconMarkup(iconType, badgeText = '') {
+  if (iconType === 'badge') {
+    return `<span class="badge">${badgeText}</span>`;
+  }
+
+  const icons = {
+    pulse: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h4l2-4 3 9 2-5h9"/></svg>',
+    wave: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3l2.2-5 3.4 11 2.5-7h3.2l1.7 3H22"/></svg>',
+    arrowDown: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v14"/><path d="M7 12l5 5 5-5"/><path d="M5 21h14"/></svg>',
+    bars: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V12"/><path d="M10 20V8"/><path d="M16 20V5"/><path d="M22 20V10"/><path d="M2 20h20"/></svg>',
+    delta: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16"/><path d="M8 8l4-4 4 4"/><path d="M8 16l4 4 4-4"/></svg>',
+    cluster: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+    target: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 7v10"/><path d="M7 12h10"/></svg>',
+    pie: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9h9"/><path d="M21 12a9 9 0 1 1-9-9"/></svg>',
+    star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1.1 6.2L12 17.4l-5.6 2.9 1.1-6.2-4.5-4.4 6.2-.9z"/></svg>',
+    info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6"/><path d="M12 7h.01"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>',
+  };
+
+  return icons[iconType] || icons.info;
+}
+
 function getScatterTooltip(item, stats) {
   const lines = [];
   lines.push(`<strong>${item.id || 'Evento'}</strong>`);
   lines.push(`Magnitude: ${Number.isFinite(item.mag) ? item.mag.toFixed(1) : '—'}${item.magType ? ` (${item.magType})` : ''}`);
-  lines.push(`Depth: ${Number.isFinite(item.depth) ? `${item.depth.toFixed(1)} km` : '—'}`);
+  lines.push(`Profundidade: ${Number.isFinite(item.depth) ? `${item.depth.toFixed(1)} km` : '—'}`);
   if (Number.isFinite(item.latitude) && Number.isFinite(item.longitude)) {
     lines.push(`Latitude: ${item.latitude.toFixed(4)}`);
     lines.push(`Longitude: ${item.longitude.toFixed(4)}`);
   }
-  if (item.place) lines.push(`Place: ${item.place}`);
-  if (item.country) lines.push(`Country: ${item.country}`);
-  if (item.region) lines.push(`Region: ${item.region}`);
+  if (item.place) lines.push(`Local: ${item.place}`);
+  if (item.country) lines.push(`País: ${item.country}`);
+  if (item.region) lines.push(`Região: ${formatRegionPt(item.region)}`);
   if (Number.isFinite(item.timestampMs)) {
-    lines.push(`Event Time UTC: ${formatUtcDate(item.timestampMs)} ${formatUtcTime(item.timestampMs)} UTC`);
+    lines.push(`Hora do evento (UTC): ${formatUtcDate(item.timestampMs)} ${formatUtcTime(item.timestampMs)} UTC`);
     const localDateTime = new Date(item.timestampMs).toLocaleString('pt-BR');
-    lines.push(`Event Time Local: ${localDateTime}`);
+    lines.push(`Hora local: ${localDateTime}`);
   }
-  if (typeof item.tsunami === 'boolean') lines.push(`Tsunami: ${item.tsunami ? 'Yes' : 'No'}`);
-  if (item.alert) lines.push(`Alert: ${formatAlert(item.alert)}`);
-  if (Number.isFinite(item.felt)) lines.push(`Felt: ${item.felt}`);
+  if (typeof item.tsunami === 'boolean') lines.push(`Tsunami: ${item.tsunami ? 'Sim' : 'Não'}`);
+  if (item.alert) lines.push(`Alerta: ${formatAlert(item.alert)}`);
+  if (Number.isFinite(item.felt)) lines.push(`Percebido (felt): ${item.felt}`);
   if (Number.isFinite(item.cdi)) lines.push(`CDI: ${item.cdi.toFixed(1)}`);
   if (Number.isFinite(item.mmi)) lines.push(`MMI: ${item.mmi.toFixed(1)}`);
-  if (Number.isFinite(item.significance) && item.significance > 0) lines.push(`USGS Significance: ${Math.round(item.significance)}`);
-  lines.push(`Source: ${item.source || 'USGS Earthquake Catalog'}`);
+  if (Number.isFinite(item.significance) && item.significance > 0) lines.push(`Significância USGS: ${Math.round(item.significance)}`);
+  lines.push(`Fonte: ${item.source || 'USGS Earthquake Catalog'}`);
   if (item.id === stats.deepestEvent?.id) {
-    lines.push('Deepest Event: yes');
+    lines.push('Evento mais profundo: sim');
   }
   if (item.id === stats.maxMagnitudeEvent?.id) {
-    lines.push('Largest Magnitude Event: yes');
+    lines.push('Maior magnitude: sim');
   }
   return lines.join('<br>');
 }
@@ -1796,7 +1833,7 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
     fill: 'rgba(255,255,255,0.8)',
     'font-size': '10',
   });
-  yAxisLabel.textContent = 'Depth (km)';
+  yAxisLabel.textContent = 'Profundidade (km)';
   svg.appendChild(yAxisLabel);
 
   const pointDomain = Math.max(xScale.max - xScale.min, 1);
@@ -1839,7 +1876,7 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
         'font-size': '9',
         'font-weight': '700',
       });
-      marker.textContent = isDeepest ? 'Deepest' : 'Largest';
+      marker.textContent = isDeepest ? 'Mais profundo' : 'Maior M';
       svg.appendChild(marker);
     }
   });
@@ -1870,29 +1907,31 @@ function renderScatterChart(container, filtered) {
   const stats = computeScatterStats(filtered);
   const mainRangeLabel = `Faixa principal calculada: 0 - ${formatAxisNumber(stats.mainDepthMax, stats.mainDepthMax >= 100 ? 0 : 1)} km (P90)`;
   const dominantCoverageLabel = `${((stats.mainCount / Math.max(stats.total, 1)) * 100).toFixed(0)}% dos eventos`;
-  const sizeLabel = stats.sizeMetric === 'significance' ? 'Tamanho = USGS Significance' : 'Tamanho = magnitude (fallback)';
+  const sizeLabel = stats.sizeMetric === 'significance' ? 'Tamanho = Significância USGS' : 'Tamanho = magnitude (alternativo)';
 
   if (scatterSummaryEl) {
     const summaryCards = [
-      { icon: '◎', iconClass: 'total', label: 'Total de eventos', value: stats.total, note: 'Eventos reais no recorte atual' },
-      { icon: 'M', iconClass: 'magnitude', label: 'Magnitude máxima', value: formatAxisNumber(stats.magnitudeMax, 1), note: 'Maior magnitude observada' },
-      { icon: '↓', iconClass: 'depth', label: 'Profundidade máxima', value: `${formatAxisNumber(stats.depthMax, stats.depthMax >= 100 ? 0 : 1)} km`, note: 'Evento mais profundo' },
-      { icon: 'μ', iconClass: 'stats', label: 'Magnitude mediana', value: formatAxisNumber(stats.magnitudeMedian, 1), note: 'Tendência central da magnitude' },
-      { icon: '↧', iconClass: 'stats', label: 'Profundidade mediana', value: `${formatAxisNumber(stats.depthMedian, stats.depthMedian >= 100 ? 0 : 1)} km`, note: 'Centro da distribuição' },
-      { icon: '≈', iconClass: 'stats', label: 'Profundidade média', value: `${formatAxisNumber(stats.depthMean, stats.depthMean >= 100 ? 0 : 1)} km`, note: 'Sensível aos eventos profundos' },
-      { icon: 'Δ', iconClass: 'warning', label: '| média - mediana |', value: `${formatAxisNumber(stats.meanMedianGap, stats.meanMedianGap >= 100 ? 0 : 1)} km`, note: 'Assimetria da distribuição' },
-      { icon: 'P90', iconClass: 'percentile', label: 'P90 profundidade', value: `${formatAxisNumber(stats.depthP90, stats.depthP90 >= 100 ? 0 : 1)} km`, note: 'Faixa principal calculada' },
-      { icon: 'P95', iconClass: 'percentile', label: 'P95 profundidade', value: `${formatAxisNumber(stats.depthP95, stats.depthP95 >= 100 ? 0 : 1)} km`, note: 'Cauda mais profunda' },
-      { icon: 'D4', iconClass: 'warning', label: 'Eventos profundos', value: stats.deepCount, note: 'Acima da faixa principal' },
-      { icon: '!', iconClass: 'warning', label: 'Outliers profundos', value: stats.depthOutliers, note: 'Tukey fence no limite superior' },
-      { icon: '⌂', iconClass: 'range', label: 'Faixa principal (P90)', value: `0 - ${formatAxisNumber(stats.mainDepthMax, stats.mainDepthMax >= 100 ? 0 : 1)} km`, note: `${dominantCoverageLabel} da seleção` },
-      { icon: '%', iconClass: 'coverage', label: '% na faixa principal', value: dominantCoverageLabel, note: 'Cobertura da concentração dominante' },
-      { icon: '⇳', iconClass: 'size', label: 'Tamanho dos pontos', value: sizeLabel, note: 'Significance quando disponível' },
+      { iconType: 'pulse', iconClass: 'total', label: 'Total de eventos', value: stats.total, note: 'Eventos reais no recorte atual' },
+      { iconType: 'wave', iconClass: 'magnitude', label: 'Magnitude máxima', value: formatAxisNumber(stats.magnitudeMax, 1), note: 'Maior magnitude observada' },
+      { iconType: 'arrowDown', iconClass: 'depth', label: 'Profundidade máxima', value: `${formatAxisNumber(stats.depthMax, stats.depthMax >= 100 ? 0 : 1)} km`, note: 'Evento mais profundo' },
+      { iconType: 'wave', iconClass: 'stats', label: 'Magnitude mediana', value: formatAxisNumber(stats.magnitudeMedian, 1), note: 'Tendência central da magnitude' },
+      { iconType: 'arrowDown', iconClass: 'stats', label: 'Profundidade mediana', value: `${formatAxisNumber(stats.depthMedian, stats.depthMedian >= 100 ? 0 : 1)} km`, note: 'Centro da distribuição' },
+      { iconType: 'bars', iconClass: 'stats', label: 'Profundidade média', value: `${formatAxisNumber(stats.depthMean, stats.depthMean >= 100 ? 0 : 1)} km`, note: 'Sensível aos eventos profundos' },
+      { iconType: 'delta', iconClass: 'warning', label: '| média - mediana |', value: `${formatAxisNumber(stats.meanMedianGap, stats.meanMedianGap >= 100 ? 0 : 1)} km`, note: 'Assimetria da distribuição' },
+      { iconType: 'badge', iconClass: 'percentile', badgeText: 'P90', label: 'P90 profundidade', value: `${formatAxisNumber(stats.depthP90, stats.depthP90 >= 100 ? 0 : 1)} km`, note: 'Faixa principal calculada' },
+      { iconType: 'badge', iconClass: 'percentile', badgeText: 'P95', label: 'P95 profundidade', value: `${formatAxisNumber(stats.depthP95, stats.depthP95 >= 100 ? 0 : 1)} km`, note: 'Cauda mais profunda' },
+      { iconType: 'wave', iconClass: 'warning', label: 'Eventos profundos', value: stats.deepCount, note: 'Acima da faixa principal' },
+      { iconType: 'cluster', iconClass: 'warning', label: 'Outliers profundos', value: stats.depthOutliers, note: 'Tukey fence no limite superior' },
+      { iconType: 'target', iconClass: 'range', label: 'Faixa principal (P90)', value: `0 - ${formatAxisNumber(stats.mainDepthMax, stats.mainDepthMax >= 100 ? 0 : 1)} km`, note: `${dominantCoverageLabel} da seleção` },
+      { iconType: 'pie', iconClass: 'coverage', label: '% na faixa principal', value: dominantCoverageLabel, note: 'Cobertura da concentração dominante' },
+      { iconType: 'star', iconClass: 'size', label: 'Tamanho dos pontos', value: sizeLabel, note: 'Significância quando disponível' },
+      { iconType: 'info', iconClass: 'warning', label: 'Observação', value: 'Outliers não significam necessariamente risco', note: 'Interpretação estatística do dataset' },
+      { iconType: 'clock', iconClass: 'percentile', label: 'Período dos dados', value: 'Conforme dataset utilizado', note: 'Sem dados sintéticos' },
     ];
 
     const cardsHtml = summaryCards.map(card => `
       <div class="scatter-summary-card">
-        <span class="scatter-summary-icon ${card.iconClass}">${card.icon}</span>
+        <span class="scatter-summary-icon ${card.iconClass}">${getSummaryIconMarkup(card.iconType, card.badgeText || '')}</span>
         <div>
           <small>${card.label}</small>
           <strong>${card.value}</strong>
@@ -1902,7 +1941,7 @@ function renderScatterChart(container, filtered) {
     `).join('');
 
     const legendHtml = stats.regionLegend.map(item => `
-      <span class="meta-pill"><span style="display:inline-block;width:0.65rem;height:0.65rem;border-radius:999px;background:${item.color};margin-right:0.35rem;vertical-align:middle;"></span>${item.region} (${item.count})</span>
+      <span class="meta-pill"><span style="display:inline-block;width:0.65rem;height:0.65rem;border-radius:999px;background:${item.color};margin-right:0.35rem;vertical-align:middle;"></span>${formatRegionPt(item.region)} (${item.count})</span>
     `).join('');
 
     scatterSummaryEl.innerHTML = `
@@ -1921,20 +1960,20 @@ function renderScatterChart(container, filtered) {
   const mainPanel = document.createElement('div');
   mainPanel.className = 'scatter-analytical-panel';
   mainPanel.innerHTML = `
-    <h4>Main Seismicity Distribution</h4>
-    <p>Faixa dominante baseada em P90 da profundidade. X = magnitude contínua, Y = depth (km).</p>
+    <h4>Distribuição Principal da Sismicidade</h4>
+    <p>Faixa dominante baseada em P90 da profundidade. X = magnitude contínua, Y = profundidade (km).</p>
   `;
-  mainPanel.appendChild(renderScatterPanelSvg(mainPoints, stats, { min: 0, max: stats.mainDepthMax }, 'Main Seismicity Distribution', `Faixa principal com ${mainPoints.length} eventos.`, `Deepest event and largest magnitude are highlighted automatically.`, false));
+  mainPanel.appendChild(renderScatterPanelSvg(mainPoints, stats, { min: 0, max: stats.mainDepthMax }, 'Distribuição Principal da Sismicidade', `Faixa principal com ${mainPoints.length} eventos.`, `Evento mais profundo e maior magnitude destacados automaticamente.`, false));
   wrapper.appendChild(mainPanel);
 
   if (deepPoints.length) {
     const deepPanel = document.createElement('div');
     deepPanel.className = 'scatter-analytical-panel';
     deepPanel.innerHTML = `
-      <h4>Deep Events</h4>
+      <h4>Eventos Profundos</h4>
       <p>Eventos acima do P90 preservados em escala própria para não distorcer a concentração rasa.</p>
     `;
-    deepPanel.appendChild(renderScatterPanelSvg(deepPoints, stats, { min: stats.mainDepthMax, max: stats.depthMax }, 'Deep Events', `Eventos profundos: ${deepPoints.length}.`, `Scale break is explicit and data-driven; no events were removed.`, true));
+    deepPanel.appendChild(renderScatterPanelSvg(deepPoints, stats, { min: stats.mainDepthMax, max: stats.depthMax }, 'Eventos Profundos', `Eventos profundos: ${deepPoints.length}.`, `Quebra de escala explícita e orientada por dados; nenhum evento removido.`, true));
     wrapper.appendChild(deepPanel);
   }
 
@@ -2052,7 +2091,7 @@ function renderDetails(filtered) {
       <tr>
         <td>${item.id}</td>
         <td>${item.place}${locationMeta}</td>
-        <td>${item.region}</td>
+        <td>${formatRegionPt(item.region)}</td>
         <td>${item.country}</td>
         <td>${dateTimeLabel}</td>
         <td>${item.mag.toFixed(1)}</td>
