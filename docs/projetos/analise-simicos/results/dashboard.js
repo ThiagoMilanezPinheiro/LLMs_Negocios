@@ -1873,26 +1873,41 @@ function renderScatterChart(container, filtered) {
   const sizeLabel = stats.sizeMetric === 'significance' ? 'Tamanho = USGS Significance' : 'Tamanho = magnitude (fallback)';
 
   if (scatterSummaryEl) {
+    const summaryCards = [
+      { icon: '◎', iconClass: 'total', label: 'Total de eventos', value: stats.total, note: 'Eventos reais no recorte atual' },
+      { icon: 'M', iconClass: 'magnitude', label: 'Magnitude máxima', value: formatAxisNumber(stats.magnitudeMax, 1), note: 'Maior magnitude observada' },
+      { icon: '↓', iconClass: 'depth', label: 'Profundidade máxima', value: `${formatAxisNumber(stats.depthMax, stats.depthMax >= 100 ? 0 : 1)} km`, note: 'Evento mais profundo' },
+      { icon: 'μ', iconClass: 'stats', label: 'Magnitude mediana', value: formatAxisNumber(stats.magnitudeMedian, 1), note: 'Tendência central da magnitude' },
+      { icon: '↧', iconClass: 'stats', label: 'Profundidade mediana', value: `${formatAxisNumber(stats.depthMedian, stats.depthMedian >= 100 ? 0 : 1)} km`, note: 'Centro da distribuição' },
+      { icon: '≈', iconClass: 'stats', label: 'Profundidade média', value: `${formatAxisNumber(stats.depthMean, stats.depthMean >= 100 ? 0 : 1)} km`, note: 'Sensível aos eventos profundos' },
+      { icon: 'Δ', iconClass: 'warning', label: '| média - mediana |', value: `${formatAxisNumber(stats.meanMedianGap, stats.meanMedianGap >= 100 ? 0 : 1)} km`, note: 'Assimetria da distribuição' },
+      { icon: 'P90', iconClass: 'percentile', label: 'P90 profundidade', value: `${formatAxisNumber(stats.depthP90, stats.depthP90 >= 100 ? 0 : 1)} km`, note: 'Faixa principal calculada' },
+      { icon: 'P95', iconClass: 'percentile', label: 'P95 profundidade', value: `${formatAxisNumber(stats.depthP95, stats.depthP95 >= 100 ? 0 : 1)} km`, note: 'Cauda mais profunda' },
+      { icon: 'D4', iconClass: 'warning', label: 'Eventos profundos', value: stats.deepCount, note: 'Acima da faixa principal' },
+      { icon: '!', iconClass: 'warning', label: 'Outliers profundos', value: stats.depthOutliers, note: 'Tukey fence no limite superior' },
+      { icon: '⌂', iconClass: 'range', label: 'Faixa principal (P90)', value: `0 - ${formatAxisNumber(stats.mainDepthMax, stats.mainDepthMax >= 100 ? 0 : 1)} km`, note: `${dominantCoverageLabel} da seleção` },
+      { icon: '%', iconClass: 'coverage', label: '% na faixa principal', value: dominantCoverageLabel, note: 'Cobertura da concentração dominante' },
+      { icon: '⇳', iconClass: 'size', label: 'Tamanho dos pontos', value: sizeLabel, note: 'Significance quando disponível' },
+    ];
+
+    const cardsHtml = summaryCards.map(card => `
+      <div class="scatter-summary-card">
+        <span class="scatter-summary-icon ${card.iconClass}">${card.icon}</span>
+        <div>
+          <small>${card.label}</small>
+          <strong>${card.value}</strong>
+          <small>${card.note}</small>
+        </div>
+      </div>
+    `).join('');
+
     const legendHtml = stats.regionLegend.map(item => `
       <span class="meta-pill"><span style="display:inline-block;width:0.65rem;height:0.65rem;border-radius:999px;background:${item.color};margin-right:0.35rem;vertical-align:middle;"></span>${item.region} (${item.count})</span>
     `).join('');
 
     scatterSummaryEl.innerHTML = `
-      <span class="meta-pill">Total: ${stats.total}</span>
-      <span class="meta-pill">Magnitude máxima: ${formatAxisNumber(stats.magnitudeMax, 1)}</span>
-      <span class="meta-pill">Profundidade máxima: ${formatAxisNumber(stats.depthMax, stats.depthMax >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">Magnitude mediana: ${formatAxisNumber(stats.magnitudeMedian, 1)}</span>
-      <span class="meta-pill">Profundidade mediana: ${formatAxisNumber(stats.depthMedian, stats.depthMedian >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">Profundidade média: ${formatAxisNumber(stats.depthMean, stats.depthMean >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">| média - mediana |: ${formatAxisNumber(stats.meanMedianGap, stats.meanMedianGap >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">P90 profundidade: ${formatAxisNumber(stats.depthP90, stats.depthP90 >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">P95 profundidade: ${formatAxisNumber(stats.depthP95, stats.depthP95 >= 100 ? 0 : 1)} km</span>
-      <span class="meta-pill">Eventos profundos: ${stats.deepCount}</span>
-      <span class="meta-pill">Outliers profundos: ${stats.depthOutliers}</span>
-      <span class="meta-pill">${mainRangeLabel}</span>
-      <span class="meta-pill">${dominantCoverageLabel}</span>
-      <span class="meta-pill">${sizeLabel}</span>
-      ${legendHtml}
+      <div class="scatter-summary-grid">${cardsHtml}</div>
+      <div class="scatter-region-legend">${legendHtml}</div>
     `;
   }
 
