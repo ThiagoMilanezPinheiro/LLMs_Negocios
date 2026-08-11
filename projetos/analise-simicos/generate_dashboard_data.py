@@ -1,6 +1,7 @@
 from pathlib import Path
 from src.main import buscar_dados_usgs
 import json
+import pandas as pd
 
 
 def infer_region(row):
@@ -54,8 +55,15 @@ for _, row in df.iterrows():
         'region': row['region'],
         'country': row['country'],
         'date': row['date'],
+        'timestampMs': int(row['time']) if pd.notna(row['time']) else None,
         'mag': round(float(row['mag']), 1),
+        'magType': row['tipo'] if pd.notna(row['tipo']) else None,
         'depth': round(float(row['profundidade_km']), 1),
+        'latitude': round(float(row['latitude']), 6) if pd.notna(row['latitude']) else None,
+        'longitude': round(float(row['longitude']), 6) if pd.notna(row['longitude']) else None,
+        'tsunami': bool(row['tsunami']) if pd.notna(row['tsunami']) else None,
+        'status': row['status'] if pd.notna(row['status']) else None,
+        'source': 'USGS Earthquake Catalog',
     })
 
 repo_root = Path(__file__).resolve().parents[2]

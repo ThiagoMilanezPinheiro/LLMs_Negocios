@@ -11,6 +11,7 @@ const exportButton = document.getElementById('exportData');
 const trendChartEl = document.getElementById('trendChart');
 const magnitudeChartEl = document.getElementById('magnitudeChart');
 const scatterChartEl = document.getElementById('scatterChart');
+const scatterSummaryEl = document.getElementById('scatterSummary');
 const depthChartEl = document.getElementById('depthChart');
 const mapEl = document.getElementById('seismicMap');
 const mapStatusEl = document.getElementById('mapStatus');
@@ -432,6 +433,134 @@ function getMedian(values) {
   const sorted = values.slice().sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+function getPercentile(values, percentile) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  const position = (sorted.length - 1) * (percentile / 100);
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.ceil(position);
+  if (lowerIndex === upperIndex) {
+    return sorted[lowerIndex];
+  }
+  const lowerValue = sorted[lowerIndex];
+  const upperValue = sorted[upperIndex];
+  return lowerValue + (upperValue - lowerValue) * (position - lowerIndex);
+}
+
+function clampValue(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function niceNumber(range, round) {
+  const exponent = Math.floor(Math.log10(range));
+  const fraction = range / (10 ** exponent);
+  let niceFraction;
+
+  if (round) {
+    if (fraction < 1.5) niceFraction = 1;
+    else if (fraction < 3) niceFraction = 2;
+    else if (fraction < 7) niceFraction = 5;
+    else niceFraction = 10;
+  } else if (fraction <= 1) niceFraction = 1;
+  else if (fraction <= 2) niceFraction = 2;
+  else if (fraction <= 5) niceFraction = 5;
+  else niceFraction = 10;
+
+  return niceFraction * (10 ** exponent);
+}
+
+function formatAxisNumber(value, digits = 1) {
+  const rounded = Number(value.toFixed(digits));
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(digits).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function buildNiceScale(minValue, maxValue, targetTickCount = 6) {
+  if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
+    return {
+      min: 0,
+      max: 1,
+      step: 1,
+      ticks: [0, 1],
+    };
+  }
+
+  let min = minValue;
+  let max = maxValue;
+  if (min === max) {
+    const offset = min === 0 ? 1 : Math.max(0.5, Math.abs(min) * 0.1);
+    min -= offset;
+    max += offset;
+  }
+
+  const range = niceNumber(max - min, false);
+  const step = niceNumber(range / Math.max(2, targetTickCount - 1), true);
+  const niceMin = Math.floor(min / step) * step;
+  const niceMax = Math.ceil(max / step) * step;
+  const ticks = [];
+
+  for (let value = niceMin; value <= niceMax + step * 0.5; value += step) {
+    ticks.push(Number(value.toFixed(10)));
+  }
+
+  return {
+    min: niceMin,
+    max: niceMax,
+    step,
+    ticks,
+  };
+}
+
+function drawXAxisScale(svg, options) {
+  const {
+    paddingLeft,
+    topY,
+    chartHeight,
+    chartWidth,
+    minValue,
+    maxValue,
+    tickCount = 6,
+    formatter = (value) => formatAxisNumber(value, 1),
+  } = options;
+
+  const scale = buildNiceScale(minValue, maxValue, tickCount);
+  const span = Math.max(scale.max - scale.min, 1);
+
+  scale.ticks.forEach(value => {
+    const ratio = (value - scale.min) / span;
+    const x = paddingLeft + ratio * chartWidth;
+
+    svg.appendChild(createSvgElement('line', {
+      x1: x,
+      y1: topY + chartHeight,
+      x2: x,
+      y2: topY + chartHeight + 6,
+      stroke: 'rgba(255,255,255,0.32)',
+      'stroke-width': 1,
+    }));
+
+    svg.appendChild(createSvgElement('line', {
+      x1: x,
+      y1: topY,
+      x2: x,
+      y2: topY + chartHeight,
+      stroke: 'rgba(255,255,255,0.07)',
+      'stroke-width': 1,
+    }));
+
+    const tickLabel = createSvgElement('text', {
+      x,
+      y: topY + chartHeight + 18,
+      'text-anchor': 'middle',
+      fill: 'rgba(255,255,255,0.76)',
+      'font-size': '9',
+    });
+    tickLabel.textContent = formatter(value);
+    svg.appendChild(tickLabel);
+  });
+
+  return scale;
 }
 
 function filterRowsByMode(rows, mode) {
@@ -1279,17 +1408,22 @@ function drawYAxisScale(svg, options) {
     topY,
     chartHeight,
     chartWidth,
+    minValue = 0,
     maxValue,
     tickCount = 4,
     invert = false,
     formatter = (value) => String(Math.round(value)),
   } = options;
 
-  const safeMax = Math.max(1, maxValue);
-  for (let i = 0; i <= tickCount; i += 1) {
-    const ratio = i / tickCount;
+  const safeMin = Number.isFinite(minValue) ? minValue : 0;
+  const safeMax = Number.isFinite(maxValue) ? maxValue : 1;
+  const span = Math.max(safeMax - safeMin, 1);
+  const scale = buildNiceScale(safeMin, safeMax, tickCount);
+  const tickValues = scale.ticks.filter(value => value >= safeMin - span * 0.001 && value <= safeMax + span * 0.001);
+
+  tickValues.forEach(value => {
+    const ratio = (value - safeMin) / span;
     const y = invert ? topY + ratio * chartHeight : topY + chartHeight - ratio * chartHeight;
-    const value = invert ? safeMax * ratio : safeMax * ratio;
 
     const gridLine = createSvgElement('line', {
       x1: paddingLeft,
@@ -1310,7 +1444,9 @@ function drawYAxisScale(svg, options) {
     });
     tickLabel.textContent = formatter(value);
     svg.appendChild(tickLabel);
-  }
+  });
+
+  return scale;
 }
 
 function renderBarChart(container, labels, values, options = {}) {
@@ -1421,84 +1557,373 @@ function renderLineChart(container, labels, values) {
   container.appendChild(svg);
 }
 
-function renderScatterChart(container, filtered) {
-  container.innerHTML = '';
-  const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
-  const minMag = Math.min(...filtered.map(item => item.mag), 0);
-  const maxMag = Math.max(...filtered.map(item => item.mag), 1);
-  const maxDepth = Math.max(...filtered.map(item => item.depth), 1);
-  const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
-  const paddingLeft = 44;
-  const paddingBottom = 40;
-  const chartWidth = 246;
-  const chartHeight = 160;
+const REGION_COLORS = {
+  'North America': '#22c55e',
+  'South America': '#7c3aed',
+  'Asia': '#f59e0b',
+  'Europe': '#0ea5e9',
+  'Africa': '#ef4444',
+  'Oceania': '#8b5cf6',
+  [UNKNOWN_REGION]: '#94a3b8',
+};
+
+function getRegionColor(region) {
+  return REGION_COLORS[region] || REGION_COLORS[UNKNOWN_REGION];
+}
+
+function getScatterPointMetric(item, stats) {
+  if (stats.sizeMetric === 'significance' && Number.isFinite(item.significance) && item.significance > 0) {
+    return item.significance;
+  }
+  return item.mag;
+}
+
+function getScatterPointRadius(item, stats) {
+  const metric = getScatterPointMetric(item, stats);
+  const { min, max } = stats.sizeDomain;
+  const safeSpan = Math.max(max - min, 1);
+  const normalized = clampValue((metric - min) / safeSpan, 0, 1);
+  return 4 + Math.sqrt(normalized) * 8;
+}
+
+function getScatterTooltip(item, stats) {
+  const lines = [];
+  lines.push(`<strong>${item.id || 'Evento'}</strong>`);
+  lines.push(`Magnitude: ${Number.isFinite(item.mag) ? item.mag.toFixed(1) : '—'}${item.magType ? ` (${item.magType})` : ''}`);
+  lines.push(`Depth: ${Number.isFinite(item.depth) ? `${item.depth.toFixed(1)} km` : '—'}`);
+  if (Number.isFinite(item.latitude) && Number.isFinite(item.longitude)) {
+    lines.push(`Latitude: ${item.latitude.toFixed(4)}`);
+    lines.push(`Longitude: ${item.longitude.toFixed(4)}`);
+  }
+  if (item.place) lines.push(`Place: ${item.place}`);
+  if (item.country) lines.push(`Country: ${item.country}`);
+  if (item.region) lines.push(`Region: ${item.region}`);
+  if (Number.isFinite(item.timestampMs)) {
+    lines.push(`Event Time UTC: ${formatUtcDate(item.timestampMs)} ${formatUtcTime(item.timestampMs)} UTC`);
+    const localDateTime = new Date(item.timestampMs).toLocaleString('pt-BR');
+    lines.push(`Event Time Local: ${localDateTime}`);
+  }
+  if (typeof item.tsunami === 'boolean') lines.push(`Tsunami: ${item.tsunami ? 'Yes' : 'No'}`);
+  if (item.alert) lines.push(`Alert: ${formatAlert(item.alert)}`);
+  if (Number.isFinite(item.felt)) lines.push(`Felt: ${item.felt}`);
+  if (Number.isFinite(item.cdi)) lines.push(`CDI: ${item.cdi.toFixed(1)}`);
+  if (Number.isFinite(item.mmi)) lines.push(`MMI: ${item.mmi.toFixed(1)}`);
+  if (Number.isFinite(item.significance) && item.significance > 0) lines.push(`USGS Significance: ${Math.round(item.significance)}`);
+  lines.push(`Source: ${item.source || 'USGS Earthquake Catalog'}`);
+  if (item.id === stats.deepestEvent?.id) {
+    lines.push('Deepest Event: yes');
+  }
+  if (item.id === stats.maxMagnitudeEvent?.id) {
+    lines.push('Largest Magnitude Event: yes');
+  }
+  return lines.join('<br>');
+}
+
+function computeScatterStats(filtered) {
+  const magnitudes = filtered.map(item => item.mag).filter(Number.isFinite);
+  const depths = filtered.map(item => item.depth).filter(Number.isFinite);
+  const significanceValues = filtered
+    .map(item => (Number.isFinite(item.significance) && item.significance > 0 ? item.significance : null))
+    .filter(value => value !== null);
+  const total = filtered.length;
+  const maxMagnitudeEvent = filtered.reduce((best, item) => (!best || item.mag > best.mag ? item : best), null);
+  const deepestEvent = filtered.reduce((best, item) => (!best || item.depth > best.depth ? item : best), null);
+
+  const magnitudeMin = magnitudes.length ? Math.min(...magnitudes) : 0;
+  const magnitudeMax = magnitudes.length ? Math.max(...magnitudes) : 1;
+  const depthMin = depths.length ? Math.min(...depths) : 0;
+  const depthMax = depths.length ? Math.max(...depths) : 1;
+  const depthMedian = getMedian(depths);
+  const magnitudeMedian = getMedian(magnitudes);
+  const depthMean = depths.length ? depths.reduce((sum, value) => sum + value, 0) / depths.length : 0;
+  const magnitudeMean = magnitudes.length ? magnitudes.reduce((sum, value) => sum + value, 0) / magnitudes.length : 0;
+  const depthP25 = getPercentile(depths, 25);
+  const depthP50 = getPercentile(depths, 50);
+  const depthP75 = getPercentile(depths, 75);
+  const depthP90 = getPercentile(depths, 90);
+  const depthP95 = getPercentile(depths, 95);
+  const depthIqr = depthP75 - depthP25;
+  const depthUpperFence = depthP75 + Math.max(0, depthIqr * 1.5);
+  const depthOutliers = depths.filter(value => value > depthUpperFence).length;
+  const mainDepthMax = depthP90 || depthMax;
+  const mainCount = depths.filter(value => value <= mainDepthMax).length;
+  const deepCount = Math.max(0, total - mainCount);
+  const meanMedianGap = Math.abs(depthMean - depthMedian);
+  const sizeMetric = significanceValues.length ? 'significance' : 'magnitude';
+  const sizeValues = significanceValues.length ? significanceValues : magnitudes;
+  const sizeDomain = sizeValues.length
+    ? {
+        min: Math.min(...sizeValues),
+        max: Math.max(getPercentile(sizeValues, 95), Math.max(...sizeValues)),
+      }
+    : { min: 0, max: 1 };
+
+  const regionCounts = new Map();
+  filtered.forEach(item => {
+    const region = item.region || UNKNOWN_REGION;
+    regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
+  });
+
+  const regionLegend = Array.from(regionCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([region, count]) => ({ region, count, color: getRegionColor(region) }));
+
+  return {
+    total,
+    magnitudes,
+    depths,
+    magnitudeMin,
+    magnitudeMax,
+    depthMin,
+    depthMax,
+    depthMedian,
+    magnitudeMedian,
+    depthMean,
+    magnitudeMean,
+    depthP50,
+    depthP75,
+    depthP90,
+    depthP95,
+    depthUpperFence,
+    depthOutliers,
+    mainDepthMax,
+    mainCount,
+    deepCount,
+    meanMedianGap,
+    sizeMetric,
+    sizeDomain,
+    regionLegend,
+    maxMagnitudeEvent,
+    deepestEvent,
+  };
+}
+
+function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note, isDeepPanel = false) {
+  const svg = createSvgElement('svg', { viewBox: '0 0 760 320', role: 'img', 'aria-label': title });
+  const paddingLeft = 58;
+  const paddingRight = 18;
+  const paddingTop = 20;
+  const paddingBottom = 52;
+  const chartWidth = 760 - paddingLeft - paddingRight;
+  const chartHeight = 320 - paddingTop - paddingBottom;
+  const xScale = buildNiceScale(stats.magnitudeMin, stats.magnitudeMax, 6);
+  const yMax = Math.max(depthDomain.max, depthDomain.min + 1);
+
+  svg.appendChild(createSvgElement('rect', {
+    x: 0,
+    y: 0,
+    width: 760,
+    height: 320,
+    rx: 12,
+    fill: 'rgba(255,255,255,0.01)',
+    stroke: 'rgba(255,255,255,0.06)',
+  }));
+
+  const titleText = createSvgElement('text', {
+    x: paddingLeft,
+    y: 16,
+    fill: 'rgba(255,255,255,0.96)',
+    'font-size': '13',
+    'font-weight': '700',
+  });
+  titleText.textContent = title;
+  svg.appendChild(titleText);
+
+  const subtitleText = createSvgElement('text', {
+    x: paddingLeft,
+    y: 32,
+    fill: 'rgba(255,255,255,0.62)',
+    'font-size': '10',
+  });
+  subtitleText.textContent = subtitle;
+  svg.appendChild(subtitleText);
 
   drawYAxisScale(svg, {
     paddingLeft,
-    topY: 20,
+    topY: paddingTop,
     chartHeight,
     chartWidth,
-    maxValue: maxDepth,
-    tickCount: 5,
+    minValue: depthDomain.min,
+    maxValue: yMax,
+    tickCount: isDeepPanel ? 5 : 6,
     invert: true,
-    formatter: (value) => `${Math.round(value)} km`,
+    formatter: (value) => `${formatAxisNumber(value, value >= 100 ? 0 : 1)} km`,
   });
 
-  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: 20, x2: paddingLeft, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
-  svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: chartHeight + 20, x2: paddingLeft + chartWidth, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
+  drawXAxisScale(svg, {
+    paddingLeft,
+    topY: paddingTop,
+    chartHeight,
+    chartWidth,
+    minValue: xScale.min,
+    maxValue: xScale.max,
+    tickCount: 6,
+    formatter: (value) => formatAxisNumber(value, value % 1 === 0 ? 0 : 1),
+  });
 
-  const magnitudeRange = Math.max(0.5, maxMag - minMag);
-  const xTickCount = 5;
-  for (let i = 0; i <= xTickCount; i += 1) {
-    const ratio = i / xTickCount;
-    const x = paddingLeft + ratio * chartWidth;
-    const magValue = minMag + magnitudeRange * ratio;
+  svg.appendChild(createSvgElement('line', {
+    x1: paddingLeft,
+    y1: paddingTop,
+    x2: paddingLeft,
+    y2: paddingTop + chartHeight,
+    stroke: 'rgba(255,255,255,0.32)',
+    'stroke-width': 1,
+  }));
+  svg.appendChild(createSvgElement('line', {
+    x1: paddingLeft,
+    y1: paddingTop + chartHeight,
+    x2: paddingLeft + chartWidth,
+    y2: paddingTop + chartHeight,
+    stroke: 'rgba(255,255,255,0.32)',
+    'stroke-width': 1,
+  }));
 
-    const tick = createSvgElement('line', {
-      x1: x,
-      y1: chartHeight + 20,
-      x2: x,
-      y2: chartHeight + 25,
-      stroke: 'rgba(255,255,255,0.45)',
-      'stroke-width': 1,
-    });
-    svg.appendChild(tick);
-
-    const tickLabel = createSvgElement('text', {
-      x,
-      y: chartHeight + 37,
-      'text-anchor': 'middle',
-      fill: 'rgba(255,255,255,0.78)',
-      'font-size': '9',
-    });
-    tickLabel.textContent = magValue.toFixed(1);
-    svg.appendChild(tickLabel);
-  }
-
-  const xTitle = createSvgElement('text', {
+  const xAxisLabel = createSvgElement('text', {
     x: paddingLeft + chartWidth / 2,
-    y: 214,
+    y: 315,
     'text-anchor': 'middle',
-    fill: 'rgba(255,255,255,0.85)',
+    fill: 'rgba(255,255,255,0.8)',
     'font-size': '10',
   });
-  xTitle.textContent = 'Magnitude';
-  svg.appendChild(xTitle);
+  xAxisLabel.textContent = 'Magnitude';
+  svg.appendChild(xAxisLabel);
 
-  filtered.forEach((item, index) => {
-    const normalizedMag = (item.mag - minMag) / magnitudeRange;
-    const x = paddingLeft + Math.min(1, Math.max(0, normalizedMag)) * chartWidth;
-    const y = 20 + (item.depth / maxDepth) * chartHeight;
-    const circle = createSvgElement('circle', { cx: x, cy: y, r: Math.max(3, 2.5 + item.mag / 2), fill: colors[index % colors.length], opacity: 0.8 });
-    svg.appendChild(circle);
+  const yAxisLabel = createSvgElement('text', {
+    x: 14,
+    y: paddingTop + chartHeight / 2,
+    transform: `rotate(-90 14 ${paddingTop + chartHeight / 2})`,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.8)',
+    'font-size': '10',
+  });
+  yAxisLabel.textContent = 'Depth (km)';
+  svg.appendChild(yAxisLabel);
 
-    attachChartHover(circle, () => {
-      const severity = getSeverityLabel(item.mag);
-      return `<strong>${item.place}</strong><br>M ${item.mag.toFixed(1)} • ${item.depth.toFixed(1)} km<br>${item.date} • ${item.country || UNKNOWN_COUNTRY}<br>Severidade: ${severity}`;
-    });
+  const pointDomain = Math.max(xScale.max - xScale.min, 1);
+  const depthSpan = Math.max(depthDomain.max - depthDomain.min, 1);
+  const sortedPoints = points.slice().sort((a, b) => {
+    const diff = getScatterPointMetric(a, stats) - getScatterPointMetric(b, stats);
+    if (diff !== 0) return diff;
+    return a.depth - b.depth;
   });
 
-  container.appendChild(svg);
+  sortedPoints.forEach(item => {
+    const x = paddingLeft + ((item.mag - xScale.min) / pointDomain) * chartWidth;
+    const y = paddingTop + ((item.depth - depthDomain.min) / depthSpan) * chartHeight;
+    const radius = getScatterPointRadius(item, stats);
+    const fill = getRegionColor(item.region);
+    const isDeepest = item.id && stats.deepestEvent && item.id === stats.deepestEvent.id;
+    const isLargest = item.id && stats.maxMagnitudeEvent && item.id === stats.maxMagnitudeEvent.id;
+    const isOutlier = item.depth > stats.depthUpperFence;
+    const stroke = isDeepest ? '#f59e0b' : isLargest ? '#22c55e' : isOutlier ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0)';
+    const strokeWidth = isDeepest || isLargest || isOutlier ? 2 : 0;
+
+    const circle = createSvgElement('circle', {
+      cx: x,
+      cy: y,
+      r: radius,
+      fill,
+      opacity: 0.82,
+      stroke,
+      'stroke-width': strokeWidth,
+    });
+    svg.appendChild(circle);
+
+    attachChartHover(circle, () => getScatterTooltip(item, stats));
+
+    if (isDeepest || isLargest) {
+      const marker = createSvgElement('text', {
+        x: x + 8,
+        y: y - 8,
+        fill: isDeepest ? '#f59e0b' : '#22c55e',
+        'font-size': '9',
+        'font-weight': '700',
+      });
+      marker.textContent = isDeepest ? 'Deepest' : 'Largest';
+      svg.appendChild(marker);
+    }
+  });
+
+  if (note) {
+    const noteText = createSvgElement('text', {
+      x: paddingLeft,
+      y: 303,
+      fill: 'rgba(255,255,255,0.7)',
+      'font-size': '9',
+    });
+    noteText.textContent = note;
+    svg.appendChild(noteText);
+  }
+
+  return svg;
+}
+
+function renderScatterChart(container, filtered) {
+  container.innerHTML = '';
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
+    if (scatterSummaryEl) scatterSummaryEl.innerHTML = '';
+    return;
+  }
+
+  const stats = computeScatterStats(filtered);
+  const mainRangeLabel = `Faixa principal calculada: 0 - ${formatAxisNumber(stats.mainDepthMax, stats.mainDepthMax >= 100 ? 0 : 1)} km (P90)`;
+  const dominantCoverageLabel = `${((stats.mainCount / Math.max(stats.total, 1)) * 100).toFixed(0)}% dos eventos`;
+  const sizeLabel = stats.sizeMetric === 'significance' ? 'Tamanho = USGS Significance' : 'Tamanho = magnitude (fallback)';
+
+  if (scatterSummaryEl) {
+    const legendHtml = stats.regionLegend.map(item => `
+      <span class="meta-pill"><span style="display:inline-block;width:0.65rem;height:0.65rem;border-radius:999px;background:${item.color};margin-right:0.35rem;vertical-align:middle;"></span>${item.region} (${item.count})</span>
+    `).join('');
+
+    scatterSummaryEl.innerHTML = `
+      <span class="meta-pill">Total: ${stats.total}</span>
+      <span class="meta-pill">Magnitude máxima: ${formatAxisNumber(stats.magnitudeMax, 1)}</span>
+      <span class="meta-pill">Profundidade máxima: ${formatAxisNumber(stats.depthMax, stats.depthMax >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">Magnitude mediana: ${formatAxisNumber(stats.magnitudeMedian, 1)}</span>
+      <span class="meta-pill">Profundidade mediana: ${formatAxisNumber(stats.depthMedian, stats.depthMedian >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">Profundidade média: ${formatAxisNumber(stats.depthMean, stats.depthMean >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">| média - mediana |: ${formatAxisNumber(stats.meanMedianGap, stats.meanMedianGap >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">P90 profundidade: ${formatAxisNumber(stats.depthP90, stats.depthP90 >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">P95 profundidade: ${formatAxisNumber(stats.depthP95, stats.depthP95 >= 100 ? 0 : 1)} km</span>
+      <span class="meta-pill">Eventos profundos: ${stats.deepCount}</span>
+      <span class="meta-pill">Outliers profundos: ${stats.depthOutliers}</span>
+      <span class="meta-pill">${mainRangeLabel}</span>
+      <span class="meta-pill">${dominantCoverageLabel}</span>
+      <span class="meta-pill">${sizeLabel}</span>
+      ${legendHtml}
+    `;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'grid';
+  wrapper.style.gap = '0.9rem';
+
+  const mainPoints = filtered.filter(item => item.depth <= stats.mainDepthMax);
+  const deepPoints = filtered.filter(item => item.depth > stats.mainDepthMax);
+
+  const mainPanel = document.createElement('div');
+  mainPanel.className = 'scatter-analytical-panel';
+  mainPanel.innerHTML = `
+    <h4>Main Seismicity Distribution</h4>
+    <p>Faixa dominante baseada em P90 da profundidade. X = magnitude contínua, Y = depth (km).</p>
+  `;
+  mainPanel.appendChild(renderScatterPanelSvg(mainPoints, stats, { min: 0, max: stats.mainDepthMax }, 'Main Seismicity Distribution', `Faixa principal com ${mainPoints.length} eventos.`, `Deepest event and largest magnitude are highlighted automatically.`, false));
+  wrapper.appendChild(mainPanel);
+
+  if (deepPoints.length) {
+    const deepPanel = document.createElement('div');
+    deepPanel.className = 'scatter-analytical-panel';
+    deepPanel.innerHTML = `
+      <h4>Deep Events</h4>
+      <p>Eventos acima do P90 preservados em escala própria para não distorcer a concentração rasa.</p>
+    `;
+    deepPanel.appendChild(renderScatterPanelSvg(deepPoints, stats, { min: stats.mainDepthMax, max: stats.depthMax }, 'Deep Events', `Eventos profundos: ${deepPoints.length}.`, `Scale break is explicit and data-driven; no events were removed.`, true));
+    wrapper.appendChild(deepPanel);
+  }
+
+  container.appendChild(wrapper);
 }
 
 function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues) {
@@ -1648,8 +2073,12 @@ function normalizeFeature(feature) {
     longitude: Number(coords[0]),
     tsunami: Boolean(props.tsunami),
     alert: props.alert || null,
-    significance: Number(props.sig || props.significance || 0)
-    ,distanceToCityKm: Number(props.distance_to_city_km || 0) || placeDetails.inferredDistanceKm || null
+    felt: Number(props.felt || props.felt_count || 0) || null,
+    cdi: Number(props.cdi || 0) || null,
+    mmi: Number(props.mmi || 0) || null,
+    significance: Number(props.sig || props.significance || 0),
+    source: props.sources || props.net || 'USGS Earthquake Catalog',
+    distanceToCityKm: Number(props.distance_to_city_km || 0) || placeDetails.inferredDistanceKm || null
   };
 }
 
@@ -1709,15 +2138,19 @@ function buildLocalModeData(mode) {
       city: item.city || placeDetails.inferredCity || null,
       nearestCity: item.nearestCity || item.nearest_city || placeDetails.inferredCity || null,
     date: String(item.date || ''),
+    timestampMs: Number(item.timestampMs || item.time || 0) || null,
     mag: Number(item.mag || 0),
+    magType: item.magType || item.magnitude_type || null,
     depth: Number(item.depth || 0),
     latitude: Number(item.latitude),
     longitude: Number(item.longitude),
     tsunami: Boolean(item.tsunami),
     alert: item.alert || null,
+    felt: Number(item.felt || 0) || null,
+    cdi: Number(item.cdi || 0) || null,
+    mmi: Number(item.mmi || 0) || null,
     significance: Number(item.significance || item.sig || 0),
-    timestampMs: Number(item.timestampMs || item.time_ms || 0) || null,
-    magType: item.magType || item.magnitude_type || null,
+    source: item.source || 'USGS Earthquake Catalog',
     countryCode: item.countryCode || item.country_code || null,
     distanceToCityKm: Number(item.distanceToCityKm || item.distance_to_city_km || 0) || placeDetails.inferredDistanceKm || null,
     };
