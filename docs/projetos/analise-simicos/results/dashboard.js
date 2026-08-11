@@ -1273,6 +1273,46 @@ function createSvgElement(tag, attrs = {}) {
   return element;
 }
 
+function drawYAxisScale(svg, options) {
+  const {
+    paddingLeft,
+    topY,
+    chartHeight,
+    chartWidth,
+    maxValue,
+    tickCount = 4,
+    invert = false,
+    formatter = (value) => String(Math.round(value)),
+  } = options;
+
+  const safeMax = Math.max(1, maxValue);
+  for (let i = 0; i <= tickCount; i += 1) {
+    const ratio = i / tickCount;
+    const y = invert ? topY + ratio * chartHeight : topY + chartHeight - ratio * chartHeight;
+    const value = invert ? safeMax * ratio : safeMax * ratio;
+
+    const gridLine = createSvgElement('line', {
+      x1: paddingLeft,
+      y1: y,
+      x2: paddingLeft + chartWidth,
+      y2: y,
+      stroke: 'rgba(255,255,255,0.12)',
+      'stroke-width': 1,
+    });
+    svg.appendChild(gridLine);
+
+    const tickLabel = createSvgElement('text', {
+      x: paddingLeft - 6,
+      y: y + 3,
+      'text-anchor': 'end',
+      fill: 'rgba(255,255,255,0.72)',
+      'font-size': '9',
+    });
+    tickLabel.textContent = formatter(value);
+    svg.appendChild(tickLabel);
+  }
+}
+
 function renderBarChart(container, labels, values, options = {}) {
   container.innerHTML = '';
   const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
@@ -1286,6 +1326,15 @@ function renderBarChart(container, labels, values, options = {}) {
   const barWidth = 40;
   const gap = 18;
 
+  drawYAxisScale(svg, {
+    paddingLeft,
+    topY: 20,
+    chartHeight,
+    chartWidth,
+    maxValue,
+    tickCount: 5,
+    formatter: (value) => String(Math.round(value)),
+  });
   svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: 20, x2: paddingLeft, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
   svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: chartHeight + 20, x2: paddingLeft + chartWidth, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
 
@@ -1331,6 +1380,16 @@ function renderLineChart(container, labels, values) {
   const chartWidth = 280;
   const step = chartWidth / Math.max(labels.length - 1, 1);
 
+  drawYAxisScale(svg, {
+    paddingLeft,
+    topY: 20,
+    chartHeight,
+    chartWidth,
+    maxValue,
+    tickCount: 5,
+    formatter: (value) => String(Math.round(value)),
+  });
+
   const points = values.map((value, index) => {
     const x = paddingLeft + index * step;
     const y = chartHeight + 20 - (value / maxValue) * chartHeight;
@@ -1365,20 +1424,71 @@ function renderLineChart(container, labels, values) {
 function renderScatterChart(container, filtered) {
   container.innerHTML = '';
   const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
+  const minMag = Math.min(...filtered.map(item => item.mag), 0);
   const maxMag = Math.max(...filtered.map(item => item.mag), 1);
   const maxDepth = Math.max(...filtered.map(item => item.depth), 1);
   const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
-  const paddingLeft = 30;
-  const paddingBottom = 30;
-  const chartWidth = 260;
+  const paddingLeft = 44;
+  const paddingBottom = 40;
+  const chartWidth = 246;
   const chartHeight = 160;
+
+  drawYAxisScale(svg, {
+    paddingLeft,
+    topY: 20,
+    chartHeight,
+    chartWidth,
+    maxValue: maxDepth,
+    tickCount: 5,
+    invert: true,
+    formatter: (value) => `${Math.round(value)} km`,
+  });
 
   svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: 20, x2: paddingLeft, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
   svg.appendChild(createSvgElement('line', { x1: paddingLeft, y1: chartHeight + 20, x2: paddingLeft + chartWidth, y2: chartHeight + 20, stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 1 }));
 
+  const magnitudeRange = Math.max(0.5, maxMag - minMag);
+  const xTickCount = 5;
+  for (let i = 0; i <= xTickCount; i += 1) {
+    const ratio = i / xTickCount;
+    const x = paddingLeft + ratio * chartWidth;
+    const magValue = minMag + magnitudeRange * ratio;
+
+    const tick = createSvgElement('line', {
+      x1: x,
+      y1: chartHeight + 20,
+      x2: x,
+      y2: chartHeight + 25,
+      stroke: 'rgba(255,255,255,0.45)',
+      'stroke-width': 1,
+    });
+    svg.appendChild(tick);
+
+    const tickLabel = createSvgElement('text', {
+      x,
+      y: chartHeight + 37,
+      'text-anchor': 'middle',
+      fill: 'rgba(255,255,255,0.78)',
+      'font-size': '9',
+    });
+    tickLabel.textContent = magValue.toFixed(1);
+    svg.appendChild(tickLabel);
+  }
+
+  const xTitle = createSvgElement('text', {
+    x: paddingLeft + chartWidth / 2,
+    y: 214,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.85)',
+    'font-size': '10',
+  });
+  xTitle.textContent = 'Magnitude';
+  svg.appendChild(xTitle);
+
   filtered.forEach((item, index) => {
-    const x = paddingLeft + (item.mag / maxMag) * chartWidth;
-    const y = chartHeight + 20 - (item.depth / maxDepth) * chartHeight;
+    const normalizedMag = (item.mag - minMag) / magnitudeRange;
+    const x = paddingLeft + Math.min(1, Math.max(0, normalizedMag)) * chartWidth;
+    const y = 20 + (item.depth / maxDepth) * chartHeight;
     const circle = createSvgElement('circle', { cx: x, cy: y, r: Math.max(3, 2.5 + item.mag / 2), fill: colors[index % colors.length], opacity: 0.8 });
     svg.appendChild(circle);
 
@@ -1496,13 +1606,15 @@ function renderDetails(filtered) {
     const locationMeta = enrichedLocation && enrichedLocation !== item.place
       ? `<br><small style="color:rgba(255,255,255,0.6);">${enrichedLocation}</small>`
       : '';
+    const eventTimeUtc = Number.isFinite(item.timestampMs) ? formatUtcTime(item.timestampMs) : null;
+    const dateTimeLabel = eventTimeUtc ? `${item.date} ${eventTimeUtc} UTC` : `${item.date} --:--:--`;
     return `
       <tr>
         <td>${item.id}</td>
         <td>${item.place}${locationMeta}</td>
         <td>${item.region}</td>
         <td>${item.country}</td>
-        <td>${item.date}</td>
+        <td>${dateTimeLabel}</td>
         <td>${item.mag.toFixed(1)}</td>
         <td>${item.depth.toFixed(1)}</td>
         <td>${score}</td>
