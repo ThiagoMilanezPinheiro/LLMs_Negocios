@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+from src.ingestion.anp_wells_ingest import fetch_anp_wells, normalize_anp_well_feature
 from src.ingestion.usgs_ingest import fetch_usgs_events, normalize_usgs_feature
 from src.quality.validate import validate_rows
 from src.transformation.build_fact import transform_rows
@@ -19,6 +20,8 @@ def run_pipeline(
     end_time: str | None = "2026-12-31",
     fetch_all: bool = False,
     max_results: int = 20000,
+    include_anp_wells: bool = False,
+    anp_wells_max_features: int = 40000,
 ) -> Dict[str, Any]:
     ensure_directories(str(BASE_DIR))
     ingestion_timestamp = datetime.now(timezone.utc)
@@ -43,6 +46,16 @@ def run_pipeline(
     persist_parquet(validated_rows, str(parquet_path))
     persist_duckdb(validated_rows, str(duckdb_path))
 
+    wells_rows: List[Dict[str, Any]] = []
+    wells_parquet_path = None
+    if include_anp_wells:
+        raw_wells = fetch_anp_wells(max_features=anp_wells_max_features)
+        wells_rows = [normalize_anp_well_feature(well, ingestion_timestamp) for well in raw_wells]
+        wells_parquet = output_dir / "dim_anp_well.parquet"
+        persist_parquet(wells_rows, str(wells_parquet))
+        persist_duckdb(wells_rows, str(duckdb_path), table_name="dim_anp_well")
+        wells_parquet_path = str(wells_parquet)
+
     report = {
         "source": "USGS",
         "source_url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
@@ -56,6 +69,9 @@ def run_pipeline(
         "records_warning": sum(1 for row in validated_rows if row.get("data_quality_flag") == "WARNING"),
         "parquet_path": str(parquet_path),
         "duckdb_path": str(duckdb_path),
+        "include_anp_wells": include_anp_wells,
+        "anp_wells_records": len(wells_rows),
+        "anp_wells_parquet_path": wells_parquet_path,
     }
     return report
 

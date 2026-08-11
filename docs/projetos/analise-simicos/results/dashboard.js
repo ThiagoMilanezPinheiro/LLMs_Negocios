@@ -12,6 +12,10 @@ const trendChartEl = document.getElementById('trendChart');
 const magnitudeChartEl = document.getElementById('magnitudeChart');
 const scatterChartEl = document.getElementById('scatterChart');
 const depthChartEl = document.getElementById('depthChart');
+const mapEl = document.getElementById('seismicMap');
+const mapStatusEl = document.getElementById('mapStatus');
+const mapAssetLayerFilter = document.getElementById('mapAssetLayerFilter');
+const chartHoverTooltipEl = document.getElementById('chartHoverTooltip');
 
 const kpiEvents = document.getElementById('kpiEvents');
 const kpiM4 = document.getElementById('kpiM4');
@@ -42,6 +46,12 @@ const topSummaryEl = document.getElementById('topSummary');
 const answerListEl = document.getElementById('answerList');
 const executiveSignalMainEl = document.getElementById('executiveSignalMain');
 const executiveSignalMetaEl = document.getElementById('executiveSignalMeta');
+const wellDatasetStatusEl = document.getElementById('wellDatasetStatus');
+const kpiWellsComparedEl = document.getElementById('kpiWellsCompared');
+const kpiWells50kmEl = document.getElementById('kpiWells50km');
+const kpiWells100kmEl = document.getElementById('kpiWells100km');
+const kpiMinWellDistanceEl = document.getElementById('kpiMinWellDistance');
+const wellComparisonTableEl = document.getElementById('wellComparisonTable');
 
 const DASHBOARD_START_TIME = '2026-01-01';
 const DASHBOARD_END_TIME = '2026-12-31';
@@ -49,6 +59,9 @@ const DASHBOARD_HISTORY_LIMIT = 20000;
 const DASHBOARD_LATEST_LIMIT = 100;
 const DASHBOARD_24H_LIMIT = 5000;
 const DASHBOARD_7D_LIMIT = 20000;
+const ANP_WELLS_URL = 'https://gishub.anp.gov.br/geoserver/BD_ANP/ows';
+const ANP_WELLS_MAX_FEATURES = 40000;
+const MAP_MAX_WELL_MARKERS = 5000;
 const CONTINENTS = [
   { name: 'Africa', code: 'AF' },
   { name: 'Antarctica', code: 'AN' },
@@ -110,6 +123,41 @@ const COUNTRY_TO_CONTINENT = {
   'New Zealand': 'Oceania',
   'Águas internacionais': 'Oceania',
 };
+const COUNTRY_CODE_BY_NAME = {
+  'Estados Unidos': 'US',
+  'México': 'MX',
+  'Canadá': 'CA',
+  'Colômbia': 'CO',
+  'Brasil': 'BR',
+  'Peru': 'PE',
+  'Chile': 'CL',
+  'Argentina': 'AR',
+  'Equador': 'EC',
+  'Bolívia': 'BO',
+  'Paraguai': 'PY',
+  'Uruguai': 'UY',
+  'Venezuela': 'VE',
+  'Indonesia': 'ID',
+  'Irã': 'IR',
+  'Japão': 'JP',
+  'Rússia': 'RU',
+  'China': 'CN',
+  'Filipinas': 'PH',
+  'Turquia': 'TR',
+  'Índia': 'IN',
+  'Fiji': 'FJ',
+  'Vanuatu': 'VU',
+  'Águas internacionais': 'INT',
+};
+
+let seismicMap = null;
+let seismicLayer = null;
+let wellLayer = null;
+let fieldLayer = null;
+let anpWells = [];
+let anpWellsPromise = null;
+let wellComparisonRunId = 0;
+let mapAssetRunId = 0;
 
 const COUNTRY_PATTERNS = [
   { regex: /\b(united states|u\.s\.|usa|alaska|hawaii|california|nevada|montana|washington|oregon|idaho|oklahoma|texas|puerto rico|virgin islands)\b/i, country: 'Estados Unidos', region: 'North America' },
@@ -211,6 +259,21 @@ function normalizeGeoValue(value, fallback) {
     return fallback;
   }
   return text;
+}
+
+function parsePlaceDetails(place) {
+  const text = String(place || '').trim();
+  if (!text) {
+    return { inferredCity: null, inferredDistanceKm: null };
+  }
+
+  const distanceMatch = text.match(/^(\d+(?:\.\d+)?)\s*km\b/i);
+  const inferredDistanceKm = distanceMatch ? Number(distanceMatch[1]) : null;
+
+  const cityMatch = text.match(/\bof\s+([^,]+)(?:,|$)/i);
+  const inferredCity = cityMatch ? cityMatch[1].trim() : null;
+
+  return { inferredCity, inferredDistanceKm };
 }
 
 function normalizeCountryValue(rawCountry, inferredCountry, place) {
@@ -463,6 +526,563 @@ function getSeismicScore(item) {
   return Math.min(100, Math.round(magnitudeBonus + depthBonus + tsunamiBonus + alertBonus + significanceBonus));
 }
 
+function toRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+    + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2))
+    * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+}
+
+function normalizeWellFeature(feature) {
+  const props = feature.properties || {};
+  const coords = feature.geometry?.coordinates || [];
+  const longitude = Number(coords[0]);
+  const latitude = Number(coords[1]);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return {
+    wellName: props.POCO || null,
+    operator: props.OPERADOR || null,
+    state: props.ESTADO || null,
+    basin: props.BACIA || null,
+    field: props.CAMPO || null,
+    type: props.TIPO || null,
+    status: props.SITUACAO || null,
+    latitude,
+    longitude,
+  };
+}
+
+function deriveFieldCentroids(wells) {
+  const groups = new Map();
+  wells.forEach(well => {
+    if (!well || !well.field || !Number.isFinite(well.latitude) || !Number.isFinite(well.longitude)) {
+      return;
+    }
+    const key = `${well.field}::${well.basin || ''}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        fieldName: well.field,
+        basin: well.basin || null,
+        count: 0,
+        sumLat: 0,
+        sumLon: 0,
+      });
+    }
+    const group = groups.get(key);
+    group.count += 1;
+    group.sumLat += well.latitude;
+    group.sumLon += well.longitude;
+  });
+
+  return Array.from(groups.values()).map(group => ({
+    fieldName: group.fieldName,
+    basin: group.basin,
+    wellCount: group.count,
+    latitude: group.sumLat / group.count,
+    longitude: group.sumLon / group.count,
+  }));
+}
+
+function getCellKey(lat, lon, cellSizeDeg) {
+  const latCell = Math.floor((lat + 90) / cellSizeDeg);
+  const lonCell = Math.floor((lon + 180) / cellSizeDeg);
+  return `${latCell}:${lonCell}`;
+}
+
+function buildEarthquakeSpatialIndex(rows, cellSizeDeg = 3) {
+  const bins = new Map();
+  rows.forEach(item => {
+    if (!Number.isFinite(item.latitude) || !Number.isFinite(item.longitude)) return;
+    const key = getCellKey(item.latitude, item.longitude, cellSizeDeg);
+    if (!bins.has(key)) {
+      bins.set(key, []);
+    }
+    bins.get(key).push(item);
+  });
+  return { bins, cellSizeDeg };
+}
+
+function getNearbyEarthquakes(index, lat, lon, maxRing = 4) {
+  const { bins, cellSizeDeg } = index;
+  const latCell = Math.floor((lat + 90) / cellSizeDeg);
+  const lonCell = Math.floor((lon + 180) / cellSizeDeg);
+
+  for (let ring = 0; ring <= maxRing; ring += 1) {
+    const candidates = [];
+    for (let dLat = -ring; dLat <= ring; dLat += 1) {
+      for (let dLon = -ring; dLon <= ring; dLon += 1) {
+        const key = `${latCell + dLat}:${lonCell + dLon}`;
+        const bucket = bins.get(key);
+        if (bucket && bucket.length) {
+          candidates.push(...bucket);
+        }
+      }
+    }
+    if (candidates.length) {
+      return candidates;
+    }
+  }
+  return [];
+}
+
+function renderWellComparisonLoading(message) {
+  if (wellComparisonTableEl) {
+    wellComparisonTableEl.innerHTML = `<tr><td colspan="7">${message}</td></tr>`;
+  }
+}
+
+function renderWellComparisonRows(rows) {
+  if (!wellComparisonTableEl) return;
+  if (!rows.length) {
+    wellComparisonTableEl.innerHTML = '<tr><td colspan="7">Sem interseção geográfica entre poços e eventos para os filtros atuais.</td></tr>';
+    return;
+  }
+
+  wellComparisonTableEl.innerHTML = rows.map(item => `
+    <tr>
+      <td>${item.wellName || '—'}</td>
+      <td>${item.operator || '—'}</td>
+      <td>${item.basin || '—'}</td>
+      <td>${item.state || '—'}</td>
+      <td>${item.nearestPlace || '—'}</td>
+      <td>${Number.isFinite(item.nearestMagnitude) ? item.nearestMagnitude.toFixed(1) : '—'}</td>
+      <td>${Number.isFinite(item.minDistanceKm) ? item.minDistanceKm.toFixed(1) : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function updateWellKpis(metrics) {
+  if (kpiWellsComparedEl) kpiWellsComparedEl.textContent = String(metrics.wellsCompared || 0);
+  if (kpiWells50kmEl) kpiWells50kmEl.textContent = String(metrics.wells50km || 0);
+  if (kpiWells100kmEl) kpiWells100kmEl.textContent = String(metrics.wells100km || 0);
+  if (kpiMinWellDistanceEl) {
+    kpiMinWellDistanceEl.textContent = Number.isFinite(metrics.minDistanceKm) ? `${metrics.minDistanceKm.toFixed(1)} km` : '—';
+  }
+}
+
+function filterWellsByEarthquakeBounds(wells, earthquakes, paddingDeg = 2) {
+  const rows = earthquakes.filter(item => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
+  if (!rows.length) return [];
+
+  const lats = rows.map(item => item.latitude);
+  const lons = rows.map(item => item.longitude);
+  const minLat = Math.max(-90, Math.min(...lats) - paddingDeg);
+  const maxLat = Math.min(90, Math.max(...lats) + paddingDeg);
+  const minLon = Math.max(-180, Math.min(...lons) - paddingDeg);
+  const maxLon = Math.min(180, Math.max(...lons) + paddingDeg);
+
+  return wells.filter(well => well.latitude >= minLat
+    && well.latitude <= maxLat
+    && well.longitude >= minLon
+    && well.longitude <= maxLon);
+}
+
+function computeWellComparison(wells, earthquakes) {
+  if (!wells.length || !earthquakes.length) {
+    return {
+      rows: [],
+      metrics: { wellsCompared: 0, wells50km: 0, wells100km: 0, minDistanceKm: null },
+    };
+  }
+
+  const index = buildEarthquakeSpatialIndex(earthquakes);
+  const comparisons = [];
+
+  wells.forEach(well => {
+    const candidates = getNearbyEarthquakes(index, well.latitude, well.longitude);
+    if (!candidates.length) return;
+
+    let bestEvent = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    candidates.forEach(event => {
+      const distanceKm = haversineKm(well.latitude, well.longitude, event.latitude, event.longitude);
+      if (distanceKm < bestDistance) {
+        bestDistance = distanceKm;
+        bestEvent = event;
+      }
+    });
+
+    if (!bestEvent || !Number.isFinite(bestDistance)) return;
+    comparisons.push({
+      ...well,
+      minDistanceKm: bestDistance,
+      nearestEventId: bestEvent.id,
+      nearestPlace: bestEvent.place,
+      nearestMagnitude: bestEvent.mag,
+      nearestDate: bestEvent.date,
+    });
+  });
+
+  comparisons.sort((a, b) => a.minDistanceKm - b.minDistanceKm);
+  const wells50km = comparisons.filter(item => item.minDistanceKm <= 50).length;
+  const wells100km = comparisons.filter(item => item.minDistanceKm <= 100).length;
+  const minDistanceKm = comparisons.length ? comparisons[0].minDistanceKm : null;
+
+  return {
+    rows: comparisons,
+    metrics: {
+      wellsCompared: comparisons.length,
+      wells50km,
+      wells100km,
+      minDistanceKm,
+    },
+  };
+}
+
+function ensureAnpWellsLoaded() {
+  if (anpWells.length) {
+    return Promise.resolve(anpWells);
+  }
+  if (anpWellsPromise) {
+    return anpWellsPromise;
+  }
+
+  if (wellDatasetStatusEl) {
+    wellDatasetStatusEl.textContent = 'Base de poços: carregando ANP...';
+  }
+
+  const params = new URLSearchParams({
+    service: 'WFS',
+    version: '1.0.0',
+    request: 'GetFeature',
+    typeName: 'BD_ANP:POCOS_SIRGAS',
+    maxFeatures: String(ANP_WELLS_MAX_FEATURES),
+    outputFormat: 'application/json',
+  });
+
+  anpWellsPromise = fetch(`${ANP_WELLS_URL}?${params.toString()}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Falha ao carregar poços ANP');
+      }
+      return response.json();
+    })
+    .then(payload => {
+      anpWells = (payload.features || []).map(normalizeWellFeature).filter(Boolean);
+      if (wellDatasetStatusEl) {
+        wellDatasetStatusEl.textContent = `Base de poços: ANP oficial carregada (${anpWells.length} poços)`;
+      }
+      return anpWells;
+    })
+    .catch(() => {
+      anpWells = [];
+      if (wellDatasetStatusEl) {
+        wellDatasetStatusEl.textContent = 'Base de poços: falha no carregamento ANP';
+      }
+      return anpWells;
+    })
+    .finally(() => {
+      anpWellsPromise = null;
+    });
+
+  return anpWellsPromise;
+}
+
+function updateWellComparison(filtered) {
+  const rowsWithCoords = filtered.filter(item => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
+  if (!rowsWithCoords.length) {
+    updateWellKpis({ wellsCompared: 0, wells50km: 0, wells100km: 0, minDistanceKm: null });
+    renderWellComparisonRows([]);
+    return;
+  }
+
+  const runId = ++wellComparisonRunId;
+  renderWellComparisonLoading('Calculando proximidade poço x abalo...');
+  ensureAnpWellsLoaded().then(allWells => {
+    if (runId !== wellComparisonRunId) return;
+
+    const scopedWells = filterWellsByEarthquakeBounds(allWells, rowsWithCoords);
+    const { rows, metrics } = computeWellComparison(scopedWells, rowsWithCoords);
+    updateWellKpis(metrics);
+    renderWellComparisonRows(rows.slice(0, 10));
+  });
+}
+
+function showChartTooltip(content, event) {
+  if (!chartHoverTooltipEl || !content) return;
+  chartHoverTooltipEl.innerHTML = content;
+  chartHoverTooltipEl.style.display = 'block';
+  const offsetX = 14;
+  const offsetY = 14;
+  const viewportPadding = 12;
+  const tooltipRect = chartHoverTooltipEl.getBoundingClientRect();
+  let left = event.clientX + offsetX;
+  let top = event.clientY + offsetY;
+
+  if (left + tooltipRect.width > window.innerWidth - viewportPadding) {
+    left = event.clientX - tooltipRect.width - offsetX;
+  }
+  if (top + tooltipRect.height > window.innerHeight - viewportPadding) {
+    top = event.clientY - tooltipRect.height - offsetY;
+  }
+
+  chartHoverTooltipEl.style.left = `${Math.max(viewportPadding, left)}px`;
+  chartHoverTooltipEl.style.top = `${Math.max(viewportPadding, top)}px`;
+}
+
+function hideChartTooltip() {
+  if (!chartHoverTooltipEl) return;
+  chartHoverTooltipEl.style.display = 'none';
+}
+
+function attachChartHover(target, tooltipBuilder) {
+  if (!target || typeof tooltipBuilder !== 'function') return;
+  target.addEventListener('mousemove', event => {
+    const html = tooltipBuilder();
+    showChartTooltip(html, event);
+  });
+  target.addEventListener('mouseleave', hideChartTooltip);
+}
+
+function formatUtcDate(ms) {
+  if (!Number.isFinite(ms)) return null;
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(ms));
+}
+
+function formatUtcTime(ms) {
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString().slice(11, 19);
+}
+
+function formatLocalTime(ms) {
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function formatAlert(value) {
+  if (!value) return null;
+  const txt = String(value).trim();
+  if (!txt) return null;
+  return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+}
+
+function getCountryCode(item) {
+  const raw = String(item.countryCode || '').trim().toUpperCase();
+  if (raw) return raw;
+  return COUNTRY_CODE_BY_NAME[item.country] || null;
+}
+
+function mapDetailRow(label, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `<div class="map-popup-item"><strong>${label}</strong><br>${value}</div>`;
+}
+
+function buildMapPopupHtml(item) {
+  const date = formatUtcDate(item.timestampMs);
+  const utcTime = formatUtcTime(item.timestampMs);
+  const localTime = formatLocalTime(item.timestampMs);
+  const magnitude = Number.isFinite(item.mag) ? `${item.mag.toFixed(1)}${item.magType ? ` ${item.magType}` : ''}` : null;
+  const depth = Number.isFinite(item.depth) ? `${item.depth.toFixed(1)} km` : null;
+  const latitude = Number.isFinite(item.latitude) ? item.latitude.toFixed(4) : null;
+  const longitude = Number.isFinite(item.longitude) ? item.longitude.toFixed(4) : null;
+  const tsunami = typeof item.tsunami === 'boolean' ? (item.tsunami ? 'Yes' : 'No') : null;
+  const alert = formatAlert(item.alert);
+  const significance = Number.isFinite(item.significance) ? String(Math.round(item.significance)) : null;
+  const distance = Number.isFinite(item.distanceToCityKm) ? `${item.distanceToCityKm.toFixed(1)} km` : null;
+
+  const rows = [
+    mapDetailRow('Event ID', item.id),
+    mapDetailRow('Magnitude', magnitude),
+    mapDetailRow('Depth', depth),
+    mapDetailRow('Date', date),
+    mapDetailRow('Time UTC', utcTime),
+    mapDetailRow('Local Time', localTime),
+    mapDetailRow('Location', item.place),
+    mapDetailRow('Country', item.country),
+    mapDetailRow('Latitude', latitude),
+    mapDetailRow('Longitude', longitude),
+    mapDetailRow('Tsunami', tsunami),
+    mapDetailRow('Alert', alert),
+    mapDetailRow('Significance', significance),
+    mapDetailRow('Nearest City', item.nearestCity),
+    mapDetailRow('Distance', distance),
+  ].filter(Boolean);
+
+  return `<div class="map-popup-scroll">${rows.join('<hr style="border:none;border-top:1px solid rgba(0,0,0,0.12);margin:6px 0;">')}</div>`;
+}
+
+function buildMapTooltipText(item) {
+  const code = getCountryCode(item);
+  const city = item.nearestCity || item.city;
+  const segments = [];
+  if (code) segments.push(code);
+  if (city) segments.push(city);
+  return segments.join(' • ');
+}
+
+function initSeismicMap() {
+  if (!mapEl || typeof L === 'undefined' || seismicMap) {
+    return;
+  }
+
+  seismicMap = L.map(mapEl, {
+    center: [12, 0],
+    zoom: 2,
+    minZoom: 2,
+    worldCopyJump: true,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(seismicMap);
+
+  seismicLayer = L.layerGroup().addTo(seismicMap);
+  wellLayer = L.layerGroup().addTo(seismicMap);
+  fieldLayer = L.layerGroup().addTo(seismicMap);
+}
+
+function getMapAssetMode() {
+  return mapAssetLayerFilter ? mapAssetLayerFilter.value : 'none';
+}
+
+function updateMapAssets(rowsWithCoords, bounds) {
+  if (!seismicMap || !wellLayer || !fieldLayer) {
+    return Promise.resolve({ wellsShown: 0, fieldsShown: 0, allBounds: bounds.slice() });
+  }
+
+  wellLayer.clearLayers();
+  fieldLayer.clearLayers();
+
+  const mode = getMapAssetMode();
+  if (mode === 'none') {
+    return Promise.resolve({ wellsShown: 0, fieldsShown: 0, allBounds: bounds.slice() });
+  }
+
+  return ensureAnpWellsLoaded().then(allWells => {
+    const scopedWells = filterWellsByEarthquakeBounds(allWells, rowsWithCoords);
+    const cappedWells = scopedWells.slice(0, MAP_MAX_WELL_MARKERS);
+    let wellsShown = 0;
+    let fieldsShown = 0;
+    const allBounds = bounds.slice();
+
+    if (mode === 'wells' || mode === 'both') {
+      cappedWells.forEach(well => {
+        const marker = L.circleMarker([well.latitude, well.longitude], {
+          radius: 3,
+          color: '#22c55e',
+          weight: 1,
+          fillColor: '#16a34a',
+          fillOpacity: 0.65,
+        });
+        marker.bindPopup(`<strong>Poço:</strong> ${well.wellName || '—'}<br><strong>Operador:</strong> ${well.operator || '—'}<br><strong>Bacia:</strong> ${well.basin || '—'}<br><strong>Estado:</strong> ${well.state || '—'}`);
+        marker.addTo(wellLayer);
+        wellsShown += 1;
+        allBounds.push([well.latitude, well.longitude]);
+      });
+    }
+
+    if (mode === 'fields' || mode === 'both') {
+      const fieldCentroids = deriveFieldCentroids(cappedWells);
+      fieldCentroids.forEach(field => {
+        const marker = L.circleMarker([field.latitude, field.longitude], {
+          radius: Math.max(4, Math.min(9, 3 + Math.log10(field.wellCount + 1) * 2)),
+          color: '#38bdf8',
+          weight: 1,
+          fillColor: '#0ea5e9',
+          fillOpacity: 0.55,
+        });
+        marker.bindPopup(`<strong>Campo:</strong> ${field.fieldName}<br><strong>Bacia:</strong> ${field.basin || '—'}<br><strong>Poços no campo:</strong> ${field.wellCount}`);
+        marker.addTo(fieldLayer);
+        fieldsShown += 1;
+        allBounds.push([field.latitude, field.longitude]);
+      });
+    }
+
+    return { wellsShown, fieldsShown, allBounds, wellsTotal: scopedWells.length };
+  });
+}
+
+function updateSeismicMap(filtered) {
+  if (!mapEl) {
+    return;
+  }
+
+  initSeismicMap();
+  if (!seismicMap || !seismicLayer) {
+    if (mapStatusEl) {
+      mapStatusEl.textContent = 'Mapa indisponível neste ambiente.';
+    }
+    return;
+  }
+
+  seismicLayer.clearLayers();
+  const rowsWithCoords = filtered.filter(item => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
+
+  if (!rowsWithCoords.length) {
+    if (mapStatusEl) {
+      mapStatusEl.textContent = 'Sem coordenadas geográficas disponíveis para a seleção atual.';
+    }
+    seismicMap.setView([12, 0], 2);
+    if (wellLayer) wellLayer.clearLayers();
+    if (fieldLayer) fieldLayer.clearLayers();
+    return;
+  }
+
+  const bounds = [];
+  rowsWithCoords.forEach(item => {
+    const magnitude = Number.isFinite(item.mag) ? item.mag : 0;
+    const radius = Math.max(3, Math.min(14, magnitude * 1.6));
+    const marker = L.circleMarker([item.latitude, item.longitude], {
+      radius,
+      color: '#f97316',
+      weight: 1,
+      fillColor: '#7c3aed',
+      fillOpacity: 0.68,
+    });
+
+    const tooltipText = buildMapTooltipText(item);
+    if (tooltipText) {
+      marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.95 });
+    }
+
+    const popupHtml = buildMapPopupHtml(item);
+    if (popupHtml) {
+      marker.bindPopup(popupHtml, { maxWidth: 320 });
+    }
+    marker.addTo(seismicLayer);
+    bounds.push([item.latitude, item.longitude]);
+  });
+
+  const runId = ++mapAssetRunId;
+  updateMapAssets(rowsWithCoords, bounds).then(({ wellsShown, fieldsShown, allBounds, wellsTotal }) => {
+    if (runId !== mapAssetRunId) return;
+
+    if (allBounds.length === 1) {
+      seismicMap.setView(allBounds[0], 5);
+    } else {
+      seismicMap.fitBounds(allBounds, { padding: [25, 25], maxZoom: 6 });
+    }
+
+    if (mapStatusEl) {
+      const missingCoords = filtered.length - rowsWithCoords.length;
+      const mode = getMapAssetMode();
+      const assetText = mode === 'none'
+        ? ''
+        : ` • poços: ${wellsShown}${Number.isFinite(wellsTotal) && wellsTotal > wellsShown ? `/${wellsTotal}` : ''} • campos: ${fieldsShown}`;
+      mapStatusEl.textContent = missingCoords > 0
+        ? `${rowsWithCoords.length} pontos sísmicos exibidos (${missingCoords} sem coordenadas)${assetText}.`
+        : `${rowsWithCoords.length} pontos sísmicos exibidos${assetText}.`;
+    }
+  });
+}
+
 function updateDashboard() {
   const filtered = getFilteredData();
   const dashboardData = getDashboardData();
@@ -478,7 +1098,10 @@ function updateDashboard() {
     topMagnitude.textContent = '—';
     summaryText.innerHTML = '<strong>Sem dados para esta seleção.</strong>';
     renderCharts([], [], [], []);
+    updateSeismicMap([]);
     renderDetails([]);
+    updateWellKpis({ wellsCompared: 0, wells50km: 0, wells100km: 0, minDistanceKm: null });
+    renderWellComparisonRows([]);
     return;
   }
 
@@ -628,7 +1251,9 @@ function updateDashboard() {
   }).join('') : '<div class="attention-item"><strong>Nenhum evento crítico na seleção atual.</strong></div>';
 
   renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues);
+  updateSeismicMap(filtered);
   renderDetails(filtered);
+  updateWellComparison(filtered);
 }
 
 function createSvgElement(tag, attrs = {}) {
@@ -637,7 +1262,7 @@ function createSvgElement(tag, attrs = {}) {
   return element;
 }
 
-function renderBarChart(container, labels, values) {
+function renderBarChart(container, labels, values, options = {}) {
   container.innerHTML = '';
   const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
   const maxValue = Math.max(...values, 1);
@@ -661,6 +1286,17 @@ function renderBarChart(container, labels, values) {
     const rect = createSvgElement('rect', { x, y, width: barWidth, height: barHeight, rx: 6, fill: colors[index % colors.length] });
     svg.appendChild(rect);
 
+    const tooltipBuilder = () => {
+      const total = options.total || values.reduce((sum, current) => sum + current, 0) || 1;
+      const share = ((value / total) * 100).toFixed(1);
+      const base = `<strong>${options.title || 'Distribuição'}</strong><br>${label}: ${value} eventos (${share}%)`;
+      if (options.metaByIndex && options.metaByIndex[index]) {
+        return `${base}<br>${options.metaByIndex[index]}`;
+      }
+      return base;
+    };
+    attachChartHover(rect, tooltipBuilder);
+
     const labelText = createSvgElement('text', { x: x + barWidth / 2, y: chartHeight + 40, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '10' });
     labelText.textContent = label;
     svg.appendChild(labelText);
@@ -674,6 +1310,7 @@ function renderBarChart(container, labels, values) {
 }
 
 function renderLineChart(container, labels, values) {
+  const options = arguments.length > 3 && arguments[3] ? arguments[3] : {};
   container.innerHTML = '';
   const svg = createSvgElement('svg', { viewBox: '0 0 320 220' });
   const maxValue = Math.max(...values, 1);
@@ -697,6 +1334,14 @@ function renderLineChart(container, labels, values) {
     const y = chartHeight + 20;
     const circle = createSvgElement('circle', { cx: x, cy: chartHeight + 20 - (values[index] / maxValue) * chartHeight, r: 4, fill: '#ffffff', stroke: '#7c3aed', 'stroke-width': 2 });
     svg.appendChild(circle);
+
+    attachChartHover(circle, () => {
+      const total = options.total || values.reduce((sum, current) => sum + current, 0) || 1;
+      const share = ((values[index] / total) * 100).toFixed(1);
+      const base = `<strong>${label}</strong><br>Eventos: ${values[index]} (${share}%)`;
+      const extra = options.metaByLabel && options.metaByLabel[label] ? `<br>${options.metaByLabel[label]}` : '';
+      return `${base}${extra}`;
+    });
 
     const text = createSvgElement('text', { x, y: y + 20, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.8)', 'font-size': '9' });
     text.textContent = label.slice(5);
@@ -725,6 +1370,11 @@ function renderScatterChart(container, filtered) {
     const y = chartHeight + 20 - (item.depth / maxDepth) * chartHeight;
     const circle = createSvgElement('circle', { cx: x, cy: y, r: Math.max(3, 2.5 + item.mag / 2), fill: colors[index % colors.length], opacity: 0.8 });
     svg.appendChild(circle);
+
+    attachChartHover(circle, () => {
+      const severity = getSeverityLabel(item.mag);
+      return `<strong>${item.place}</strong><br>M ${item.mag.toFixed(1)} • ${item.depth.toFixed(1)} km<br>${item.date} • ${item.country || UNKNOWN_COUNTRY}<br>Severidade: ${severity}`;
+    });
   });
 
   container.appendChild(svg);
@@ -734,15 +1384,53 @@ function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, de
 
   const trendLabels = trendCounts.map(item => item[0]);
   const trendValues = trendCounts.map(item => item[1]);
+  const trendMetaByLabel = {};
+  trendLabels.forEach((label, index) => {
+    const dayEvents = filtered.filter(item => item.date === label);
+    const medianMagDay = getMedian(dayEvents.map(item => item.mag)).toFixed(1);
+    const medianDepthDay = getMedian(dayEvents.map(item => item.depth)).toFixed(1);
+    const maxMagDay = dayEvents.reduce((max, item) => Math.max(max, item.mag), 0).toFixed(1);
+    trendMetaByLabel[label] = `Magn. mediana: ${medianMagDay} • Prof. mediana: ${medianDepthDay} km • Máx: ${maxMagDay}`;
+  });
+
+  const totalEvents = filtered.length || 1;
+  const magnitudeMeta = magnitudeBands.map((band, index) => {
+    if (!magnitudeValues[index]) return 'Sem eventos nesta faixa';
+    const minEdge = band === '<2' ? 0 : Number(String(band).split('–')[0]);
+    const maxEdge = band === '<2' ? 2 : band === '7+' ? Infinity : Number(String(band).split('–')[1]);
+    const bandRows = filtered.filter(item => (band === '<2' ? item.mag < 2 : band === '7+' ? item.mag >= 7 : item.mag >= minEdge && item.mag < maxEdge));
+    const medianDepthBand = getMedian(bandRows.map(item => item.depth)).toFixed(1);
+    return `Prof. mediana: ${medianDepthBand} km`;
+  });
+
+  const depthMeta = depthBands.map((band, index) => {
+    if (!depthValues[index]) return 'Sem eventos nesta faixa';
+    const bandRows = filtered.filter(item => {
+      if (band === '0–10 km') return item.depth >= 0 && item.depth < 10;
+      if (band === '10–50 km') return item.depth >= 10 && item.depth < 50;
+      if (band === '50–100 km') return item.depth >= 50 && item.depth < 100;
+      if (band === '100–300 km') return item.depth >= 100 && item.depth < 300;
+      return item.depth >= 300;
+    });
+    const medianMagBand = getMedian(bandRows.map(item => item.mag)).toFixed(1);
+    return `Magn. mediana: ${medianMagBand}`;
+  });
 
   if (trendLabels.length) {
-    renderLineChart(trendChartEl, trendLabels, trendValues);
+    renderLineChart(trendChartEl, trendLabels, trendValues, {
+      total: totalEvents,
+      metaByLabel: trendMetaByLabel,
+    });
   } else {
     trendChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
   }
 
   if (magnitudeBands && magnitudeValues) {
-    renderBarChart(magnitudeChartEl, magnitudeBands, magnitudeValues);
+    renderBarChart(magnitudeChartEl, magnitudeBands, magnitudeValues, {
+      title: 'Faixa de magnitude',
+      total: totalEvents,
+      metaByIndex: magnitudeMeta,
+    });
   } else {
     magnitudeChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
   }
@@ -754,7 +1442,11 @@ function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, de
   }
 
   if (depthBands && depthValues) {
-    renderBarChart(depthChartEl, depthBands, depthValues);
+    renderBarChart(depthChartEl, depthBands, depthValues, {
+      title: 'Faixa de profundidade',
+      total: totalEvents,
+      metaByIndex: depthMeta,
+    });
   } else {
     depthChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
   }
@@ -813,6 +1505,7 @@ function normalizeFeature(feature) {
   const props = feature.properties || {};
   const coords = feature.geometry?.coordinates || [];
   const inferredGeo = inferCountryRegionFromPlace(props.place);
+  const placeDetails = parsePlaceDetails(props.place);
   const country = normalizeCountryValue(props.country, inferredGeo.country, props.place);
   const region = normalizeRegionValue(props.region, country, inferredGeo.region);
   return {
@@ -820,14 +1513,20 @@ function normalizeFeature(feature) {
     place: props.place,
     region,
     country,
-    city: props.city || null,
-    nearestCity: props.nearest_city || null,
+    city: props.city || placeDetails.inferredCity || null,
+    nearestCity: props.nearest_city || placeDetails.inferredCity || null,
+    countryCode: props.country_code || null,
     date: new Date(props.time).toISOString().slice(0, 10),
+    timestampMs: Number(props.time),
     mag: Number(props.mag || 0),
+    magType: props.magType || null,
     depth: Number(coords[2] || 0),
+    latitude: Number(coords[1]),
+    longitude: Number(coords[0]),
     tsunami: Boolean(props.tsunami),
-    alert: Boolean(props.alert),
+    alert: props.alert || null,
     significance: Number(props.sig || props.significance || 0)
+    ,distanceToCityKm: Number(props.distance_to_city_km || 0) || placeDetails.inferredDistanceKm || null
   };
 }
 
@@ -877,18 +1576,27 @@ function buildLocalModeData(mode) {
   const normalizedRows = staticRows.map(item => {
     const place = item.place || item.place_raw || '';
     const inferredGeo = inferCountryRegionFromPlace(place);
+    const placeDetails = parsePlaceDetails(place);
     const country = normalizeCountryValue(item.country, inferredGeo.country, place);
     const region = normalizeRegionValue(item.region, country, inferredGeo.region);
     return {
       ...item,
       region,
       country,
+      city: item.city || placeDetails.inferredCity || null,
+      nearestCity: item.nearestCity || item.nearest_city || placeDetails.inferredCity || null,
     date: String(item.date || ''),
     mag: Number(item.mag || 0),
     depth: Number(item.depth || 0),
+    latitude: Number(item.latitude),
+    longitude: Number(item.longitude),
     tsunami: Boolean(item.tsunami),
-    alert: Boolean(item.alert),
+    alert: item.alert || null,
     significance: Number(item.significance || item.sig || 0),
+    timestampMs: Number(item.timestampMs || item.time_ms || 0) || null,
+    magType: item.magType || item.magnitude_type || null,
+    countryCode: item.countryCode || item.country_code || null,
+    distanceToCityKm: Number(item.distanceToCityKm || item.distance_to_city_km || 0) || placeDetails.inferredDistanceKm || null,
     };
   });
   return filterRowsByMode(normalizedRows, mode);
@@ -999,6 +1707,12 @@ function initFilters() {
     datasetModeFilter.addEventListener('change', changeDatasetMode);
   }
 
+  if (mapAssetLayerFilter) {
+    mapAssetLayerFilter.addEventListener('change', () => {
+      updateDashboard();
+    });
+  }
+
   if (exportButton) {
     exportButton.addEventListener('click', () => {
       exportFilteredData(getFilteredData());
@@ -1013,6 +1727,7 @@ function initFilters() {
 
 function initDashboard() {
   const initialMode = datasetModeFilter ? datasetModeFilter.value : 'latest_24h';
+  ensureAnpWellsLoaded();
   loadDashboardDataFromApi(initialMode).then(() => {
     initFilters();
     updateDashboard();

@@ -37,6 +37,26 @@
     .summary { color: rgba(255,255,255,0.75); font-size: 0.95rem; }
     .chart-canvas { width: 100%; min-height: 260px; }
     .chart-canvas svg { width: 100%; height: 100%; }
+    .chart-hover-tooltip {
+      position: fixed;
+      z-index: 9999;
+      max-width: 280px;
+      background: rgba(2, 6, 23, 0.94);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 10px;
+      padding: 0.55rem 0.65rem;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      pointer-events: none;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.34);
+      display: none;
+      white-space: normal;
+    }
+    .map-canvas { width: 100%; min-height: 420px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); }
+    .map-status { margin-top: 0.6rem; color: rgba(255,255,255,0.72); font-size: 0.9rem; }
+    .map-popup-scroll { max-height: 250px; overflow-y: auto; padding-right: 0.3rem; }
+    .map-popup-item { min-height: 42px; }
     .meta-strip { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.8rem; color: rgba(255,255,255,0.72); font-size: 0.9rem; }
     .meta-pill { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 0.35rem 0.7rem; }
     .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
@@ -167,6 +187,45 @@
         </div>
       </div>
 
+      <div class="panel">
+        <h3 style="margin-top:0;">Comparação Poço x Abalo Sísmico (ANP)</h3>
+        <p style="margin:0.2rem 0 0.8rem; color:rgba(255,255,255,0.72);">Base oficial ANP (poços públicos georreferenciados) comparada com os abalos filtrados para estimar distância mínima geodésica.</p>
+        <div class="meta-strip" style="margin-top:0; margin-bottom:0.85rem;">
+          <span class="meta-pill" id="wellDatasetStatus">Base de poços: carregando...</span>
+        </div>
+        <div class="kpis" style="margin-bottom:0.85rem;">
+          <div class="kpi-card"><div class="kpi-title">Poços comparados</div><div class="kpi-value" id="kpiWellsCompared">0</div></div>
+          <div class="kpi-card"><div class="kpi-title">Poços até 50 km</div><div class="kpi-value" id="kpiWells50km">0</div></div>
+          <div class="kpi-card"><div class="kpi-title">Poços até 100 km</div><div class="kpi-value" id="kpiWells100km">0</div></div>
+          <div class="kpi-card"><div class="kpi-title">Menor distância poço-abalo</div><div class="kpi-value" id="kpiMinWellDistance">—</div></div>
+        </div>
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr><th>Poço</th><th>Operador</th><th>Bacia</th><th>Estado</th><th>Abalo mais próximo</th><th>M</th><th>Distância (km)</th></tr>
+            </thead>
+            <tbody id="wellComparisonTable"><tr><td colspan="7">Aguardando dados...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+          <h3 style="margin:0;">Mapa Sísmico (pontos exatos)</h3>
+          <label style="display:flex; align-items:center; gap:0.45rem; color:rgba(255,255,255,0.82); font-size:0.9rem;">
+            Incluir no mapa
+            <select id="mapAssetLayerFilter" style="min-width:180px; border:1px solid rgba(15, 23, 42, 0.2); background:rgba(255,255,255,0.95); color:#0f172a; padding:0.45rem 0.6rem; border-radius:8px;">
+              <option value="none">Nenhum</option>
+              <option value="fields">Campos</option>
+              <option value="wells">Poços</option>
+              <option value="both">Campos e poços</option>
+            </select>
+          </label>
+        </div>
+        <div id="seismicMap" class="map-canvas"></div>
+        <div id="mapStatus" class="map-status">Carregando pontos sísmicos...</div>
+      </div>
+
       <div class="grid-2">
         <div class="panel">
           <h3 style="margin-top:0;">Eventos ao longo do tempo</h3>
@@ -237,7 +296,10 @@
     </section>
   </main>
 
+  <div id="chartHoverTooltip" class="chart-hover-tooltip"></div>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="dashboard-data.js?v=20260811-1"></script>
-  <script src="dashboard.js?v=20260811-1"></script>
+  <script src="dashboard.js?v=20260811-2"></script>
 </body>
 </html>
