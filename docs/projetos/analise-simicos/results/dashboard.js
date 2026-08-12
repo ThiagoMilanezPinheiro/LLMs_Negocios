@@ -1475,13 +1475,14 @@ function updateDashboard() {
     return filtered.filter(item => item.mag >= 7).length;
   });
 
-  const depthBands = ['0–10 km', '10–50 km', '50–100 km', '100–300 km', '300+ km'];
+  const depthBands = ['0–10 km', '10–50 km', '50–100 km', '100–300 km', '300–400 km', '400–500 km'];
   const depthValues = depthBands.map((band) => {
     if (band === '0–10 km') return filtered.filter(item => item.depth >= 0 && item.depth < 10).length;
     if (band === '10–50 km') return filtered.filter(item => item.depth >= 10 && item.depth < 50).length;
     if (band === '50–100 km') return filtered.filter(item => item.depth >= 50 && item.depth < 100).length;
     if (band === '100–300 km') return filtered.filter(item => item.depth >= 100 && item.depth < 300).length;
-    return filtered.filter(item => item.depth >= 300).length;
+    if (band === '300–400 km') return filtered.filter(item => item.depth >= 300 && item.depth < 400).length;
+    return filtered.filter(item => item.depth >= 400 && item.depth < 500).length;
   });
 
   const dayValues = filtered.map(item => item.date).sort();
@@ -2314,7 +2315,8 @@ function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, de
       if (band === '10–50 km') return item.depth >= 10 && item.depth < 50;
       if (band === '50–100 km') return item.depth >= 50 && item.depth < 100;
       if (band === '100–300 km') return item.depth >= 100 && item.depth < 300;
-      return item.depth >= 300;
+      if (band === '300–400 km') return item.depth >= 300 && item.depth < 400;
+      return item.depth >= 400 && item.depth < 500;
     });
     const medianMagBand = getMedian(bandRows.map(item => item.mag)).toFixed(1);
     return `Magn. mediana: ${medianMagBand}`;
@@ -2350,8 +2352,8 @@ function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, de
       title: 'Faixa de profundidade',
       total: totalEvents,
       metaByIndex: depthMeta,
-      chartHeight: 92,
-      svgHeight: 190,
+      chartHeight: 72,
+      svgHeight: 170,
     });
   } else {
     depthChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';
