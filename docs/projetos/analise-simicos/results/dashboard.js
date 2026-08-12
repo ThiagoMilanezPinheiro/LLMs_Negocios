@@ -1456,11 +1456,12 @@ function updateDashboard() {
   if (insightHotspotsMetaEl) insightHotspotsMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} eventos na liderança`;
   if (insightAlertsEl) {
     insightAlertsEl.innerHTML = `
-      <div class="mini-line"><span>Alertas = ${alertEvents}</span><span>tsunami = ${tsunamiEvents}</span></div>
-      <div class="mini-line"><span>felt = ${feltEvents}</span><span>eventos</span></div>
+      <div class="mini-line"><span>Alertas = ${alertEvents}</span></div>
+      <div class="mini-line"><span>Tsunami = ${tsunamiEvents}</span></div>
+      <div class="mini-line"><span>Felt = ${feltEvents}</span></div>
     `;
   }
-  if (insightAlertsMetaEl) insightAlertsMetaEl.textContent = 'Eventos';
+  if (insightAlertsMetaEl) insightAlertsMetaEl.textContent = '';
   if (insightDistanceEl) insightDistanceEl.textContent = '—';
   if (insightDistanceMetaEl) insightDistanceMetaEl.textContent = 'Sem comparação ANP na seleção atual';
 

@@ -68,18 +68,20 @@
     .insight-card strong { font-size: 1.05rem; color: white; display: block; }
     .insight-card small { color: rgba(255,255,255,0.65); }
     .insight-card .mini-list {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 0.18rem;
       font-size: 0.84rem;
       line-height: 1.4;
       color: #f8fafc;
+      width: 100%;
     }
     .insight-card .mini-list .mini-line {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.55rem;
-      white-space: nowrap;
+      justify-content: flex-start;
+      gap: 0.35rem;
+      white-space: normal;
     }
     .insight-card .mini-list .mini-line span:last-child {
       color: #dbeafe;
@@ -250,7 +252,7 @@
           <div class="insight-card"><h4>Padrão temporal</h4><strong id="insightTemporal">—</strong><small id="insightTemporalMeta">—</small></div>
           <div class="insight-card"><h4>Tendência vs. janela anterior</h4><strong id="insightTrend">—</strong><small id="insightTrendMeta">—</small></div>
           <div class="insight-card"><h4>Top 3 hotspots</h4><strong id="insightHotspots" class="mini-list">—</strong><small id="insightHotspotsMeta">—</small></div>
-          <div class="insight-card"><h4>Eventos</h4><strong id="insightAlerts" class="mini-list">—</strong><small id="insightAlertsMeta">—</small></div>
+          <div class="insight-card"><h4>Eventos</h4><div id="insightAlerts" class="mini-list">—</div><small id="insightAlertsMeta">—</small></div>
           <div class="insight-card"><h4>Distância mínima à infraestrutura crítica</h4><strong id="insightDistance">—</strong><small id="insightDistanceMeta">—</small></div>
         </div>
       </div>
