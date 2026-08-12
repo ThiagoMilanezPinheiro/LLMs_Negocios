@@ -1102,46 +1102,72 @@ function getMapAssetMode() {
 
 function drawNearestAssetConnection(event, wells, fields, mode) {
   if (!linkLayer || !event || !Number.isFinite(event.latitude) || !Number.isFinite(event.longitude)) return;
-  if (!wells.length && !fields.length) return;
 
-  const drawPolyline = (assetCoords, color) => {
-    if (!assetCoords) return;
-    const line = L.polyline([
-      [event.latitude, event.longitude],
-      assetCoords,
-    ], {
-      color,
-      weight: 2,
-      opacity: 0.9,
-      dashArray: '7 6',
+  const pool = [];
+  if ((mode === 'wells' || mode === 'both') && Array.isArray(wells)) {
+    wells.forEach(well => {
+      pool.push({
+        type: 'well',
+        coords: [well.latitude, well.longitude],
+        color: '#22c55e',
+        distance: haversineKm(event.latitude, event.longitude, well.latitude, well.longitude),
+      });
     });
-    line.bindTooltip(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${haversineKm(event.latitude, event.longitude, assetCoords[0], assetCoords[1]).toFixed(1)} km`, { direction: 'top', sticky: true, opacity: 0.96 });
-    line.bindPopup(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${haversineKm(event.latitude, event.longitude, assetCoords[0], assetCoords[1]).toFixed(1)} km`);
-    line.addTo(linkLayer);
-    line.bringToFront();
   }
 
-  if ((mode === 'wells' || mode === 'both') && wells.length) {
-    const nearestWell = wells.reduce((best, well) => {
-      const distance = haversineKm(event.latitude, event.longitude, well.latitude, well.longitude);
-      if (!best || distance < best.distance) {
-        return { distance, coords: [well.latitude, well.longitude] };
-      }
-      return best;
-    }, null);
-    if (nearestWell) drawPolyline(nearestWell.coords, '#22c55e');
+  if ((mode === 'fields' || mode === 'both') && Array.isArray(fields)) {
+    fields.forEach(field => {
+      pool.push({
+        type: 'field',
+        coords: [field.latitude, field.longitude],
+        color: '#38bdf8',
+        distance: haversineKm(event.latitude, event.longitude, field.latitude, field.longitude),
+      });
+    });
   }
 
-  if ((mode === 'fields' || mode === 'both') && fields.length) {
-    const nearestField = fields.reduce((best, field) => {
-      const distance = haversineKm(event.latitude, event.longitude, field.latitude, field.longitude);
-      if (!best || distance < best.distance) {
-        return { distance, coords: [field.latitude, field.longitude] };
-      }
-      return best;
-    }, null);
-    if (nearestField) drawPolyline(nearestField.coords, '#38bdf8');
-  }
+  if (!pool.length) return;
+
+  const nearestAsset = pool.reduce((best, current) => {
+    if (!best || current.distance < best.distance) return current;
+    return best;
+  }, null);
+
+  if (!nearestAsset) return;
+
+  const line = L.polyline([
+    [event.latitude, event.longitude],
+    nearestAsset.coords,
+  ], {
+    color: nearestAsset.color,
+    weight: 1.8,
+    opacity: 0.58,
+    dashArray: '4 7',
+    lineCap: 'round',
+    lineJoin: 'round',
+  });
+
+  line.bindTooltip(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${nearestAsset.distance.toFixed(1)} km`, { direction: 'top', sticky: true, opacity: 0.9 });
+  line.bindPopup(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${nearestAsset.distance.toFixed(1)} km`);
+  line.addTo(linkLayer);
+  line.bringToFront();
+}
+
+function getPriorityAssetLinkEvent(rowsWithCoords) {
+  const relevant = rowsWithCoords.filter(item => {
+    const severity = getSeverityLabel(Number(item.mag));
+    return severity === 'ALTA' || severity === 'SIGNIFICATIVA';
+  });
+
+  const candidates = relevant.length ? relevant : rowsWithCoords;
+  if (!candidates.length) return null;
+
+  return candidates.reduce((best, current) => {
+    if (!best) return current;
+    const bestScore = getSeismicScore(best);
+    const currentScore = getSeismicScore(current);
+    return currentScore > bestScore ? current : best;
+  }, null);
 }
 
 function updateMapAssets(rowsWithCoords, bounds) {
@@ -1210,10 +1236,7 @@ function updateMapAssets(rowsWithCoords, bounds) {
       });
     }
 
-    const primaryEvent = rowsWithCoords.reduce((best, item) => {
-      if (!best || Number(item.mag) > Number(best.mag)) return item;
-      return best;
-    }, null);
+    const primaryEvent = getPriorityAssetLinkEvent(rowsWithCoords);
     if (primaryEvent) {
       drawNearestAssetConnection(primaryEvent, cappedWells, fieldCentroids, mode);
     }
