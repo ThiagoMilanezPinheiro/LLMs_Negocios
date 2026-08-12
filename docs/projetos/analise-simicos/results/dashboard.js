@@ -1208,10 +1208,11 @@ function updateMapAssets(rowsWithCoords, bounds) {
       cappedWells.forEach(well => {
         const marker = L.circleMarker([well.latitude, well.longitude], {
           radius: 3,
-          color: '#22c55e',
-          weight: 1,
+          color: '#ffffff',
+          weight: 1.2,
           fillColor: '#16a34a',
-          fillOpacity: 0.65,
+          fillOpacity: 0.72,
+          opacity: 0.9,
         });
         const tooltipText = `<strong>Poço:</strong> ${well.wellName || '—'}<br><strong>Operador:</strong> ${well.operator || '—'}<br><strong>Bacia:</strong> ${well.basin || '—'}<br><strong>Estado:</strong> ${well.state || '—'}`;
         marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.96 });
@@ -1228,10 +1229,11 @@ function updateMapAssets(rowsWithCoords, bounds) {
       fieldCentroids.forEach(field => {
         const marker = L.circleMarker([field.latitude, field.longitude], {
           radius: Math.max(4, Math.min(9, 3 + Math.log10(field.wellCount + 1) * 2)),
-          color: '#38bdf8',
-          weight: 1,
+          color: '#ffffff',
+          weight: 1.2,
           fillColor: '#0ea5e9',
-          fillOpacity: 0.55,
+          fillOpacity: 0.7,
+          opacity: 0.9,
         });
         const tooltipText = `<strong>Campo:</strong> ${field.fieldName}<br><strong>Bacia:</strong> ${field.basin || '—'}<br><strong>Poços no campo:</strong> ${field.wellCount}`;
         marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.96 });
@@ -1289,10 +1291,11 @@ function updateSeismicMap(filtered) {
     const markerColor = getSeverityColor(severity);
     const marker = L.circleMarker([item.latitude, item.longitude], {
       radius,
-      color: markerColor,
-      weight: 1,
+      color: '#ffffff',
+      weight: 1.4,
       fillColor: markerColor,
-      fillOpacity: 0.68,
+      fillOpacity: 0.72,
+      opacity: 0.95,
     });
 
     const tooltipText = buildMapTooltipText(item);
