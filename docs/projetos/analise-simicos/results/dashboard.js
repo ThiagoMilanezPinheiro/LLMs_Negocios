@@ -167,6 +167,7 @@ let seismicMap = null;
 let seismicLayer = null;
 let wellLayer = null;
 let fieldLayer = null;
+let linkLayer = null;
 let anpWells = [];
 let anpWellsPromise = null;
 let wellComparisonRunId = 0;
@@ -1094,19 +1095,58 @@ function initSeismicMap() {
   seismicLayer = L.layerGroup().addTo(seismicMap);
   wellLayer = L.layerGroup().addTo(seismicMap);
   fieldLayer = L.layerGroup().addTo(seismicMap);
+  linkLayer = L.layerGroup().addTo(seismicMap);
 }
 
 function getMapAssetMode() {
   return mapAssetLayerFilter ? mapAssetLayerFilter.value : 'none';
 }
 
+function drawNearestAssetConnection(event, wells, fields, mode) {
+  if (!linkLayer || !event || !Number.isFinite(event.latitude) || !Number.isFinite(event.longitude)) return;
+  if (!wells.length && !fields.length) return;
+
+  const drawPolyline = (assetCoords, color) => {
+    if (!assetCoords) return;
+    const line = L.polyline([
+      [event.latitude, event.longitude],
+      assetCoords,
+    ], {
+      color,
+      weight: 2,
+      opacity: 0.9,
+      dashArray: '7 6',
+    });
+    line.bindTooltip(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${haversineKm(event.latitude, event.longitude, assetCoords[0], assetCoords[1]).toFixed(1)} km`, { direction: 'top', sticky: true, opacity: 0.96 });
+    line.bindPopup(`<strong>Evento sísmico</strong><br>${event.place || 'Local não informado'}<br><strong>Distância:</strong> ${haversineKm(event.latitude, event.longitude, assetCoords[0], assetCoords[1]).toFixed(1)} km`);
+    line.addTo(linkLayer);
+    line.bringToFront();
+  }
+
+  if ((mode === 'fields' || mode === 'both') && fields.length) {
+    const nearestField = fields.reduce((best, field) => {
+      const distance = haversineKm(event.latitude, event.longitude, field.latitude, field.longitude);
+      if (!best || distance < best.distance) {
+        return { distance, coords: [field.latitude, field.longitude] };
+      }
+      return best;
+    }, null);
+    if (nearestField) drawPolyline(nearestField.coords, '#38bdf8');
+  }
+}
+
 function updateMapAssets(rowsWithCoords, bounds) {
-  if (!seismicMap || !wellLayer || !fieldLayer) {
+  if (!seismicMap) {
     return Promise.resolve({ wellsShown: 0, fieldsShown: 0, allBounds: bounds.slice() });
   }
 
+  if (!wellLayer) wellLayer = L.layerGroup().addTo(seismicMap);
+  if (!fieldLayer) fieldLayer = L.layerGroup().addTo(seismicMap);
+  if (!linkLayer) linkLayer = L.layerGroup().addTo(seismicMap);
+
   wellLayer.clearLayers();
   fieldLayer.clearLayers();
+  linkLayer.clearLayers();
 
   const mode = getMapAssetMode();
   if (mode === 'none') {
@@ -1119,6 +1159,7 @@ function updateMapAssets(rowsWithCoords, bounds) {
     let wellsShown = 0;
     let fieldsShown = 0;
     const allBounds = bounds.slice();
+    const fieldCentroids = mode === 'fields' || mode === 'both' ? deriveFieldCentroids(cappedWells) : [];
 
     if (mode === 'wells' || mode === 'both') {
       cappedWells.forEach(well => {
@@ -1129,7 +1170,11 @@ function updateMapAssets(rowsWithCoords, bounds) {
           fillColor: '#16a34a',
           fillOpacity: 0.65,
         });
-        marker.bindPopup(`<strong>Poço:</strong> ${well.wellName || '—'}<br><strong>Operador:</strong> ${well.operator || '—'}<br><strong>Bacia:</strong> ${well.basin || '—'}<br><strong>Estado:</strong> ${well.state || '—'}`);
+        const tooltipText = `<strong>Poço:</strong> ${well.wellName || '—'}<br><strong>Operador:</strong> ${well.operator || '—'}<br><strong>Bacia:</strong> ${well.basin || '—'}<br><strong>Estado:</strong> ${well.state || '—'}`;
+        marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.96 });
+        marker.bindPopup(tooltipText);
+        marker.on('mouseover', () => marker.openTooltip());
+        marker.on('mouseout', () => marker.closeTooltip());
         marker.addTo(wellLayer);
         wellsShown += 1;
         allBounds.push([well.latitude, well.longitude]);
@@ -1137,7 +1182,6 @@ function updateMapAssets(rowsWithCoords, bounds) {
     }
 
     if (mode === 'fields' || mode === 'both') {
-      const fieldCentroids = deriveFieldCentroids(cappedWells);
       fieldCentroids.forEach(field => {
         const marker = L.circleMarker([field.latitude, field.longitude], {
           radius: Math.max(4, Math.min(9, 3 + Math.log10(field.wellCount + 1) * 2)),
@@ -1146,11 +1190,23 @@ function updateMapAssets(rowsWithCoords, bounds) {
           fillColor: '#0ea5e9',
           fillOpacity: 0.55,
         });
-        marker.bindPopup(`<strong>Campo:</strong> ${field.fieldName}<br><strong>Bacia:</strong> ${field.basin || '—'}<br><strong>Poços no campo:</strong> ${field.wellCount}`);
+        const tooltipText = `<strong>Campo:</strong> ${field.fieldName}<br><strong>Bacia:</strong> ${field.basin || '—'}<br><strong>Poços no campo:</strong> ${field.wellCount}`;
+        marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.96 });
+        marker.bindPopup(tooltipText);
+        marker.on('mouseover', () => marker.openTooltip());
+        marker.on('mouseout', () => marker.closeTooltip());
         marker.addTo(fieldLayer);
         fieldsShown += 1;
         allBounds.push([field.latitude, field.longitude]);
       });
+    }
+
+    const primaryEvent = rowsWithCoords.reduce((best, item) => {
+      if (!best || Number(item.mag) > Number(best.mag)) return item;
+      return best;
+    }, null);
+    if (primaryEvent) {
+      drawNearestAssetConnection(primaryEvent, cappedWells, fieldCentroids, mode);
     }
 
     return { wellsShown, fieldsShown, allBounds, wellsTotal: scopedWells.length };
@@ -1171,6 +1227,7 @@ function updateSeismicMap(filtered) {
   }
 
   seismicLayer.clearLayers();
+  if (linkLayer) linkLayer.clearLayers();
   const rowsWithCoords = filtered.filter(item => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
 
   if (!rowsWithCoords.length) {
@@ -1180,6 +1237,7 @@ function updateSeismicMap(filtered) {
     seismicMap.setView([12, 0], 2);
     if (wellLayer) wellLayer.clearLayers();
     if (fieldLayer) fieldLayer.clearLayers();
+    if (linkLayer) linkLayer.clearLayers();
     return;
   }
 
