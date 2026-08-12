@@ -664,6 +664,14 @@ function getSeverityClass(label) {
   return 'severity-low';
 }
 
+function getSeverityColor(label) {
+  if (label === 'CRITICA') return '#a855f7';
+  if (label === 'ALTA') return '#ef4444';
+  if (label === 'SIGNIFICATIVA') return '#f97316';
+  if (label === 'MODERADA') return '#3b82f6';
+  return '#22c55e';
+}
+
 function getSeismicScore(item) {
   const magnitudeBonus = item.mag * 8;
   const depthBonus = item.depth < 50 ? 12 : item.depth < 100 ? 6 : 0;
@@ -1276,12 +1284,14 @@ function updateSeismicMap(filtered) {
   const bounds = [];
   rowsWithCoords.forEach(item => {
     const magnitude = Number.isFinite(item.mag) ? item.mag : 0;
+    const severity = getSeverityLabel(magnitude);
     const radius = Math.max(3, Math.min(14, magnitude * 1.6));
+    const markerColor = getSeverityColor(severity);
     const marker = L.circleMarker([item.latitude, item.longitude], {
       radius,
-      color: '#f97316',
+      color: markerColor,
       weight: 1,
-      fillColor: '#7c3aed',
+      fillColor: markerColor,
       fillOpacity: 0.68,
     });
 
