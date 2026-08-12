@@ -1143,14 +1143,19 @@ function drawNearestAssetConnection(event, wells, fields, mode) {
 
   if (!nearestAsset) return;
 
+  const severity = getSeverityLabel(Number(event.mag));
+  const lineColor = severity === 'CRITICA' || severity === 'ALTA' ? '#f43f5e' : nearestAsset.color;
+  const lineWeight = severity === 'CRITICA' || severity === 'ALTA' ? 2.6 : 1.6;
+  const lineOpacity = severity === 'CRITICA' || severity === 'ALTA' ? 0.9 : 0.42;
+
   const line = L.polyline([
     [event.latitude, event.longitude],
     nearestAsset.coords,
   ], {
-    color: nearestAsset.color,
-    weight: 1.8,
-    opacity: 0.58,
-    dashArray: '4 7',
+    color: lineColor,
+    weight: lineWeight,
+    opacity: lineOpacity,
+    dashArray: severity === 'CRITICA' || severity === 'ALTA' ? '5 6' : '3 8',
     lineCap: 'round',
     lineJoin: 'round',
   });
