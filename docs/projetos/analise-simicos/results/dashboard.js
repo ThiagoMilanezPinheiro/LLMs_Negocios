@@ -1117,7 +1117,7 @@ function drawNearestAssetConnection(event, wells, fields, mode) {
       pool.push({
         type: 'well',
         coords: [well.latitude, well.longitude],
-        color: '#22c55e',
+        color: '#facc15',
         distance: haversineKm(event.latitude, event.longitude, well.latitude, well.longitude),
       });
     });
@@ -1169,7 +1169,7 @@ function getNearestAssetForEvent(event, wells, fields, mode) {
       pool.push({
         type: 'well',
         coords: [well.latitude, well.longitude],
-        color: '#22c55e',
+        color: '#facc15',
         distance: haversineKm(event.latitude, event.longitude, well.latitude, well.longitude),
       });
     });
@@ -1197,7 +1197,7 @@ function getNearestAssetForEvent(event, wells, fields, mode) {
 function getPriorityAssetLinkEvent(rowsWithCoords, wells, fields, mode) {
   const relevant = rowsWithCoords.filter(item => {
     const severity = getSeverityLabel(Number(item.mag));
-    return severity === 'ALTA' || severity === 'SIGNIFICATIVA';
+    return severity === 'CRITICA' || severity === 'ALTA';
   });
 
   const candidates = relevant.length ? relevant : rowsWithCoords;
@@ -1251,9 +1251,9 @@ function updateMapAssets(rowsWithCoords, bounds) {
           radius: 3,
           color: '#ffffff',
           weight: 1.2,
-          fillColor: '#16a34a',
-          fillOpacity: 0.72,
-          opacity: 0.9,
+          fillColor: '#facc15',
+          fillOpacity: 0.8,
+          opacity: 0.95,
         });
         const tooltipText = `<strong>Poço:</strong> ${well.wellName || '—'}<br><strong>Operador:</strong> ${well.operator || '—'}<br><strong>Bacia:</strong> ${well.basin || '—'}<br><strong>Estado:</strong> ${well.state || '—'}`;
         marker.bindTooltip(tooltipText, { direction: 'top', sticky: true, opacity: 0.96 });
