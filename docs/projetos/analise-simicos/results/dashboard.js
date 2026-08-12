@@ -46,6 +46,14 @@ const insightMagnitudeBandEl = document.getElementById('insightMagnitudeBand');
 const insightMagnitudeMetaEl = document.getElementById('insightMagnitudeMeta');
 const insightTemporalEl = document.getElementById('insightTemporal');
 const insightTemporalMetaEl = document.getElementById('insightTemporalMeta');
+const insightTrendEl = document.getElementById('insightTrend');
+const insightTrendMetaEl = document.getElementById('insightTrendMeta');
+const insightHotspotsEl = document.getElementById('insightHotspots');
+const insightHotspotsMetaEl = document.getElementById('insightHotspotsMeta');
+const insightAlertsEl = document.getElementById('insightAlerts');
+const insightAlertsMetaEl = document.getElementById('insightAlertsMeta');
+const insightDistanceEl = document.getElementById('insightDistance');
+const insightDistanceMetaEl = document.getElementById('insightDistanceMeta');
 const attentionListEl = document.getElementById('attentionList');
 const topSummaryEl = document.getElementById('topSummary');
 const answerListEl = document.getElementById('answerList');
@@ -1328,7 +1336,13 @@ function updateDashboard() {
   const m7Events = filtered.filter(item => item.mag >= 7).length;
   const tsunamiEvents = filtered.filter(item => item.tsunami).length;
   const alertEvents = filtered.filter(item => item.alert).length;
+  const feltEvents = filtered.filter(item => Number(item.felt) > 0).length;
   const significantEvents = filtered.filter(item => (item.significance || 0) >= 100).length;
+  const hotspotList = regionCounts.slice(0, 3).map(([name, value], index) => `
+    <div class="mini-line"><span>${index + 1}. ${formatRegionPt(name)}</span><span>(${value})</span></div>
+  `).join('');
+  const trendDelta = count - (dashboardData.filter(item => item.date < lastDate && item.date >= new Date(new Date(lastDate).getTime() - 7 * 24 * 60 * 60 * 1000)).length || 0);
+  const trendText = trendDelta > 0 ? `+${trendDelta}` : String(trendDelta);
   const hourlySpread = filtered.reduce((acc, item) => {
     const hour = new Date(item.date).getHours();
     acc[hour] = (acc[hour] || 0) + 1;
@@ -1355,7 +1369,7 @@ function updateDashboard() {
     executiveSignalMetaEl.textContent = `Maior evento: ${topMagnitudePlace} (M ${topMagnitudeItem}) • tendência ${trendStatus} • ${m6Events} eventos M6+`;
   }
 
-  insightHighestEl.textContent = `${maxMag.toFixed(1)} M`; 
+  insightHighestEl.textContent = `${maxMag.toFixed(1)} M`;
   insightHighestMetaEl.textContent = `${topMagnitudePlace} • ${lastDate} • ${m7Events} eventos M7+`;
   insightRegionEl.textContent = `${topRegionLabel}`;
   insightRegionMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} eventos • ${((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0)}% do total`;
@@ -1363,6 +1377,19 @@ function updateDashboard() {
   insightMagnitudeMetaEl.textContent = `${dominantBandCount} eventos • ${m6Events} M6+ • ${m7Events} M7+`;
   insightTemporalEl.textContent = temporalInsight;
   insightTemporalMetaEl.textContent = `magnitude mediana ${medianMag} • profundidade mediana ${medianDepthAll} km • pico horário ${hourlyLabel}`;
+  if (insightTrendEl) insightTrendEl.textContent = trendText;
+  if (insightTrendMetaEl) insightTrendMetaEl.textContent = `${Math.abs(trendDelta)} eventos ${trendDelta >= 0 ? 'acima' : 'abaixo'} da janela anterior`;
+  if (insightHotspotsEl) insightHotspotsEl.innerHTML = hotspotList || '—';
+  if (insightHotspotsMetaEl) insightHotspotsMetaEl.textContent = `${regionCounts[0] ? regionCounts[0][1] : 0} eventos na liderança`;
+  if (insightAlertsEl) {
+    insightAlertsEl.innerHTML = `
+      <div class="mini-line"><span>Alertas = ${alertEvents}</span><span>tsunami = ${tsunamiEvents}</span></div>
+      <div class="mini-line"><span>felt = ${feltEvents}</span><span>eventos</span></div>
+    `;
+  }
+  if (insightAlertsMetaEl) insightAlertsMetaEl.textContent = 'Eventos';
+  if (insightDistanceEl) insightDistanceEl.textContent = '—';
+  if (insightDistanceMetaEl) insightDistanceMetaEl.textContent = 'Sem comparação ANP na seleção atual';
 
   lastUpdatedEl.textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
   if (window.dashboardSource === 'api') {

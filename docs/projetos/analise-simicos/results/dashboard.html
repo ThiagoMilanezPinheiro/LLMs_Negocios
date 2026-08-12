@@ -67,6 +67,23 @@
     .insight-card h4 { margin: 0 0 0.35rem; font-size: 0.95rem; color: rgba(255,255,255,0.75); }
     .insight-card strong { font-size: 1.05rem; color: white; display: block; }
     .insight-card small { color: rgba(255,255,255,0.65); }
+    .insight-card .mini-list {
+      display: grid;
+      gap: 0.18rem;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      color: #f8fafc;
+    }
+    .insight-card .mini-list .mini-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.55rem;
+      white-space: nowrap;
+    }
+    .insight-card .mini-list .mini-line span:last-child {
+      color: #dbeafe;
+    }
     .tag { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.25rem 0.55rem; font-size: 0.78rem; background: rgba(124,58,237,0.2); color: #d8b4fe; }
     .executive-signal { margin-top: 1rem; padding: 1rem 1.1rem; border-radius: 14px; background: linear-gradient(135deg, rgba(124,58,237,0.24), rgba(15,23,42,0.45)); border: 1px solid rgba(192,132,252,0.24); }
     .signal-pill { display: inline-block; margin-bottom: 0.45rem; padding: 0.28rem 0.6rem; border-radius: 999px; background: rgba(255,255,255,0.12); color: #e9d5ff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -219,6 +236,10 @@
           <div class="insight-card"><h4>Concentração regional</h4><strong id="insightRegion">—</strong><small id="insightRegionMeta">—</small></div>
           <div class="insight-card"><h4>Perfil de magnitude</h4><strong id="insightMagnitudeBand">—</strong><small id="insightMagnitudeMeta">—</small></div>
           <div class="insight-card"><h4>Padrão temporal</h4><strong id="insightTemporal">—</strong><small id="insightTemporalMeta">—</small></div>
+          <div class="insight-card"><h4>Tendência vs. janela anterior</h4><strong id="insightTrend">—</strong><small id="insightTrendMeta">—</small></div>
+          <div class="insight-card"><h4>Top 3 hotspots</h4><strong id="insightHotspots" class="mini-list">—</strong><small id="insightHotspotsMeta">—</small></div>
+          <div class="insight-card"><h4>Eventos</h4><strong id="insightAlerts" class="mini-list">—</strong><small id="insightAlertsMeta">—</small></div>
+          <div class="insight-card"><h4>Distância mínima à infraestrutura crítica</h4><strong id="insightDistance">—</strong><small id="insightDistanceMeta">—</small></div>
         </div>
       </div>
 
