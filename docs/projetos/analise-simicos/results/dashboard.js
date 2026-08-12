@@ -1289,9 +1289,21 @@ function updateDashboard() {
   const topRegionItem = regionCounts[0] ? regionCounts[0][0] : '—';
   const topRegionLabel = topRegionItem === '—' ? '—' : formatRegionPt(topRegionItem);
   const topCountryItem = countryCounts[0] ? countryCounts[0][0] : '—';
-  const topMagnitudeItem = filtered.reduce((max, item) => item.mag > max.mag ? item : max, filtered[0]).mag.toFixed(1);
-  const topMagnitudePlace = filtered.reduce((max, item) => item.mag > max.mag ? item : max, filtered[0]).place;
-  const topEvent = filtered.reduce((max, item) => getSeismicScore(item) > getSeismicScore(max) ? item : max, filtered[0]);
+  const activeRegionFilter = regionFilter.value || null;
+  const activeCountryFilter = countryFilter.value || null;
+  const filterMatchedRows = filtered.filter(item => {
+    const itemRegion = normalizeGeoValue(item.region, UNKNOWN_REGION);
+    const itemCountry = normalizeGeoValue(item.country, UNKNOWN_COUNTRY);
+    const matchesRegion = !activeRegionFilter || itemRegion === activeRegionFilter;
+    const matchesCountry = !activeCountryFilter || itemCountry === activeCountryFilter;
+    return matchesRegion && matchesCountry;
+  });
+  const topMagnitudeEvent = filterMatchedRows.length
+    ? filterMatchedRows.reduce((max, item) => item.mag > max.mag ? item : max, filterMatchedRows[0])
+    : filtered[0];
+  const topMagnitudeItem = topMagnitudeEvent.mag.toFixed(1);
+  const topMagnitudePlace = topMagnitudeEvent.place;
+  const topEvent = topMagnitudeEvent;
   const trendStatus = getTrendStatus(filtered);
   const correlation = getCorrelation(filtered);
   const correlationLabel = correlation > 0.3 ? 'positiva' : correlation < -0.3 ? 'negativa' : 'fraca';
@@ -1359,6 +1371,19 @@ function updateDashboard() {
   const geographicLabel = topRegionItem === 'Outros' && topCountryItem === 'Outros'
     ? 'a classificação geográfica do catálogo permanece agregada'
     : `${topRegionLabel} como principal concentração regional e ${topCountryItem} como principal país da seleção`;
+  const topEventDate = topEvent && topEvent.date ? new Date(topEvent.date) : null;
+  const topEventDateLabel = topEventDate ? topEventDate.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }) : '—';
+  const topEventDepthLabel = topEvent && Number.isFinite(topEvent.depth) ? `${topEvent.depth.toFixed(1)} km` : '—';
+  const topEventLocationLabel = topEvent ? `${topEvent.place || topMagnitudePlace}` : topMagnitudePlace;
+  const topEventRegionLabel = topEvent && topEvent.region ? formatRegionPt(topEvent.region) : topRegionLabel;
+  const topEventCountryLabel = topEvent && topEvent.country ? topEvent.country : topCountryItem;
 
   summaryText.innerHTML = `<strong>Severidade Analítica:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
   topSummaryEl.innerHTML = `<strong>${topRegionLabel}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
@@ -1366,7 +1391,7 @@ function updateDashboard() {
     executiveSignalMainEl.textContent = `${topRegionLabel} é o centro da seleção • ${count} eventos monitorados`;
   }
   if (executiveSignalMetaEl) {
-    executiveSignalMetaEl.textContent = `Maior evento: ${topMagnitudePlace} (M ${topMagnitudeItem}) • tendência ${trendStatus} • ${m6Events} eventos M6+`;
+    executiveSignalMetaEl.textContent = `Maior evento: ${topEventLocationLabel} (${topEventRegionLabel}, ${topEventCountryLabel}) • M ${topMagnitudeItem} • ${topEventDateLabel} • profundidade ${topEventDepthLabel} • tendência ${trendStatus} • ${m6Events} eventos M6+`;
   }
 
   insightHighestEl.textContent = `${maxMag.toFixed(1)} M`;
