@@ -1121,6 +1121,17 @@ function drawNearestAssetConnection(event, wells, fields, mode) {
     line.bringToFront();
   }
 
+  if ((mode === 'wells' || mode === 'both') && wells.length) {
+    const nearestWell = wells.reduce((best, well) => {
+      const distance = haversineKm(event.latitude, event.longitude, well.latitude, well.longitude);
+      if (!best || distance < best.distance) {
+        return { distance, coords: [well.latitude, well.longitude] };
+      }
+      return best;
+    }, null);
+    if (nearestWell) drawPolyline(nearestWell.coords, '#22c55e');
+  }
+
   if ((mode === 'fields' || mode === 'both') && fields.length) {
     const nearestField = fields.reduce((best, field) => {
       const distance = haversineKm(event.latitude, event.longitude, field.latitude, field.longitude);
