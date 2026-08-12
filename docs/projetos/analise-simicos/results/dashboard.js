@@ -34,6 +34,7 @@ const topCountry = document.getElementById('topCountry');
 const topMagnitude = document.getElementById('topMagnitude');
 const detailsTable = document.getElementById('detailsTable');
 const detailsLimit = document.getElementById('detailsLimit');
+const severityFilter = document.getElementById('severityFilter');
 const lastUpdatedEl = document.getElementById('lastUpdated');
 const dataSourceEl = document.getElementById('dataSource');
 const recordsLoadedEl = document.getElementById('recordsLoaded');
@@ -2289,8 +2290,13 @@ function exportFilteredData(filtered) {
 }
 
 function renderDetails(filtered) {
+  const currentSeverity = severityFilter ? severityFilter.value : 'all';
+  const severityFiltered = currentSeverity === 'all'
+    ? filtered
+    : filtered.filter(item => getSeverityLabel(item.mag) === currentSeverity);
+
   const limitValue = detailsLimit ? detailsLimit.value : 'all';
-  const sliced = limitValue === 'all' ? filtered : filtered.slice(0, Number(limitValue));
+  const sliced = limitValue === 'all' ? severityFiltered : severityFiltered.slice(0, Number(limitValue));
 
   detailsTable.innerHTML = sliced.length ? sliced.map(item => {
     const severity = getSeverityLabel(item.mag);
@@ -2519,6 +2525,12 @@ function initFilters() {
 
   if (detailsLimit) {
     detailsLimit.addEventListener('change', () => {
+      updateDashboard();
+    });
+  }
+
+  if (severityFilter) {
+    severityFilter.addEventListener('change', () => {
       updateDashboard();
     });
   }

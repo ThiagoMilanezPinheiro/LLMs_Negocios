@@ -342,6 +342,17 @@
                 <option value="all">Todas</option>
               </select>
             </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; color:rgba(255,255,255,0.8); font-size:0.95rem;">
+              Severidade
+              <select id="severityFilter" style="min-width:130px;">
+                <option value="all">Todas</option>
+                <option value="CRITICA">Crítica</option>
+                <option value="ALTA">Alta</option>
+                <option value="SIGNIFICATIVA">Significativa</option>
+                <option value="MODERADA">Moderada</option>
+                <option value="BAIXA">Baixa</option>
+              </select>
+            </label>
             <button id="exportData" type="button" style="padding:0.6rem 0.9rem; border:none; border-radius:10px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color:white; font-weight:700; cursor:pointer;">Exportar CSV</button>
             <button id="refreshData" type="button" style="padding:0.6rem 0.9rem; border:none; border-radius:10px; background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); color:white; font-weight:700; cursor:pointer;">Atualizar dados</button>
           </div>
