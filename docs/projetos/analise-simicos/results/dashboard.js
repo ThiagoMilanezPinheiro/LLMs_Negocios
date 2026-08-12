@@ -1161,7 +1161,40 @@ function drawNearestAssetConnection(event, wells, fields, mode) {
   line.bringToFront();
 }
 
-function getPriorityAssetLinkEvent(rowsWithCoords) {
+function getNearestAssetForEvent(event, wells, fields, mode) {
+  const pool = [];
+
+  if ((mode === 'wells' || mode === 'both') && Array.isArray(wells)) {
+    wells.forEach(well => {
+      pool.push({
+        type: 'well',
+        coords: [well.latitude, well.longitude],
+        color: '#22c55e',
+        distance: haversineKm(event.latitude, event.longitude, well.latitude, well.longitude),
+      });
+    });
+  }
+
+  if ((mode === 'fields' || mode === 'both') && Array.isArray(fields)) {
+    fields.forEach(field => {
+      pool.push({
+        type: 'field',
+        coords: [field.latitude, field.longitude],
+        color: '#38bdf8',
+        distance: haversineKm(event.latitude, event.longitude, field.latitude, field.longitude),
+      });
+    });
+  }
+
+  if (!pool.length) return null;
+
+  return pool.reduce((best, current) => {
+    if (!best || current.distance < best.distance) return current;
+    return best;
+  }, null);
+}
+
+function getPriorityAssetLinkEvent(rowsWithCoords, wells, fields, mode) {
   const relevant = rowsWithCoords.filter(item => {
     const severity = getSeverityLabel(Number(item.mag));
     return severity === 'ALTA' || severity === 'SIGNIFICATIVA';
@@ -1170,12 +1203,20 @@ function getPriorityAssetLinkEvent(rowsWithCoords) {
   const candidates = relevant.length ? relevant : rowsWithCoords;
   if (!candidates.length) return null;
 
-  return candidates.reduce((best, current) => {
-    if (!best) return current;
-    const bestScore = getSeismicScore(best);
-    const currentScore = getSeismicScore(current);
-    return currentScore > bestScore ? current : best;
-  }, null);
+  let bestCandidate = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  candidates.forEach(current => {
+    const nearestAsset = getNearestAssetForEvent(current, wells, fields, mode);
+    if (!nearestAsset) return;
+
+    if (!bestCandidate || nearestAsset.distance < bestDistance || (nearestAsset.distance === bestDistance && getSeismicScore(current) > getSeismicScore(bestCandidate))) {
+      bestCandidate = current;
+      bestDistance = nearestAsset.distance;
+    }
+  });
+
+  return bestCandidate;
 }
 
 function updateMapAssets(rowsWithCoords, bounds) {
@@ -1246,7 +1287,7 @@ function updateMapAssets(rowsWithCoords, bounds) {
       });
     }
 
-    const primaryEvent = getPriorityAssetLinkEvent(rowsWithCoords);
+    const primaryEvent = getPriorityAssetLinkEvent(rowsWithCoords, cappedWells, fieldCentroids, mode);
     if (primaryEvent) {
       drawNearestAssetConnection(primaryEvent, cappedWells, fieldCentroids, mode);
     }
