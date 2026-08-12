@@ -29,9 +29,6 @@ const kpiMaxMag = document.getElementById('kpiMaxMag');
 const kpiMedianDepth = document.getElementById('kpiMedianDepth');
 const kpiLastDate = document.getElementById('kpiLastDate');
 const summaryText = document.getElementById('summaryText');
-const topRegion = document.getElementById('topRegion');
-const topCountry = document.getElementById('topCountry');
-const topMagnitude = document.getElementById('topMagnitude');
 const detailsTable = document.getElementById('detailsTable');
 const detailsLimit = document.getElementById('detailsLimit');
 const severityFilter = document.getElementById('severityFilter');
@@ -1300,9 +1297,6 @@ function updateDashboard() {
     kpiMaxMag.textContent = '0.0';
     kpiMedianDepth.textContent = '0.0';
     kpiLastDate.textContent = '—';
-    topRegion.textContent = '—';
-    topCountry.textContent = '—';
-    topMagnitude.textContent = '—';
     summaryText.innerHTML = '<strong>Sem dados para esta seleção.</strong>';
     renderCharts([], [], [], []);
     updateSeismicMap([]);
@@ -1422,10 +1416,6 @@ function updateDashboard() {
   const dominantHour = Object.entries(hourlySpread).sort((a, b) => b[1] - a[1])[0];
   const hourlyLabel = dominantHour ? `${dominantHour[0]}h` : '—';
 
-  topRegion.textContent = topRegionLabel;
-  topCountry.textContent = topCountryItem;
-  topMagnitude.textContent = `${topMagnitudeItem} (${topMagnitudePlace})`;
-
   const regionShare = count ? ((regionCounts[0] ? regionCounts[0][1] : 0) / count * 100).toFixed(0) : 0;
   const geographicLabel = topRegionItem === 'Outros' && topCountryItem === 'Outros'
     ? 'a classificação geográfica do catálogo permanece agregada'
@@ -1445,7 +1435,6 @@ function updateDashboard() {
   const topEventCountryLabel = topEvent && topEvent.country ? topEvent.country : topCountryItem;
 
   summaryText.innerHTML = `<strong>Severidade Analítica:</strong> ${getSeverityLabel(maxMag)} • ${count} eventos • profundidade mediana ${medianDepth.toFixed(1)} km • ${geographicLabel}.`;
-  topSummaryEl.innerHTML = `<strong>${topRegionLabel}</strong> concentra ${regionCounts[0] ? regionCounts[0][1] : 0} eventos, o que representa ${regionShare}% da seleção, e o maior evento registrado atingiu magnitude ${topMagnitudeItem} em ${topMagnitudePlace}.`;
   if (executiveSignalMainEl) {
     executiveSignalMainEl.textContent = `${topRegionLabel} é o centro da seleção • ${count} eventos monitorados`;
   }
@@ -1497,11 +1486,15 @@ function updateDashboard() {
 
   const attentionItems = filtered.filter(item => item.mag >= 5 || item.tsunami || item.alert || item.mag >= 6 || (item.significance || 0) >= 50)
     .sort((a, b) => b.mag - a.mag)
-    .slice(0, 5);
-  attentionListEl.innerHTML = attentionItems.length ? attentionItems.map(item => {
+    .slice(0, 6);
+  const visibleAttentionItems = Array.from({ length: 6 }, (_, index) => attentionItems[index] || null);
+  attentionListEl.innerHTML = visibleAttentionItems.map(item => {
+    if (!item) {
+      return '<div class="attention-item" style="opacity:0.38; border-style:dashed;"><strong>Sem evento</strong><br><small>Slot reservado para expansão</small><br><span class="severity-pill" style="background:rgba(148,163,184,0.18);color:rgba(255,255,255,0.7);">—</span></div>';
+    }
     const severity = getSeverityLabel(item.mag);
-    return `<div class="attention-item"><strong>${item.place}</strong><br><small>${item.date} • M ${item.mag.toFixed(1)} • ${item.country}</small><br><span class="severity-pill ${getSeverityClass(severity)}">${severity}</span></div>`;
-  }).join('') : '<div class="attention-item"><strong>Nenhum evento crítico na seleção atual.</strong></div>';
+    return `<div class="attention-item"><strong>${item.place}</strong><br><small>${item.date} • M ${item.mag.toFixed(1)} • ${item.country}</small><br><span class="severity-pill ${getSeverityClass(severity)}" style="display:flex; justify-content:center; align-items:center; width:100%; min-height:38px; text-align:center;">${severity}</span></div>`;
+  }).join('');
 
   renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, depthBands, depthValues);
   updateSeismicMap(filtered);
@@ -1583,11 +1576,12 @@ function getPaddedDomain(minValue, maxValue, options = {}) {
 
 function renderBarChart(container, labels, values, options = {}) {
   container.innerHTML = '';
-  const svg = createSvgElement('svg', { viewBox: '0 0 360 260' });
+  const svgHeight = options.svgHeight || 260;
+  const chartHeight = options.chartHeight || 165;
+  const svg = createSvgElement('svg', { viewBox: `0 0 360 ${svgHeight}` });
   const maxValue = Math.max(...values, 1);
   const colors = ['#7c3aed', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'];
 
-  const chartHeight = 165;
   const chartWidth = 296;
   const paddingLeft = 46;
   const paddingTop = 26;
@@ -1908,13 +1902,14 @@ function computeScatterStats(filtered) {
 }
 
 function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note, isDeepPanel = false) {
-  const svg = createSvgElement('svg', { viewBox: '0 0 760 360', role: 'img', 'aria-label': title });
+  const canvasHeight = 260;
+  const svg = createSvgElement('svg', { viewBox: `0 0 760 ${canvasHeight}`, role: 'img', 'aria-label': title });
   const paddingLeft = 64;
   const paddingRight = 24;
-  const paddingTop = 56;
-  const paddingBottom = 72;
+  const paddingTop = 48;
+  const paddingBottom = 54;
   const chartWidth = 760 - paddingLeft - paddingRight;
-  const chartHeight = 360 - paddingTop - paddingBottom;
+  const chartHeight = canvasHeight - paddingTop - paddingBottom;
   const xSourceMin = points.length ? Math.min(...points.map(item => item.mag)) : stats.magnitudeMin;
   const xSourceMax = points.length ? Math.max(...points.map(item => item.mag)) : stats.magnitudeMax;
   const ySourceMin = points.length ? Math.min(...points.map(item => item.depth)) : depthDomain.min;
@@ -1949,7 +1944,7 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
     x: 0,
     y: 0,
     width: 760,
-    height: 360,
+    height: canvasHeight,
     rx: 12,
     fill: 'rgba(255,255,255,0.01)',
     stroke: 'rgba(255,255,255,0.06)',
@@ -2027,7 +2022,7 @@ function renderScatterPanelSvg(points, stats, depthDomain, title, subtitle, note
 
   const xAxisLabel = createSvgElement('text', {
     x: paddingLeft + chartWidth / 2,
-    y: 340,
+    y: canvasHeight - 20,
     'text-anchor': 'middle',
     fill: 'rgba(255,255,255,0.8)',
     'font-size': '11',
@@ -2261,6 +2256,8 @@ function renderCharts(trendCounts, filtered, magnitudeBands, magnitudeValues, de
       title: 'Faixa de profundidade',
       total: totalEvents,
       metaByIndex: depthMeta,
+      chartHeight: 92,
+      svgHeight: 190,
     });
   } else {
     depthChartEl.innerHTML = '<div style="color:rgba(255,255,255,0.7);padding-top:3rem;">Nenhum evento para exibir.</div>';

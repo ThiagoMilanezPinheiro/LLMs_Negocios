@@ -89,10 +89,22 @@
     .signal-pill { display: inline-block; margin-bottom: 0.45rem; padding: 0.28rem 0.6rem; border-radius: 999px; background: rgba(255,255,255,0.12); color: #e9d5ff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
     .signal-main { font-size: 1.08rem; font-weight: 700; color: white; margin-bottom: 0.3rem; }
     .signal-meta { color: rgba(255,255,255,0.77); font-size: 0.95rem; }
-    .attention-list { display: grid; gap: 0.6rem; margin-top: 0.7rem; }
-    .attention-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.7rem; }
-    .attention-item strong { color: white; }
+    .attention-panel { width: 100%; }
+    .attention-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; margin-top: 0.7rem; }
+    .attention-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.7rem; min-height: 146px; display: flex; flex-direction: column; justify-content: space-between; }
+    .attention-item strong { color: white; font-size: 1.05rem; line-height: 1.3; }
     .attention-item small { color: rgba(255,255,255,0.7); }
+    .attention-item .severity-pill {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      min-height: 38px !important;
+      text-align: center !important;
+      padding: 0.45rem 0.7rem !important;
+      box-sizing: border-box !important;
+      margin: 0 auto !important;
+    }
     .answer-list { display: grid; gap: 0.65rem; margin-top: 0.75rem; }
     .answer-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 0.85rem; color: rgba(255,255,255,0.82); }
     .answer-item strong { color: white; }
@@ -117,7 +129,7 @@
     .scatter-summary-icon.size { background: radial-gradient(circle at 30% 30%, rgba(34,197,94,0.95), rgba(22,163,74,0.9)); }
     .scatter-region-legend { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.85rem; }
     .scatter-region-legend .meta-pill { display: inline-flex; align-items: center; }
-    .severity-pill { display: inline-block; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 700; }
+    .severity-pill { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 700; text-align: center; }
     .severity-low { background: rgba(34,197,94,0.16); color: #bbf7d0; }
     .severity-moderate { background: rgba(59,130,246,0.16); color: #bfdbfe; }
     .severity-significant { background: rgba(249,115,22,0.16); color: #fed7aa; }
@@ -310,23 +322,9 @@
         <div class="chart-canvas" id="scatterChart"></div>
       </div>
 
-      <div class="grid-2">
-        <div class="panel">
-          <h3 style="margin-top:0;">Atenção necessária</h3>
-          <div class="attention-list" id="attentionList"></div>
-        </div>
-        <div class="panel">
-          <h3 style="margin-top:0;">Inteligência do evento</h3>
-          <div class="summary" id="topSummary"></div>
-          <table style="margin-top: 0.8rem;">
-            <thead>
-              <tr><th>Região líder</th><th>País líder</th><th>Magnitude máxima</th></tr>
-            </thead>
-            <tbody>
-              <tr><td id="topRegion">—</td><td id="topCountry">—</td><td id="topMagnitude">—</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="panel attention-panel">
+        <h3 style="margin-top:0;">Atenção necessária</h3>
+        <div class="attention-list" id="attentionList"></div>
       </div>
 
       <div class="panel">
